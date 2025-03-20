@@ -112,7 +112,8 @@ class SignUpActivity : AppCompatActivity() {
             "userid" to userid,
             "name" to name,
             "email" to email,
-            "role" to "user"
+            "role" to "user",
+            "isfirsttime" to true
         )
         db.collection("Users").document(userid).set(user).addOnSuccessListener {
             Toast.makeText(this, "Đăng kí tài khoản thành công!", Toast.LENGTH_SHORT).show()
