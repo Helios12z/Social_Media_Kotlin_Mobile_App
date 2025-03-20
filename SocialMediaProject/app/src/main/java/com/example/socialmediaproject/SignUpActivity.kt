@@ -50,8 +50,6 @@ class SignUpActivity : AppCompatActivity() {
                         task -> if (task.isSuccessful)
                         {
                             Toast.makeText(this, "Đăng kí tài khoản thành công!", Toast.LENGTH_SHORT).show()
-                            intent=Intent(this,LoginActivity::class.java)
-                            startActivity(intent)
                             finish()
                         }
                         else
@@ -65,9 +63,7 @@ class SignUpActivity : AppCompatActivity() {
 
     private fun OnLoginTextClikec()
     {
-        intent=Intent(this,LoginActivity::class.java)
-        startActivity(intent)
-        finish()
+        finish();
     }
 
     private fun SetTitleGradientColor(title: TextView)

@@ -46,7 +46,7 @@ class LoginActivity : AppCompatActivity() {
                                 startActivity(intent)
                                 finish()
                             }
-                            else Toast.makeText(this, "Đăng nhập thất bại!", Toast.LENGTH_SHORT).show()
+                            else Toast.makeText(this, "Tên đăng nhập hay mật khẩu không chính xác!", Toast.LENGTH_SHORT).show()
                     }
             }
             else Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
