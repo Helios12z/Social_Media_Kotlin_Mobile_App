@@ -1,8 +1,11 @@
 package com.example.socialmediaproject
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -34,6 +37,12 @@ class FirstCheckActivity : AppCompatActivity() {
         chipGroup = binding.chipGroup
         btnContinue = binding.btnContinue
         setupChips()
+
+    }
+
+    @SuppressLint("MissingSuperCall")
+    override fun onBackPressed() {
+
     }
 
     private fun setupChips() {

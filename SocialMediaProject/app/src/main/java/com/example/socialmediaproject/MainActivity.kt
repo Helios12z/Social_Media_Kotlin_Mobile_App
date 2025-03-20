@@ -2,6 +2,8 @@ package com.example.socialmediaproject
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -29,8 +31,10 @@ class MainActivity : AppCompatActivity() {
                 val userdoc=documents.documents[0]
                 val isfirsttime=userdoc.getBoolean("isfirsttime") ?: false
                 if (isfirsttime) {
-                    intent= Intent(this, FirstCheckActivity::class.java)
-                    startActivity(intent)
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        intent= Intent(this, FirstCheckActivity::class.java)
+                        startActivity(intent)
+                    }, 2000)
                 }
             }
         }
@@ -46,7 +50,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications
             )
         )
-        setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
     }
 }

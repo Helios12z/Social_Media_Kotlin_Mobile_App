@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.LinearGradient
 import android.graphics.Shader
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -35,13 +36,18 @@ class LoginActivity : AppCompatActivity() {
             if (email.text.toString().isNotEmpty() && password.text.toString().isNotEmpty())
             {
                 firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
-                    .addOnCompleteListener(this) {
+                    .addOnCompleteListener() {
                         task->
                             if (task.isSuccessful) {
                                 Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
-                                intent = Intent(this, MainActivity::class.java)
-                                startActivity(intent)
-                                finish()
+                                try {
+                                    intent = Intent(this, MainActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                                catch(err: Exception) {
+                                    Log.e("LoginError", "Lỗi khi chuyển sang MainActivity: ${err.message}")
+                                }
                             }
                             else Toast.makeText(this, "Tên đăng nhập hay mật khẩu không chính xác!", Toast.LENGTH_SHORT).show()
                     }
