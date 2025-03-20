@@ -34,14 +34,17 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/title"
         android:layout_marginTop="30dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:background="@drawable/rounded_edittext">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nickname"
-            android:background="@color/white"
+            android:background="@android:color/transparent"
             android:inputType="textPersonName" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -51,14 +54,17 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/nameLayout"
         android:layout_marginTop="16dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:background="@drawable/rounded_edittext">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Email"
-            android:background="@color/white"
+            android:background="@android:color/transparent"
             android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -68,14 +74,17 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/emailLayout"
         android:layout_marginTop="16dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:background="@drawable/rounded_edittext">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Mật khẩu"
-            android:background="@color/white"
+            android:background="@android:color/transparent"
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -85,14 +94,17 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/passwordLayout"
         android:layout_marginTop="16dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:background="@drawable/rounded_edittext">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/confirmPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nhập lại mật khẩu"
-            android:background="@color/white"
+            android:background="@android:color/transparent"
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -102,7 +114,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/confirmPasswordLayout"
         android:layout_marginTop="30dp"
-        android:backgroundTint="@color/purple_500"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/rounded_button"
         android:text="Đăng ký"
         android:textColor="@color/white"
         android:textSize="18sp" />
@@ -115,7 +129,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="Đã có tài khoản? Đăng nhập ngay"
-        android:textColor="@color/purple_500"
+        android:textColor="@color/white"
         android:textSize="14sp" />
 
 </RelativeLayout>

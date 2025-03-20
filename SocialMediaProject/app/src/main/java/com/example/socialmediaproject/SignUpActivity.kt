@@ -33,6 +33,11 @@ class SignUpActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        if (savedInstanceState!=null)
+        {
+            binding.name.setText(savedInstanceState.getString("name"))
+            binding.email.setText(savedInstanceState.getString("email"))
+        }
         logintext=binding.loginText
         logintext.setOnClickListener { OnLoginTextClikec() }
         title=binding.title
@@ -59,6 +64,12 @@ class SignUpActivity : AppCompatActivity() {
             else
                 Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("email", binding.email.text.toString())
+        outState.putString("name", binding.name.text.toString())
     }
 
     private fun OnLoginTextClikec()
