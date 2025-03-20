@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@color/black"
+    android:background="@drawable/gradientbackground"
     tools:context=".FirstCheckActivity">
 
     <TextView
@@ -22,9 +22,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Thế giới trong lòng bàn tay"
+        android:text="Hãy để trải nghiệm của bạn được cá nhân hóa tốt nhất"
         android:textSize="14sp"
-        android:textColor="@color/gray"
+        android:textColor="@color/white"
         android:gravity="center"
         android:layout_marginBottom="16dp"/>
 

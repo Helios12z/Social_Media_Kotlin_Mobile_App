@@ -4,29 +4,21 @@ import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.viewbinding.ViewBinding
 import com.example.socialmediaproject.databinding.ActivityFirstCheckBinding
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.firestore.FirebaseFirestore
 
 class FirstCheckActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityFirstCheckBinding
     private lateinit var chipGroup: ChipGroup
     private lateinit var btnContinue: Button
+    private var db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val selectedInterests = mutableSetOf<String>()
-    private val interests = listOf(
-        "Daily life", "Comedy", "Entertainment", "Animals", "Food", "Drama",
-        "Beauty & Style", "Learning", "Fitness & Gym", "Auto", "Family",
-        "Health & Care", "DIY", "Daily life hacks", "Arts & Crafts",
-        "Dance", "Outdoors", "Sports"
-    )
+    private val interests = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,15 +26,29 @@ class FirstCheckActivity : AppCompatActivity() {
         setContentView(R.layout.activity_first_check)
         binding= ActivityFirstCheckBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        GetListOfInterests {
+            setupChips()
+        }
         chipGroup = binding.chipGroup
         btnContinue = binding.btnContinue
-        setupChips()
-
     }
 
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
 
+    }
+
+    private fun GetListOfInterests(callback: ()->Unit)
+    {
+        db.collection("Categories").get().addOnSuccessListener {
+            documents->interests.clear()
+            for (document in documents)
+            {
+                val name=document.getString("name")
+                if (name!=null) interests.add(name)
+            }
+            callback()
+        }
     }
 
     private fun setupChips() {
@@ -63,7 +69,7 @@ class FirstCheckActivity : AppCompatActivity() {
     }
 
     private fun updateContinueButton() {
-        btnContinue.isEnabled = selectedInterests.size >= 3
+        btnContinue.isEnabled = selectedInterests.size >= 2
         btnContinue.setBackgroundColor(
             if (selectedInterests.size >= 3) Color.parseColor("#4F46E5") else Color.GRAY
         )
