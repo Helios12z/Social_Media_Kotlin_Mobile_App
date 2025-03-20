@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.viewbinding.ViewBinding
 import com.example.socialmediaproject.databinding.ActivitySignUpBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var logintext: TextView
@@ -22,6 +23,7 @@ class SignUpActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySignUpBinding
     private lateinit var signupbutton: Button
     private lateinit var firebaseauth: FirebaseAuth
+    private var db=FirebaseFirestore.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,19 +52,33 @@ class SignUpActivity : AppCompatActivity() {
             val confirmpassword=binding.confirmPassword.text.toString()
             val name=binding.name.text.toString()
             if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty() && confirmpassword.isNotEmpty())
+            {
                 if (password==confirmpassword)
-                    firebaseauth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) {
-                        task -> if (task.isSuccessful)
-                        {
-                            Toast.makeText(this, "Đăng kí tài khoản thành công!", Toast.LENGTH_SHORT).show()
-                            finish()
+                {
+                    val usersRef = db.collection("Users")
+                    usersRef.whereEqualTo("name", name).get()
+                        .addOnSuccessListener { nameResult ->
+                            usersRef.whereEqualTo("email", email).get()
+                                .addOnSuccessListener { emailResult ->
+                                    if (!nameResult.isEmpty || !emailResult.isEmpty) {
+                                        Toast.makeText(this, "Tên hoặc email đã tồn tại!", Toast.LENGTH_SHORT).show()
+                                    }
+                                    else {
+                                        firebaseauth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) {
+                                                task -> if (task.isSuccessful)
+                                        {
+                                            val userid=firebaseauth.currentUser?.uid
+                                            if (userid!=null) AddNewUserToDb(binding.name.text.toString(), userid, binding.email.text.toString())
+                                        }
+                                        else Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
                         }
-                        else
-                            Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
-                    }
+                }
                 else Toast.makeText(this, "Mật khẩu nhập lại không đúng!", Toast.LENGTH_SHORT).show()
-            else
-                Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
+            }
+            else Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -88,5 +104,21 @@ class SignUpActivity : AppCompatActivity() {
             Shader.TileMode.CLAMP
         )
         paint.shader = shader
+    }
+
+    private fun AddNewUserToDb(name: String, userid: String, email: String)
+    {
+        val user= hashMapOf(
+            "userid" to userid,
+            "name" to name,
+            "email" to email,
+            "role" to "user"
+        )
+        db.collection("Users").document(userid).set(user).addOnSuccessListener {
+            Toast.makeText(this, "Đăng kí tài khoản thành công!", Toast.LENGTH_SHORT).show()
+            finish()
+        }.addOnFailureListener {
+            Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
+        }
     }
 }
