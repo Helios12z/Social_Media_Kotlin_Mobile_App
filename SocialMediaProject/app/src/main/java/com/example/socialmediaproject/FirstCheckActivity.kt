@@ -1,6 +1,7 @@
 package com.example.socialmediaproject
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.socialmediaproject.databinding.ActivityFirstCheckBinding
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class FirstCheckActivity : AppCompatActivity() {
@@ -19,6 +21,7 @@ class FirstCheckActivity : AppCompatActivity() {
     private var db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val selectedInterests = mutableSetOf<String>()
     private val interests = mutableListOf<String>()
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +34,19 @@ class FirstCheckActivity : AppCompatActivity() {
         }
         chipGroup = binding.chipGroup
         btnContinue = binding.btnContinue
+        auth= FirebaseAuth.getInstance()
+        btnContinue.setOnClickListener {
+            val userid=auth.currentUser?.uid
+            if (userid != null)
+            {
+                val userref=db.collection("Users").document(userid)
+                userref.update("isfirsttime", false)
+                userref.update("interests", selectedInterests.toList())
+                val intent=Intent(this, AfterFirstCheckActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
     }
 
     @SuppressLint("MissingSuperCall")
@@ -71,7 +87,7 @@ class FirstCheckActivity : AppCompatActivity() {
     private fun updateContinueButton() {
         btnContinue.isEnabled = selectedInterests.size >= 2
         btnContinue.setBackgroundColor(
-            if (selectedInterests.size >= 3) Color.parseColor("#4F46E5") else Color.GRAY
+            if (selectedInterests.size >= 2) Color.parseColor("#4F46E5") else Color.GRAY
         )
     }
 }

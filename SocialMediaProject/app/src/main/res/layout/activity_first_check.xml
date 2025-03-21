@@ -17,7 +17,8 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="@color/white"
-        android:gravity="center" />
+        android:gravity="center"
+        android:layout_marginTop="90dp"/>
 
     <TextView
         android:layout_width="match_parent"
