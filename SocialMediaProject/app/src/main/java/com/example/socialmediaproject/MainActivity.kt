@@ -11,6 +11,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.socialmediaproject.databinding.ActivityMainBinding
+import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
                     Handler(Looper.getMainLooper()).postDelayed({
                         intent= Intent(this, FirstCheckActivity::class.java)
                         startActivity(intent)
-                    }, 2000)
+                    }, 500)
                 }
             }
         }
@@ -47,9 +48,23 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications
+                R.id.navigation_home
             )
         )
         navView.setupWithNavController(navController)
+
+        navView.setOnItemSelectedListener {
+            item->when(item.itemId) {
+                R.id.navigation_plus -> {
+                    val intent=Intent(this, AddPostActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                else -> {
+                    false
+                }
+            }
+        }
     }
 }
