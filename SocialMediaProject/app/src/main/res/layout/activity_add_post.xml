@@ -11,7 +11,8 @@
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/purple_200"
+        android:layout_marginTop="50dp"
         app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
@@ -38,7 +39,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
                     android:text="Tạo bài viết mới"
-                    android:textColor="@color/dark_gray"
+                    android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -132,8 +133,8 @@
                 android:importantForAutofill="no"
                 android:inputType="textMultiLine"
                 android:minHeight="120dp"
-                android:textColor="@color/gray"
-                android:textColorHint="@color/black"
+                android:textColor="@color/black"
+                android:textColorHint="@color/gray"
                 android:textSize="16sp" />
 
             <androidx.recyclerview.widget.RecyclerView
