@@ -2,24 +2,27 @@ package com.example.socialmediaproject
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaproject.databinding.ActivityAddPostBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.io.File
-import java.io.FileOutputStream
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 
 private const val REQUEST_IMAGE_PICK = 100
 class AddPostActivity : AppCompatActivity() {
@@ -29,6 +32,8 @@ class AddPostActivity : AppCompatActivity() {
     private lateinit var MediaAdapter: MediaAdapter
     private val imageList = mutableListOf<Uri>()
     private lateinit var rv_selected_media: RecyclerView
+    private val API_KEY = "b5a914cc1aedaa51a1a0a5a4db8ed3ff"
+    private val uploadedimage = arrayListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +64,11 @@ class AddPostActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+        binding.btnPost.setOnClickListener {
+            binding.btnPost.isEnabled = false
+            binding.progressBar.visibility = View.VISIBLE
+            uploadAllImages() //upload post duoc goi o ben trong uploadallimages
+        }
     }
 
     @SuppressLint("MissingSuperCall")
@@ -67,27 +77,6 @@ class AddPostActivity : AppCompatActivity() {
         val intent=Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()
-    }
-
-    private fun saveImageToInternalStorage(context: Context, file: Uri, filename: String): String? {
-        try {
-            val inputStream = context.contentResolver.openInputStream(file) ?: return null
-            val directory = File(context.filesDir, "images")
-            if (!directory.exists()) directory.mkdirs()
-
-            val imageFile = File(directory, filename)
-            val outputStream = FileOutputStream(imageFile)
-
-            inputStream.copyTo(outputStream)
-
-            inputStream.close()
-            outputStream.close()
-
-            return imageFile.absolutePath
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
-        }
     }
 
     private fun openGallery() {
@@ -122,6 +111,95 @@ class AddPostActivity : AppCompatActivity() {
 
         if (imageList.isEmpty()) {
             rv_selected_media.visibility = View.GONE
+        }
+    }
+
+    private fun uploadAllImages() {
+        var uploadedCount = 0
+        if (imageList.isEmpty()) {
+            UploadPost()
+            return
+        }
+
+        for (uri in imageList) {
+            uploadImageToImgbb(uri) { imageUrl ->
+                if (imageUrl != null) {
+                    uploadedimage.add(imageUrl)
+                }
+                uploadedCount++
+                if (uploadedCount == imageList.size) {
+                    UploadPost()
+                }
+            }
+        }
+    }
+
+    private fun uploadImageToImgbb(imageUri: Uri, callback: (String?) -> Unit) {
+        Thread {
+            try {
+                val base64Image = uriToBase64(imageUri) ?: return@Thread callback(null)
+                val client = OkHttpClient()
+                val requestBody = FormBody.Builder()
+                    .add("key", API_KEY)
+                    .add("image", base64Image)
+                    .build()
+
+                val request = Request.Builder()
+                    .url("https://api.imgbb.com/1/upload")
+                    .post(requestBody)
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        Log.e("UploadError", "Lỗi: ${response.message}")
+                        callback(null)
+                        return@use
+                    }
+                    val jsonResponse = JSONObject(response.body!!.string())
+                    val imageUrl = jsonResponse.getJSONObject("data").getString("url")
+                    callback(imageUrl)
+                    uploadedimage.add(imageUrl)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                callback(null)
+            }
+        }.start()
+    }
+
+    private fun uriToBase64(uri: Uri): String? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            val outputStream = ByteArrayOutputStream()
+            val buffer = ByteArray(1024)
+            var bytesRead: Int
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+            inputStream.close()
+            Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun UploadPost()
+    {
+        val userid=auth.currentUser?.uid
+        val post= hashMapOf(
+            "userid" to userid,
+            "imageurl" to uploadedimage,
+            "content" to binding.etPostContent.text.toString(),
+            "timestamp" to System.currentTimeMillis()
+        )
+        db.collection("Posts").add(post).addOnSuccessListener {
+            Toast.makeText(this, "Đăng bài thành công", Toast.LENGTH_SHORT).show()
+            val intent=Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }.addOnFailureListener {
+            Toast.makeText(this, "Đăng bài thất bại", Toast.LENGTH_SHORT).show()
         }
     }
 }
