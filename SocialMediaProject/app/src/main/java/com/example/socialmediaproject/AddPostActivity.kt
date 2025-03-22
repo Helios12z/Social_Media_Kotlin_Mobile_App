@@ -3,6 +3,7 @@ package com.example.socialmediaproject
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -66,6 +67,7 @@ class AddPostActivity : AppCompatActivity() {
         }
         binding.btnPost.setOnClickListener {
             binding.btnPost.isEnabled = false
+            binding.btnPost.setBackgroundColor(Color.BLACK)
             binding.progressBar.visibility = View.VISIBLE
             uploadAllImages() //upload post duoc goi o ben trong uploadallimages
         }
@@ -108,10 +110,7 @@ class AddPostActivity : AppCompatActivity() {
     private fun removeImage(position: Int) {
         imageList.removeAt(position)
         MediaAdapter.notifyItemRemoved(position)
-
-        if (imageList.isEmpty()) {
-            rv_selected_media.visibility = View.GONE
-        }
+        MediaAdapter.notifyItemRangeChanged(position, imageList.size)
     }
 
     private fun uploadAllImages() {
