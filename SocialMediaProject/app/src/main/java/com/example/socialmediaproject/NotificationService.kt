@@ -11,6 +11,10 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 
 class NotificationService: Service() {
 
@@ -24,6 +28,7 @@ class NotificationService: Service() {
             ACTION.START.toString()->{
                 val content=intent.getStringExtra("content") ?: ""
                 Start(content)
+                startUploadWorker()
             }
             ACTION.STOP.toString()->stopSelf()
             ACTION.UPDATE.toString()->{
@@ -31,7 +36,7 @@ class NotificationService: Service() {
                 Update(content)
             }
         }
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     enum class ACTION {
@@ -68,5 +73,15 @@ class NotificationService: Service() {
             val notificationmanager=getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationmanager.createNotificationChannel(channel)
         }
+    }
+
+    private fun startUploadWorker() {
+        val workRequest = OneTimeWorkRequestBuilder<UploadWorker>()
+            .setConstraints(
+                    Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED) // Chỉ chạy khi có mạng
+                    .build()
+            ).build()
+        WorkManager.getInstance(this).enqueue(workRequest)
     }
 }
