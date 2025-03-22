@@ -99,10 +99,8 @@ class PostingService : Service() {
                 serviceScope.launch {
                     try {
                         updateNotification("AI đang phân tích nội dung...")
-
                         val response = AIService.classifyPost(content, categories) ?: ""
                         Log.d("AI_RESPONSE", response.ifEmpty { "Không có kết quả" })
-
                         val userid = auth.currentUser?.uid
                         val post = hashMapOf(
                             "userid" to userid,
@@ -112,7 +110,6 @@ class PostingService : Service() {
                             "privacy" to privacy,
                             "category" to extractCategory(response)
                         )
-
                         db.collection("Posts").add(post)
                             .addOnSuccessListener {
                                 updateNotification("Đăng bài thành công!")

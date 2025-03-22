@@ -113,13 +113,6 @@ class AddPostActivity : AppCompatActivity() {
             binding.btnPost.isEnabled = false
             binding.btnPost.setBackgroundColor(Color.BLACK)
             binding.progressBar.visibility = View.VISIBLE
-            intent = Intent(this, NotificationService::class.java)
-            intent.action = NotificationService.ACTION.START.toString()
-            intent.putExtra("content", "Đang đăng bài...")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent)
-            else {
-                startService(intent)
-            }
             val postintent = Intent(this, PostingService::class.java)
             postintent.putExtra("post_content", binding.etPostContent.text.toString())
             postintent.putExtra("privacy", privacy)
