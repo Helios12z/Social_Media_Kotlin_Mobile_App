@@ -22,11 +22,13 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaproject.databinding.ActivityAddPostBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -46,6 +48,8 @@ class AddPostActivity : AppCompatActivity() {
     private val uploadedimage = arrayListOf<String>()
     private lateinit var privacyspinner: Spinner
     private lateinit var privacy: String
+    private lateinit var listprivacy: ArrayList<String>
+    private lateinit var response: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,9 +70,14 @@ class AddPostActivity : AppCompatActivity() {
             }
         }
         privacyspinner=binding.postprivacy
-        val listprivacy= arrayListOf<String>("Công khai",
-            "Riêng tư",
-            "Bạn bè")
+        /*db.collection("Privacies").get().addOnSuccessListener {
+            documents->for (document in documents)
+            {
+               val privacy=document.getString("name")
+               if (privacy!=null) listprivacy.add(privacy)
+            }
+        }*/
+        listprivacy= arrayListOf("Công khai", "Riêng tư", "Bạn bè")
         val adapter=ArrayAdapter(this, android.R.layout.simple_spinner_item, listprivacy)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         privacyspinner.adapter=adapter
@@ -224,37 +233,81 @@ class AddPostActivity : AppCompatActivity() {
         }
     }
 
-    private fun UploadPost()
-    {
-        val userid=auth.currentUser?.uid
-        val post= hashMapOf(
-            "userid" to userid,
-            "imageurl" to uploadedimage,
-            "content" to binding.etPostContent.text.toString(),
-            "timestamp" to System.currentTimeMillis(),
-            "privacy" to privacy
-        )
-        db.collection("Posts").add(post).addOnSuccessListener {
-            Toast.makeText(this, "Đăng bài thành công", Toast.LENGTH_SHORT).show()
-            intent=Intent(this, NotificationService::class.java)
-            intent.action=NotificationService.ACTION.UPDATE.toString()
-            intent.putExtra("content", "Đăng bài thành công!")
-            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) startForegroundService(intent)
-            else {
-                startService(intent)
+    private fun UploadPost() {
+        getCategories { categories ->
+            if (categories.isNotEmpty()) {
+                lifecycleScope.launch {
+                    try {
+                        response = AIService.classifyPost(binding.etPostContent.text.toString(), categories) ?: ""
+                        Log.d("AI_RESPONSE", response ?: "Không có kết quả")
+
+                        val userid = auth.currentUser?.uid
+                        val post = hashMapOf(
+                            "userid" to userid,
+                            "imageurl" to uploadedimage,
+                            "content" to binding.etPostContent.text.toString(),
+                            "timestamp" to System.currentTimeMillis(),
+                            "privacy" to privacy,
+                            "category" to extractCategory(response)
+                        )
+                        db.collection("Posts").add(post)
+                        .addOnSuccessListener {
+                            sendNotification("Đăng bài thành công!")
+                            navigateToMain()
+                        }
+                        .addOnFailureListener {
+                            sendNotification("Đăng bài thất bại!")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("UploadPost", "Lỗi khi xử lý bài đăng", e)
+                    }
+                }
             }
-            intent=Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }.addOnFailureListener {
-            intent=Intent(this, NotificationService::class.java)
-            intent.action=NotificationService.ACTION.UPDATE.toString()
-            intent.putExtra("content", "Đăng bài thất bại!")
-            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) startForegroundService(intent)
-            else {
-                startService(intent)
-            }
-            Toast.makeText(this, "Đăng bài thất bại", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun getCategories(callback: (List<String>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("Categories").get().addOnSuccessListener { documents ->
+            val interests = mutableListOf<String>()
+            for (document in documents) {
+                document.getString("name")?.let { interests.add(it) }
+            }
+            callback(interests)
+        }.addOnFailureListener {
+            callback(emptyList())
+        }
+    }
+
+    private fun extractCategory(jsonResponse: String): String? {
+        try {
+            val jsonObject = JSONObject(jsonResponse)
+            val candidates = jsonObject.getJSONArray("candidates")
+            if (candidates.length() > 0) {
+                val content = candidates.getJSONObject(0).getJSONObject("content")
+                val parts = content.getJSONArray("parts")
+                if (parts.length() > 0) {
+                    return parts.getJSONObject(0).getString("text").trim()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    private fun sendNotification(content: String) {
+        intent=Intent(this, NotificationService::class.java)
+        intent.action=NotificationService.ACTION.UPDATE.toString()
+        intent.putExtra("content", content)
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) startForegroundService(intent)
+        else startService(intent)
+    }
+
+    private fun navigateToMain()
+    {
+        intent=Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }
