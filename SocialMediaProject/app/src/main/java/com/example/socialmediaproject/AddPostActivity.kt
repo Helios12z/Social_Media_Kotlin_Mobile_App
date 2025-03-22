@@ -15,6 +15,9 @@ import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -41,6 +44,8 @@ class AddPostActivity : AppCompatActivity() {
     private lateinit var rv_selected_media: RecyclerView
     private val API_KEY = "b5a914cc1aedaa51a1a0a5a4db8ed3ff"
     private val uploadedimage = arrayListOf<String>()
+    private lateinit var privacyspinner: Spinner
+    private lateinit var privacy: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +63,29 @@ class AddPostActivity : AppCompatActivity() {
                         val username=document.getString("name")
                         binding.tvUsername.text=username
                     }
+            }
+        }
+        privacyspinner=binding.postprivacy
+        val listprivacy= arrayListOf<String>("Công khai",
+            "Riêng tư",
+            "Bạn bè")
+        val adapter=ArrayAdapter(this, android.R.layout.simple_spinner_item, listprivacy)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        privacyspinner.adapter=adapter
+        privacyspinner.onItemSelectedListener=object: AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                if (parent != null) {
+                    privacy=parent.getItemAtPosition(position).toString()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
             }
         }
         MediaAdapter = MediaAdapter(imageList, ::removeImage)
@@ -171,7 +199,6 @@ class AddPostActivity : AppCompatActivity() {
                     val jsonResponse = JSONObject(response.body!!.string())
                     val imageUrl = jsonResponse.getJSONObject("data").getString("url")
                     callback(imageUrl)
-                    uploadedimage.add(imageUrl)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -204,7 +231,8 @@ class AddPostActivity : AppCompatActivity() {
             "userid" to userid,
             "imageurl" to uploadedimage,
             "content" to binding.etPostContent.text.toString(),
-            "timestamp" to System.currentTimeMillis()
+            "timestamp" to System.currentTimeMillis(),
+            "privacy" to privacy
         )
         db.collection("Posts").add(post).addOnSuccessListener {
             Toast.makeText(this, "Đăng bài thành công", Toast.LENGTH_SHORT).show()

@@ -108,18 +108,11 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_privacy"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                    <Spinner
                         android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="-12dp"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        android:text="Công khai"
-                        android:textAllCaps="false"
-                        android:textColor="@color/black"
-                        android:textSize="12sp" />
+                        android:layout_height="wrap_content"
+                        android:id="@+id/postprivacy"/>
+
                 </LinearLayout>
             </LinearLayout>
 

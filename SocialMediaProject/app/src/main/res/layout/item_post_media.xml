@@ -21,7 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:contentDescription="Đăng bài"
+                android:contentDescription="Hình ảnh"
                 android:scaleType="centerCrop"
                 tools:src="@tools:sample/backgrounds/scenic"
                 tools:minHeight="200dp" />
