@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -42,9 +42,10 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".PostUploadService"
-            android:foregroundServiceType="mediaProjection"
-            android:exported="false"/>
+            android:name=".NotificationService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false"
+            android:enabled="true"/>
     </application>
 
 </manifest>

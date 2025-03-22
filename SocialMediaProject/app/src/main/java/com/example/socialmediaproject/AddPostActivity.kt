@@ -1,10 +1,15 @@
 package com.example.socialmediaproject
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
@@ -13,6 +18,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaproject.databinding.ActivityAddPostBinding
@@ -41,6 +47,7 @@ class AddPostActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding=ActivityAddPostBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.TIRAMISU) ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 0)
         auth=FirebaseAuth.getInstance()
         db=FirebaseFirestore.getInstance()
         val userid=auth.currentUser?.uid
@@ -69,6 +76,13 @@ class AddPostActivity : AppCompatActivity() {
             binding.btnPost.isEnabled = false
             binding.btnPost.setBackgroundColor(Color.BLACK)
             binding.progressBar.visibility = View.VISIBLE
+            intent=Intent(this, NotificationService::class.java)
+            intent.action=NotificationService.ACTION.START.toString()
+            intent.putExtra("content", "Đang đăng bài...")
+            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) startForegroundService(intent)
+            else {
+                startService(intent)
+            }
             uploadAllImages() //upload post duoc goi o ben trong uploadallimages
         }
     }
@@ -194,10 +208,24 @@ class AddPostActivity : AppCompatActivity() {
         )
         db.collection("Posts").add(post).addOnSuccessListener {
             Toast.makeText(this, "Đăng bài thành công", Toast.LENGTH_SHORT).show()
-            val intent=Intent(this, MainActivity::class.java)
+            intent=Intent(this, NotificationService::class.java)
+            intent.action=NotificationService.ACTION.UPDATE.toString()
+            intent.putExtra("content", "Đăng bài thành công!")
+            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) startForegroundService(intent)
+            else {
+                startService(intent)
+            }
+            intent=Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
         }.addOnFailureListener {
+            intent=Intent(this, NotificationService::class.java)
+            intent.action=NotificationService.ACTION.UPDATE.toString()
+            intent.putExtra("content", "Đăng bài thất bại!")
+            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) startForegroundService(intent)
+            else {
+                startService(intent)
+            }
             Toast.makeText(this, "Đăng bài thất bại", Toast.LENGTH_SHORT).show()
         }
     }
