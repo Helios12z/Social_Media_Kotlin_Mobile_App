@@ -15,7 +15,7 @@ object AIService {
         val json = """
             {
                 "contents": [
-                    { "role": "user", "parts": [{ "text": "Hãy phân loại bài viết sau vào danh mục phù hợp trong danh sách, chỉ cần đưa ra đáp án chính xác, nếu thuộc nhiều danh mục, các danh mục sẽ cách nhau bởi dấu phẩy: ${categories.joinToString(", ")}\n$content" }] }
+                    { "role": "user", "parts": [{ "text": "Hãy phân loại nội dung sau vào danh mục phù hợp trong danh sách, chỉ cần đưa ra đáp án chính xác, nếu nội dung thuộc nhiều danh mục, các danh mục mà nội dung đó thuộc về sẽ cách nhau bởi dấu phẩy: ${categories.joinToString(", ")}\n$content" }] }
                 ],
                 "generationConfig": {
                     "temperature": 0.7,
