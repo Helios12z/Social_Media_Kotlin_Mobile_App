@@ -53,17 +53,17 @@ class MainActivity : AppCompatActivity() {
         )
         navView.setupWithNavController(navController)
 
-        navView.setOnItemSelectedListener {
-            item->when(item.itemId) {
+        navView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
                 R.id.navigation_plus -> {
-                    val intent=Intent(this, AddPostActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                    if (!PostingService.isposting) {
+                        val intent = Intent(this, AddPostActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
                     true
                 }
-                else -> {
-                    false
-                }
+                else -> false
             }
         }
     }

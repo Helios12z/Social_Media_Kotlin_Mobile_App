@@ -15,10 +15,10 @@ object AIService {
         val json = """
             {
                 "contents": [
-                    { "role": "user", "parts": [{ "text": "Hãy phân loại nội dung sau vào danh mục phù hợp trong danh sách, chỉ cần đưa ra đáp án chính xác, nếu nội dung thuộc nhiều danh mục, các danh mục mà nội dung đó thuộc về sẽ cách nhau bởi dấu phẩy: ${categories.joinToString(", ")}\n$content" }] }
+                    { "role": "user", "parts": [{ "text": "Hãy phân loại nội dung sau vào danh mục phù hợp trong danh sách, tuyệt đối chỉ được sử dụng các danh mục trong danh sách để trả lời, nếu nội dung thuộc nhiều danh mục, trình bày các danh mục mà nội dung đó thuộc về, cách nhau bởi dấu phẩy, chỉ cần đưa ra đáp án, không trả lời gì thêm, ví dụ: Học tập, Giải trí: ${categories.joinToString(", ")}\n$content" }] }
                 ],
                 "generationConfig": {
-                    "temperature": 0.7,
+                    "temperature": 1,
                     "topK": 40,
                     "topP": 0.95,
                     "maxOutputTokens": 100,

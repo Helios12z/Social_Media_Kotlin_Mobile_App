@@ -31,7 +31,12 @@ class PostingService : Service() {
     private val uploadedImage = arrayListOf<String>()
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    companion object {
+        var isposting=false
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        isposting=true
         val postContent = intent?.getStringExtra("post_content") ?: ""
         val imageList = intent?.getParcelableArrayListExtra<Uri>("image_list") ?: arrayListOf()
         val privacy = intent?.getStringExtra("privacy") ?: "Công khai"
@@ -98,7 +103,7 @@ class PostingService : Service() {
             if (categories.isNotEmpty()) {
                 serviceScope.launch {
                     try {
-                        updateNotification("AI đang phân tích nội dung...")
+                        updateNotification("Đang phân tích nội dung...")
                         val response = AIService.classifyPost(content, categories) ?: ""
                         Log.d("AI_RESPONSE", response.ifEmpty { "Không có kết quả" })
                         val userid = auth.currentUser?.uid
@@ -113,20 +118,24 @@ class PostingService : Service() {
                         db.collection("Posts").add(post)
                             .addOnSuccessListener {
                                 updateNotification("Đăng bài thành công!")
+                                isposting=false
                                 stopSelf()
                             }
                             .addOnFailureListener {
                                 updateNotification("Đăng bài thất bại!")
+                                isposting=false
                                 stopSelf()
                             }
                     } catch (e: Exception) {
                         Log.e("UploadPost", "Lỗi khi xử lý bài đăng", e)
                         updateNotification("Lỗi khi xử lý bài đăng!")
+                        isposting=false
                         stopSelf()
                     }
                 }
             } else {
-                updateNotification("Không có danh mục để phân loại bài đăng!")
+                updateNotification("Lỗi trong quá trình phân tích!")
+                isposting=false
                 stopSelf()
             }
         }
@@ -135,7 +144,7 @@ class PostingService : Service() {
     private fun createNotification(content: String): Notification {
         val channelId = "upload_post_channel"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Upload Post", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(channelId, "Đang đăng bài", NotificationManager.IMPORTANCE_HIGH)
             getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
         return NotificationCompat.Builder(this, channelId)

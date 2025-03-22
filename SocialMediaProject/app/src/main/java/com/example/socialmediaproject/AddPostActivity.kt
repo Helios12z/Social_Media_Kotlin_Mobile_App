@@ -14,6 +14,7 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -57,6 +58,7 @@ class AddPostActivity : AppCompatActivity() {
         privacyspinner = binding.postprivacy
         val listprivacy = arrayListOf<String>("Công khai", "Riêng tư", "Bạn bè")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listprivacy)
+        privacyspinner.adapter = adapter
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         privacyspinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -88,21 +90,34 @@ class AddPostActivity : AppCompatActivity() {
             binding.btnPost.isEnabled = false
             binding.btnPost.setBackgroundColor(Color.BLACK)
             binding.progressBar.visibility = View.VISIBLE
-            intent=Intent(this, NotificationService::class.java)
-            intent.action=NotificationService.ACTION.START.toString()
-            intent = Intent(this, NotificationService::class.java)
-            intent.action = NotificationService.ACTION.START.toString()
-            intent.putExtra("content", "Đang đăng bài...")
-            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) startForegroundService(intent)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent)
-            else {
-                startService(intent)
+            if (imageList.isEmpty() && binding.etPostContent.text.isEmpty()) {
+                Toast.makeText(this, "Không thể đăng một bài trống không!", Toast.LENGTH_SHORT).show()
+                binding.btnPost.isEnabled = true
+                binding.btnPost.setBackgroundColor(Color.parseColor("#FF6200EE"))
+                binding.progressBar.visibility = View.GONE
+                return@setOnClickListener
             }
-            val postintent = Intent(this, PostingService::class.java)
-            postintent.putExtra("post_content", binding.etPostContent.text.toString())
-            postintent.putExtra("privacy", privacy)
-            postintent.putParcelableArrayListExtra("image_list", ArrayList(imageList))
-            startService(postintent)
+            else
+            {
+                intent=Intent(this, NotificationService::class.java)
+                intent.action=NotificationService.ACTION.START.toString()
+                intent = Intent(this, NotificationService::class.java)
+                intent.action = NotificationService.ACTION.START.toString()
+                intent.putExtra("content", "Đang đăng bài...")
+                if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) startForegroundService(intent)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent)
+                else {
+                    startService(intent)
+                }
+                val postintent = Intent(this, PostingService::class.java)
+                postintent.putExtra("post_content", binding.etPostContent.text.toString())
+                postintent.putExtra("privacy", privacy)
+                postintent.putParcelableArrayListExtra("image_list", ArrayList(imageList))
+                startService(postintent)
+                val mainintent=Intent(this, MainActivity::class.java)
+                startActivity(mainintent)
+                finish()
+            }
         }
     }
 
