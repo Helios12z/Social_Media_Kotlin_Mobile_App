@@ -67,7 +67,7 @@ class SignUpActivity : AppCompatActivity() {
                                         firebaseauth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) {
                                                 task -> if (task.isSuccessful)
                                         {
-                                            val userid=firebaseauth.currentUser?.uid
+                                            val userid=task.result.user?.uid
                                             if (userid!=null) AddNewUserToDb(binding.name.text.toString(), userid, binding.email.text.toString())
                                         }
                                         else Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()

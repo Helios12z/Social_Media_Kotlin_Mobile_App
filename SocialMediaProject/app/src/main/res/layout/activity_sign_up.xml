@@ -44,6 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nickname"
+            android:textColor="@color/black"
             android:background="@android:color/transparent"
             android:inputType="textPersonName" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -64,6 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Email"
+            android:textColor="@color/black"
             android:background="@android:color/transparent"
             android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -84,6 +86,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Mật khẩu"
+            android:textColor="@color/black"
             android:background="@android:color/transparent"
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -104,6 +107,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nhập lại mật khẩu"
+            android:textColor="@color/black"
             android:background="@android:color/transparent"
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
