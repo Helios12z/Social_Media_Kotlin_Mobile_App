@@ -61,6 +61,11 @@ class MainActivity : AppCompatActivity() {
                         startActivity(intent)
                         finish()
                     }
+                    else navController.navigate(R.id.navigation_plus)
+                    true
+                }
+                R.id.navigation_home -> {
+                    navController.navigate(R.id.navigation_home)
                     true
                 }
                 else -> false
