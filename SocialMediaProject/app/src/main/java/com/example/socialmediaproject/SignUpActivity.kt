@@ -56,25 +56,22 @@ class SignUpActivity : AppCompatActivity() {
                 if (password==confirmpassword)
                 {
                     val usersRef = db.collection("Users")
-                    usersRef.whereEqualTo("name", name).get()
-                        .addOnSuccessListener { nameResult ->
-                            usersRef.whereEqualTo("email", email).get()
-                                .addOnSuccessListener { emailResult ->
-                                    if (!nameResult.isEmpty || !emailResult.isEmpty) {
-                                        Toast.makeText(this, "Tên hoặc email đã tồn tại!", Toast.LENGTH_SHORT).show()
+                        usersRef.whereEqualTo("email", email).get()
+                            .addOnSuccessListener { emailResult ->
+                                if (!emailResult.isEmpty) {
+                                    Toast.makeText(this, "Email đã tồn tại!", Toast.LENGTH_SHORT).show()
+                                }
+                                else {
+                                    firebaseauth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) {
+                                            task -> if (task.isSuccessful)
+                                    {
+                                        val userid=task.result.user?.uid
+                                        if (userid!=null) AddNewUserToDb(binding.name.text.toString(), userid, binding.email.text.toString())
                                     }
-                                    else {
-                                        firebaseauth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) {
-                                                task -> if (task.isSuccessful)
-                                        {
-                                            val userid=task.result.user?.uid
-                                            if (userid!=null) AddNewUserToDb(binding.name.text.toString(), userid, binding.email.text.toString())
-                                        }
-                                        else Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
-                                        }
+                                    else Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
                                     }
                                 }
-                        }
+                            }
                 }
                 else Toast.makeText(this, "Mật khẩu nhập lại không đúng!", Toast.LENGTH_SHORT).show()
             }
