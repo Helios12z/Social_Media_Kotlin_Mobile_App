@@ -45,7 +45,7 @@ object AIService {
             { 
                 "role": "user", 
                 "parts": [{ 
-                    "text": "Dựa vào danh sách categoryid cho trước, hãy phân loại mục sau vào categoryid phù hợp. Nếu không có categoryid phù hợp, trả lời một categoryid mới. Câu trả lời chứa duy nhất categoryId, ví dụ nếu mục đã cho là Nhạc US/UK thì câu trả lời nên đưa ra là music. Danh sách categoryid: ${categories.joinToString(", ")}\n$name" 
+                    "text": "Dựa vào danh sách CategoryId cho trước, hãy phân loại mục sau vào CategoryId phù hợp. Chỉ được sử dụng những CategoryID có sẵn. Câu trả lời chứa duy nhất categoryId, ví dụ nếu mục đưa ra là Đánh giá thì câu trả lời nên đưa ra là news. Danh sách CategoryId: ${categories.joinToString(", ")}\n$name" 
                 }] 
             }
         ],

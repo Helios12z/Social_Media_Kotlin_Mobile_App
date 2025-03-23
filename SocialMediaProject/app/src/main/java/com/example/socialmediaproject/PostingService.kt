@@ -115,6 +115,30 @@ class PostingService : Service() {
                             "privacy" to privacy,
                             "category" to extractCategory(response)
                         )
+                        val rawdata=extractCategory(response)?:""
+                        val categorynamelist=rawdata.split(",").map{it.trim()}
+                        for (categoryname in categorynamelist) {
+                            db.collection("Categories").whereEqualTo("name", categoryname).get().addOnSuccessListener {
+                                result->if (result.isEmpty) {
+                                    serviceScope.launch {
+                                        val listcategoryid= mutableListOf<String>()
+                                        db.collection("Categories").get().addOnSuccessListener {
+                                            documents->for (document in documents) {
+                                                document.getString("categoryid")?.let { listcategoryid.add(it) }
+                                        }
+                                        }
+                                        val categoryid=extractCategory(AIService.classifyItem(categoryname, listcategoryid))
+                                        val category= hashMapOf(
+                                            "name" to categoryname,
+                                            "categoryid" to categoryid
+                                        )
+                                        db.collection("Categories").add(category).addOnSuccessListener {
+                                            Log.d("UploadCategory", "Thêm danh mục thành công!")
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         db.collection("Posts").add(post)
                             .addOnSuccessListener {
                                 updateNotification("Đăng bài thành công!")
