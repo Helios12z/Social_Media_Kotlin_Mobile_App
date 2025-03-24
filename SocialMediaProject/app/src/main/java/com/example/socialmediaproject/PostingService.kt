@@ -107,13 +107,15 @@ class PostingService : Service() {
                         val response = AIService.classifyPost(content, categories) ?: ""
                         Log.d("AI_RESPONSE", response.ifEmpty { "Không có kết quả" })
                         val userid = auth.currentUser?.uid
+                        val extractresponse=extractCategory(response)?:""
+                        val category: List<String> = extractresponse.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                         val post = hashMapOf(
                             "userid" to userid,
                             "imageurl" to uploadedImage,
                             "content" to content,
                             "timestamp" to System.currentTimeMillis(),
                             "privacy" to privacy,
-                            "category" to extractCategory(response)
+                            "category" to category
                         )
                         val rawdata=extractCategory(response)?:""
                         val categorynamelist=rawdata.split(",").map{it.trim()}
