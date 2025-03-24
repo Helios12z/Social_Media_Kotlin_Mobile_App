@@ -16,19 +16,15 @@ import com.example.socialmediaproject.PostViewModel
 import com.example.socialmediaproject.R
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.getValue
+import com.google.firebase.database.database
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
+import com.google.firebase.firestore.QuerySnapshot
 
 class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
@@ -85,13 +81,12 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     private fun loadPosts() {
         postList.clear()
-        auth=FirebaseAuth.getInstance()
+        auth = FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid ?: ""
         getUserInterests(userId) { userInterests ->
             Log.d("USER INTERESTS: ", userInterests.toString())
             if (userInterests.isEmpty()) {
-                Toast.makeText(requireContext(), "Không có bài viết phù hợp", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Không có bài viết phù hợp", Toast.LENGTH_SHORT).show()
                 return@getUserInterests
             }
             val db = FirebaseFirestore.getInstance()
@@ -104,54 +99,166 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                 .addOnSuccessListener { documents ->
                     postList.clear()
                     Log.d("DOCUMENTS SIZE: ", documents.size().toString())
+                    val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
+                    val tempPostList = mutableListOf<PostViewModel>()
+                    val tasks = mutableListOf<Task<*>>()
                     for (doc in documents) {
-                        val userid=doc.getString("userid")?:""
-                        var likecount=0
-                        var commentcount=0
-                        var sharecount=0
-                        var isliked=false
-                        val poststatdbref=FirebaseDatabase.getInstance().getReference("PostStats").child(doc.id)
-                        poststatdbref.get().addOnSuccessListener {
-                                snapshot->if (snapshot.exists()) {
-                            likecount=snapshot.child("likecount").getValue(Int::class.java)?:0
-                            commentcount=snapshot.child("commentcount").getValue(Int::class.java)?:0
-                            sharecount=snapshot.child("sharecount").getValue(Int::class.java)?:0
-                            isliked=snapshot.child("isliked").getValue(Boolean::class.java)?:false
+                        val userid = doc.getString("userid") ?: ""
+                        val ref = realtimedb.getReference("PostStats").child(doc.id)
+                        var likecount = 0
+                        var commentcount = 0
+                        var sharecount = 0
+                        var isliked = false
+                        val likesTask = db.collection("Likes")
+                            .whereEqualTo("userid", userid)
+                            .whereEqualTo("postid", doc.id)
+                            .get()
+                            .addOnSuccessListener { results ->
+                                if (!results.isEmpty) {
+                                    for (result in results) {
+                                        isliked = result.getBoolean("status") ?: false
+                                    }
+                                }
+                            }
+                        tasks.add(likesTask)
+                        val postStatsTask = ref.get().addOnSuccessListener { result ->
+                            likecount = result.child("likecount").getValue(Int::class.java) ?: 0
+                            sharecount = result.child("sharecount").getValue(Int::class.java) ?: 0
+                            commentcount = result.child("commentcount").getValue(Int::class.java) ?: 0
                         }
-                        }
-                        val user=db.collection("Users").document(userid).get().addOnSuccessListener {
-                                result->
+                        tasks.add(postStatsTask)
+                        val userTask = db.collection("Users").document(userid).get().addOnSuccessListener { result ->
                             val post = PostViewModel(
-                                id=doc.id,
-                                userId=doc.getString("userid")?:"",
-                                userName = result.getString("name")?:"",
-                                userAvatarUrl = result.getString("avatarurl")?:"",
-                                content=doc.getString("content")?:"",
+                                id = doc.id,
+                                userId = doc.getString("userid") ?: "",
+                                userName = result.getString("name") ?: "",
+                                userAvatarUrl = result.getString("avatarurl") ?: "",
+                                content = doc.getString("content") ?: "",
                                 category = doc.get("category") as List<String>,
                                 imageUrls = doc.get("imageurl") as List<String>,
-                                timestamp = doc.getLong("timestamp")?:0,
-                                likeCount=likecount,
+                                timestamp = doc.getLong("timestamp") ?: 0,
+                                likeCount = likecount,
                                 commentCount = commentcount,
                                 shareCount = sharecount,
                                 isLiked = isliked
                             )
-                            postList.add(post)
-                            feedAdapter.notifyDataSetChanged()
+                            tempPostList.add(post)
                         }
+                        tasks.add(userTask)
+                    }
+                    Tasks.whenAllSuccess<Any>(tasks).addOnSuccessListener {
+                        tempPostList.sortByDescending { it.timestamp }
+                        postList.clear()
+                        postList.addAll(tempPostList)
+                        feedAdapter.notifyDataSetChanged()
                     }
                 }
         }
     }
 
     override fun onLikeClicked(position: Int) {
+        db=FirebaseFirestore.getInstance()
         val post = postList[position]
-        post.isLiked = !post.isLiked
-        if (post.isLiked) {
-            post.likeCount += 1
-        } else {
-            post.likeCount -= 1
+        val auth=FirebaseAuth.getInstance()
+        val userId = auth.currentUser?.uid ?: ""
+        val realtimedb=Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
+        val likeRef = db.collection("Likes").whereEqualTo("userid", userId).whereEqualTo("postid", post.id).get().addOnSuccessListener {
+            results-> if (!results.isEmpty) {
+                for (result in results) {
+                    post.isLiked=result.getBoolean("status")?:false
+                }
+                val ref=realtimedb.getReference("PostStats").child(post.id)
+                ref.get().addOnSuccessListener {
+                        result->
+                    val likecount=result.child("likecount").getValue(Int::class.java)?:0
+                    val updates = HashMap<String, Any>()
+                    if (post.isLiked) {
+                        updates["likecount"] = (likecount - 1).coerceAtLeast(0)
+                        post.likeCount -= 1
+                        post.isLiked=false
+                        post.isLiked=false
+                        ref.updateChildren(updates).addOnSuccessListener {  }
+                        db.collection("Likes").whereEqualTo("userid", userId).whereEqualTo("postid", post.id).get().addOnSuccessListener {
+                            results->if (!results.isEmpty) {
+                                for (result in results) {
+                                    db.collection("Likes").document(result.id).delete().addOnSuccessListener {  }
+                                }
+                            }
+                        }
+                        feedAdapter.notifyItemChanged(position)
+                    }
+                    else {
+                        updates["likecount"] = likecount + 1
+                        post.likeCount += 1
+                        post.isLiked=true
+                        db.collection("Likes").whereEqualTo("userid", userId).whereEqualTo("postid", post.id).get().addOnSuccessListener {
+                            results->if (!results.isEmpty) {
+                                for (document in results.documents) {
+                                    db.collection("Likes").document(document.id).update("status", true).addOnSuccessListener {  }
+                                }
+                            }
+                            else {
+                                val item= hashMapOf(
+                                    "userid" to userId,
+                                    "postid" to post.id,
+                                    "status" to true
+                                )
+                                db.collection("Likes").add(item).addOnSuccessListener { }
+                            }
+                        }
+                    }
+                    ref.updateChildren(updates).addOnCompleteListener { }
+                    feedAdapter.notifyItemChanged(position)
+                }
+            }
+            else {
+                val ref=realtimedb.getReference("PostStats").child(post.id)
+                ref.get().addOnSuccessListener {
+                    result->
+                        val likecount=result.child("likecount").getValue(Int::class.java)?:0
+                        val updates = HashMap<String, Any>()
+                        if (post.isLiked) {
+                            updates["likecount"] = (likecount - 1).coerceAtLeast(0)
+                            post.likeCount -= 1
+                            post.isLiked=false
+                            ref.updateChildren(updates).addOnSuccessListener {  }
+                            db.collection("Likes").whereEqualTo("userid", userId).whereEqualTo("postid", post.id).get().addOnSuccessListener {
+                                results->if (!results.isEmpty) {
+                                    for (result in results) {
+                                        db.collection("Likes").document(result.id).delete().addOnSuccessListener {  }
+                                    }
+                                }
+                            }
+                            feedAdapter.notifyItemChanged(position)
+                        }
+                        else {
+                            updates["likecount"] = likecount + 1
+                            post.likeCount += 1
+                            post.isLiked=true
+                            db.collection("Likes").whereEqualTo("userid", userId).whereEqualTo("postid", post.id).get().addOnSuccessListener {
+                                results->if (!results.isEmpty) {
+                                for (document in results.documents) {
+                                    db.collection("Likes").document(document.id).update("status", true).addOnSuccessListener {  }
+                                }
+                            }
+                            else {
+                                val item= hashMapOf(
+                                    "userid" to userId,
+                                    "postid" to post.id,
+                                    "status" to true
+                                )
+                                db.collection("Likes").add(item).addOnSuccessListener { }
+                            }
+                            }
+                        }
+                        ref.updateChildren(updates).addOnCompleteListener { }
+                        feedAdapter.notifyItemChanged(position)
+                    }
+                }
         }
-        feedAdapter.notifyItemChanged(position)
+        .addOnFailureListener{e->
+            Log.e("LOI LAY DATABASE: ", e.toString())
+        }
     }
 
     override fun onCommentClicked(position: Int) {
@@ -207,11 +314,6 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     override fun onImageClicked(postPosition: Int, imagePosition: Int) {
         val post = postList[postPosition]
-        Toast.makeText(
-            requireContext(),
-            "Xem ảnh ${imagePosition + 1} của bài đăng ${post.id}",
-            Toast.LENGTH_SHORT
-        ).show()
     }
 
     private fun getUserInterests(userId: String, callback: (List<String>) -> Unit) {

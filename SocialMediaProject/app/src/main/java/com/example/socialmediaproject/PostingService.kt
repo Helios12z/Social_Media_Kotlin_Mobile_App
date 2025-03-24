@@ -251,7 +251,6 @@ class PostingService : Service() {
             "likecount" to 0,
             "sharecount" to 0,
             "commentcount" to 0,
-            "isliked" to false
         )
         databaseRef.setValue(postStats)
             .addOnSuccessListener {

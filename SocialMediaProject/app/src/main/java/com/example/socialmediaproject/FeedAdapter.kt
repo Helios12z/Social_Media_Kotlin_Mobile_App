@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class FeedAdapter(
     private val context: Context,
@@ -64,6 +66,21 @@ class FeedAdapter(
         holder.imageViewLike.setImageResource(
             if (post.isLiked) R.drawable.heartediconbutton else R.drawable.heartbutton
         )
+        val db=FirebaseFirestore.getInstance()
+        val auth=FirebaseAuth.getInstance()
+        val userId=auth.currentUser?.uid?:""
+        db.collection("Likes")
+            .whereEqualTo("userid", userId)
+            .whereEqualTo("postid", post.id)
+            .addSnapshotListener { snapshot, _ ->
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val isLikedNow = snapshot.documents.first().getBoolean("status") ?: false
+                    post.isLiked = isLikedNow
+                    holder.imageViewLike.setImageResource(
+                        if (isLikedNow) R.drawable.heartediconbutton else R.drawable.heartbutton
+                    )
+                }
+            }
 
         setupClickListeners(holder, position)
     }
