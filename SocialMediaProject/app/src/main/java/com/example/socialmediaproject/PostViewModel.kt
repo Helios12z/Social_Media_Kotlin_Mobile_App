@@ -1,5 +1,9 @@
 package com.example.socialmediaproject
 
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 data class PostViewModel(
     val id: String = "",
     val userId: String = "",
@@ -25,7 +29,10 @@ data class PostViewModel(
             seconds < 3600 -> "${seconds / 60} phút trước"
             seconds < 86400 -> "${seconds / 3600} giờ trước"
             seconds < 604800 -> "${seconds / 86400} ngày trước"
-            else -> "Hien thi ngay thang nam dang bai"
+            else -> {
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                dateFormat.format(Date(timestamp))
+            }
         }
     }
 }

@@ -13,12 +13,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.viewbinding.ViewBinding
 import com.example.socialmediaproject.databinding.ActivitySignUpBinding
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Date
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var logintext: TextView
-    private lateinit var intent: Intent
     private lateinit var title: TextView
     private lateinit var binding: ActivitySignUpBinding
     private lateinit var signupbutton: Button

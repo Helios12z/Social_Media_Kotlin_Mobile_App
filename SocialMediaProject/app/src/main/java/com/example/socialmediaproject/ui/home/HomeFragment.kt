@@ -14,10 +14,21 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.FeedAdapter
 import com.example.socialmediaproject.PostViewModel
 import com.example.socialmediaproject.R
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.getValue
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import kotlin.math.log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
@@ -79,7 +90,8 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         getUserInterests(userId) { userInterests ->
             Log.d("USER INTERESTS: ", userInterests.toString())
             if (userInterests.isEmpty()) {
-                Toast.makeText(requireContext(), "Không có bài viết phù hợp", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Không có bài viết phù hợp", Toast.LENGTH_SHORT)
+                    .show()
                 return@getUserInterests
             }
             val db = FirebaseFirestore.getInstance()
@@ -93,29 +105,52 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                     postList.clear()
                     Log.d("DOCUMENTS SIZE: ", documents.size().toString())
                     for (doc in documents) {
-                        val post = doc.toObject(PostViewModel::class.java)
-                        postList.add(post)
+                        val userid=doc.getString("userid")?:""
+                        var likecount=0
+                        var commentcount=0
+                        var sharecount=0
+                        var isliked=false
+                        val poststatdbref=FirebaseDatabase.getInstance().getReference("PostStats").child(doc.id)
+                        poststatdbref.get().addOnSuccessListener {
+                                snapshot->if (snapshot.exists()) {
+                            likecount=snapshot.child("likecount").getValue(Int::class.java)?:0
+                            commentcount=snapshot.child("commentcount").getValue(Int::class.java)?:0
+                            sharecount=snapshot.child("sharecount").getValue(Int::class.java)?:0
+                            isliked=snapshot.child("isliked").getValue(Boolean::class.java)?:false
+                        }
+                        }
+                        val user=db.collection("Users").document(userid).get().addOnSuccessListener {
+                                result->
+                            val post = PostViewModel(
+                                id=doc.id,
+                                userId=doc.getString("userid")?:"",
+                                userName = result.getString("name")?:"",
+                                userAvatarUrl = result.getString("avatarurl")?:"",
+                                content=doc.getString("content")?:"",
+                                category = doc.get("category") as List<String>,
+                                imageUrls = doc.get("imageurl") as List<String>,
+                                timestamp = doc.getLong("timestamp")?:0,
+                                likeCount=likecount,
+                                commentCount = commentcount,
+                                shareCount = sharecount,
+                                isLiked = isliked
+                            )
+                            postList.add(post)
+                            feedAdapter.notifyDataSetChanged()
+                        }
                     }
-                    feedAdapter.notifyDataSetChanged()
-                }
-                .addOnFailureListener {e->
-                    Log.e("LOI TAI DU LIEU: ", e.toString())
-                    Toast.makeText(requireContext(), "Lỗi tải bài viết", Toast.LENGTH_SHORT).show()
                 }
         }
-        feedAdapter.notifyDataSetChanged()
     }
 
     override fun onLikeClicked(position: Int) {
         val post = postList[position]
         post.isLiked = !post.isLiked
-
         if (post.isLiked) {
             post.likeCount += 1
         } else {
             post.likeCount -= 1
         }
-
         feedAdapter.notifyItemChanged(position)
     }
 

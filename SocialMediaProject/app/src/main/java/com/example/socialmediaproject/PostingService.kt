@@ -15,7 +15,11 @@ import org.json.JSONObject
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -142,10 +146,13 @@ class PostingService : Service() {
                             }
                         }
                         db.collection("Posts").add(post)
-                            .addOnSuccessListener {
-                                updateNotification("Đăng bài thành công!")
-                                isposting=false
-                                stopSelf()
+                            .addOnSuccessListener { docref->
+                                val postid=docref.id
+                                savePostStatsToRealtimeDatabase(postid) {
+                                    updateNotification("Đăng bài thành công!")
+                                    isposting=false
+                                    stopSelf()
+                                }
                             }
                             .addOnFailureListener {
                                 updateNotification("Đăng bài thất bại!")
@@ -235,5 +242,25 @@ class PostingService : Service() {
             e.printStackTrace()
         }
         return null
+    }
+
+    private fun savePostStatsToRealtimeDatabase(postId: String, callback: () -> Unit) {
+        val db=Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
+        val databaseRef = db.getReference("PostStats").child(postId)
+        val postStats = mapOf(
+            "likecount" to 0,
+            "sharecount" to 0,
+            "commentcount" to 0,
+            "isliked" to false
+        )
+        databaseRef.setValue(postStats)
+            .addOnSuccessListener {
+                Log.d("RealtimeDB", "Thêm dữ liệu vào Realtime Database thành công!")
+                callback()
+            }
+            .addOnFailureListener { e ->
+                Log.e("RealtimeDB", "Lỗi khi thêm dữ liệu vào Realtime Database", e)
+                callback()
+            }
     }
 }
