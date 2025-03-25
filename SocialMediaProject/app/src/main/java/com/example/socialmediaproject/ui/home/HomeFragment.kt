@@ -139,6 +139,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val post=homeviewmodel.postlist.value?.get(postPosition)?:return
         val images=post?.imageUrls
         val imageurl=images?.get(imagePosition)
+        Log.d("IMAGE URL CLICKED: ", imageurl.toString())
         if (imageurl!=null) {
             val fragment= ViewingImageFragment.newInstance(imageurl)
             requireActivity().supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment_activity_main, fragment)

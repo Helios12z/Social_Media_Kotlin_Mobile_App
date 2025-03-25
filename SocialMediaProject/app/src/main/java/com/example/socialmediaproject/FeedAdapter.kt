@@ -75,6 +75,8 @@ class FeedAdapter(
             listener.onImageClicked(postPosition, imagePosition)
         }
         recyclerView.layoutManager = LinearLayoutManager(recyclerView.context, LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.setHasFixedSize(true)
+        recyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
         recyclerView.adapter = imageAdapter
     }
 

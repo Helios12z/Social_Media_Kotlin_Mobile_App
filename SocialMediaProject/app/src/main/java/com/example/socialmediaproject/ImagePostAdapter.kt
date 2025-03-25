@@ -1,6 +1,7 @@
 package com.example.socialmediaproject
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +22,6 @@ class ImagePostAdapter(
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageUrl = imageUrls[position]
-
         Glide.with(holder.imageViewPost)
             .load(imageUrl)
             .centerCrop()
@@ -32,7 +32,9 @@ class ImagePostAdapter(
         }
     }
 
-    override fun getItemCount(): Int = imageUrls.size
+    override fun getItemCount(): Int {
+        return imageUrls.size
+    }
 
     class ImageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageViewPost: ImageView = itemView.findViewById(R.id.imageViewPost)
