@@ -19,7 +19,6 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -81,6 +80,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     private fun loadPosts() {
         postList.clear()
+        val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
         auth = FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid ?: ""
         getUserInterests(userId) { userInterests ->
@@ -99,62 +99,62 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                 .addOnSuccessListener { documents ->
                     postList.clear()
                     Log.d("DOCUMENTS SIZE: ", documents.size().toString())
-                    val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
-                    val tempPostList = mutableListOf<PostViewModel>()
+                    val finalPostList = mutableListOf<PostViewModel>()
                     val tasks = mutableListOf<Task<*>>()
                     for (doc in documents) {
                         val userid = doc.getString("userid") ?: ""
-                        val ref = realtimedb.getReference("PostStats").child(doc.id)
-                        var likecount = 0
-                        var commentcount = 0
-                        var sharecount = 0
-                        var isliked = false
+                        val userTask = db.collection("Users").document(userid).get()
+                        val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
                         val likesTask = db.collection("Likes")
-                            .whereEqualTo("userid", userid)
+                            .whereEqualTo("userid", userId)
                             .whereEqualTo("postid", doc.id)
                             .get()
-                            .addOnSuccessListener { results ->
-                                if (!results.isEmpty) {
-                                    for (result in results) {
-                                        isliked = result.getBoolean("status") ?: false
-                                    }
+                        tasks.add(userTask)
+                        tasks.add(postStatsTask)
+                        tasks.add(likesTask)
+                        Tasks.whenAllComplete(listOf(userTask, postStatsTask, likesTask)).addOnSuccessListener { results ->
+                            val userDoc = (results[0] as Task<DocumentSnapshot>).result
+                            val ref = (results[1] as Task<DataSnapshot>).result
+                            val likeResults = (results[2] as Task<QuerySnapshot>).result
+
+                            val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
+                            Log.d("LIKE COUNT", likecount.toString())
+                            val sharecount = ref.child("sharecount").getValue(Int::class.java) ?: 0
+                            val commentcount = ref.child("commentcount").getValue(Int::class.java) ?: 0
+                            var isliked = false
+                            if (!likeResults.isEmpty) {
+                                for (result in likeResults) {
+                                    Log.d("LIKE USERID", result.getString("userid").toString())
+                                    isliked = result.getBoolean("status") ?: false
                                 }
                             }
-                        tasks.add(likesTask)
-                        val postStatsTask = ref.get().addOnSuccessListener { result ->
-                            likecount = result.child("likecount").getValue(Int::class.java) ?: 0
-                            sharecount = result.child("sharecount").getValue(Int::class.java) ?: 0
-                            commentcount = result.child("commentcount").getValue(Int::class.java) ?: 0
-                        }
-                        tasks.add(postStatsTask)
-                        val userTask = db.collection("Users").document(userid).get().addOnSuccessListener { result ->
                             val post = PostViewModel(
                                 id = doc.id,
-                                userId = doc.getString("userid") ?: "",
-                                userName = result.getString("name") ?: "",
-                                userAvatarUrl = result.getString("avatarurl") ?: "",
+                                userId = userid,
+                                userName = userDoc.getString("name") ?: "",
+                                userAvatarUrl = userDoc.getString("avatarurl") ?: "",
                                 content = doc.getString("content") ?: "",
-                                category = doc.get("category") as List<String>,
-                                imageUrls = doc.get("imageurl") as List<String>,
+                                category = doc.get("category") as? List<String> ?: emptyList(),
+                                imageUrls = doc.get("imageurl") as? List<String> ?: emptyList(),
                                 timestamp = doc.getLong("timestamp") ?: 0,
                                 likeCount = likecount,
                                 commentCount = commentcount,
                                 shareCount = sharecount,
                                 isLiked = isliked
                             )
-                            tempPostList.add(post)
+                            finalPostList.add(post)
                         }
-                        tasks.add(userTask)
                     }
-                    Tasks.whenAllSuccess<Any>(tasks).addOnSuccessListener {
-                        tempPostList.sortByDescending { it.timestamp }
+                    Tasks.whenAllComplete(tasks).addOnSuccessListener {
+                        finalPostList.sortByDescending { it.timestamp }
                         postList.clear()
-                        postList.addAll(tempPostList)
+                        postList.addAll(finalPostList)
                         feedAdapter.notifyDataSetChanged()
                     }
                 }
         }
     }
+
 
     override fun onLikeClicked(position: Int) {
         db=FirebaseFirestore.getInstance()
