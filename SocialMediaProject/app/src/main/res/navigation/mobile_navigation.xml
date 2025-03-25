@@ -12,7 +12,7 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment android:id="@+id/navigation_plus"
-        android:name="com.example.socialmediaproject.plus.PlusFragment"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.PlusFragment"
         android:label="Plus"
         tools:layout="@layout/fragment_plus"/>
 </navigation>

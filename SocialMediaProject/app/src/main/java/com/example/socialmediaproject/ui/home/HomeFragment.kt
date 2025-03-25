@@ -15,16 +15,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.FeedAdapter
 import com.example.socialmediaproject.PostViewModel
 import com.example.socialmediaproject.R
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.Firebase
+import com.example.socialmediaproject.fragmentwithoutviewmodel.ViewingImageFragment
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.database
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.QuerySnapshot
 
 class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
@@ -42,7 +35,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
-        homeviewmodel=ViewModelProvider(this)[HomeViewModel::class.java]
+        homeviewmodel=ViewModelProvider(requireActivity())[HomeViewModel::class.java]
         initViews(view)
         setupRecyclerView()
         setupSwipeRefresh()
@@ -143,6 +136,14 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onImageClicked(postPosition: Int, imagePosition: Int) {
-        val post = postList[postPosition]
+        val post=homeviewmodel.postlist.value?.get(postPosition)?:return
+        val images=post?.imageUrls
+        val imageurl=images?.get(imagePosition)
+        if (imageurl!=null) {
+            val fragment= ViewingImageFragment.newInstance(imageurl)
+            requireActivity().supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment_activity_main, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
     }
 }
