@@ -15,7 +15,7 @@ object AIService {
         val json = """
             {
                 "contents": [
-                    { "role": "user", "parts": [{ "text": "Hãy phân loại nội dung sau vào danh mục phù hợp trong danh sách, nếu nội dung thuộc nhiều danh mục, trình bày các danh mục mà nội dung đó thuộc về, cách nhau bởi dấu phẩy, chỉ cần đưa ra đáp án, không trả lời gì thêm, ví dụ: Học tập, Giải trí, Hài. Nếu không có danh mục phù hợp thì có thể tự tạo danh mục mới: ${categories.joinToString(", ")}\n$content" }] }
+                    { "role": "user", "parts": [{ "text": "Hãy phân loại nội dung sau vào danh mục phù hợp trong danh sách, nếu nội dung thuộc nhiều danh mục, trình bày các danh mục mà nội dung đó thuộc về, cách nhau bởi dấu phẩy, chỉ cần đưa ra đáp án, không trả lời gì thêm, ví dụ: Học tập, Giải trí, Hài, Phàn nàn. Nếu không có danh mục phù hợp thì có thể tự tạo danh mục mới. Cố gắng xếp bài viết vào càng nhiều danh mục càng tốt, nhưng ưu tiên nhất vẫn là tính đúng đắn: ${categories.joinToString(", ")}\n$content" }] }
                 ],
                 "generationConfig": {
                     "temperature": 1,
