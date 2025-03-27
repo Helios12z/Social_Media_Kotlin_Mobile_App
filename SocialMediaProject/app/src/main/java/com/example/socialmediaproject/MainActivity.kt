@@ -57,14 +57,18 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.navigation_plus -> {
                     if (!PostingService.isposting) {
-                        val intent = Intent(this, AddPostActivity::class.java)
-                        startActivity(intent)
-                        finish()
+                        if (!navController.popBackStack(R.id.navigation_post, false)) {
+                            navController.navigate(R.id.navigation_post)
+                        }
+                    } else {
+                        if (!navController.popBackStack(R.id.navigation_plus, false)) {
+                            navController.navigate(R.id.navigation_plus)
+                        }
                     }
-                    else navController.navigate(R.id.navigation_plus)
                     true
                 }
                 R.id.navigation_home -> {
+                    navController.popBackStack(navController.graph.startDestinationId, false)
                     navController.navigate(R.id.navigation_home)
                     true
                 }

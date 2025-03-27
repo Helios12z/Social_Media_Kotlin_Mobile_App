@@ -15,4 +15,9 @@
         android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.PlusFragment"
         android:label="Plus"
         tools:layout="@layout/fragment_plus"/>
+
+    <fragment android:id="@+id/navigation_post"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.PostingFragment"
+        android:label="Posting"
+        tools:layout="@layout/fragment_posting"/>
 </navigation>
