@@ -1,4 +1,4 @@
-package com.example.socialmediaproject
+package com.example.socialmediaproject.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import com.example.socialmediaproject.R
 
 class NotificationService: Service() {
 

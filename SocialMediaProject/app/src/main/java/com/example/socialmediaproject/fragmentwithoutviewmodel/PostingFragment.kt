@@ -1,7 +1,6 @@
 package com.example.socialmediaproject.fragmentwithoutviewmodel
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
@@ -21,8 +20,8 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaproject.MediaAdapter
-import com.example.socialmediaproject.NotificationService
-import com.example.socialmediaproject.PostingService
+import com.example.socialmediaproject.service.NotificationService
+import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.databinding.FragmentPostingBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

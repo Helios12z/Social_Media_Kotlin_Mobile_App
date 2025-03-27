@@ -1,6 +1,5 @@
-package com.example.socialmediaproject
+package com.example.socialmediaproject.activity
 
-import android.content.Intent
 import android.graphics.LinearGradient
 import android.graphics.Shader
 import android.os.Bundle
@@ -11,12 +10,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.viewbinding.ViewBinding
+import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivitySignUpBinding
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.Date
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var logintext: TextView

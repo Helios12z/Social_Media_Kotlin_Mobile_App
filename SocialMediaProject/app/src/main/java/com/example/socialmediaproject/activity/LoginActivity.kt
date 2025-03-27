@@ -1,4 +1,4 @@
-package com.example.socialmediaproject
+package com.example.socialmediaproject.activity
 
 import android.content.Intent
 import android.graphics.LinearGradient
@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.socialmediaproject.R
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 
@@ -74,7 +75,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun OnSignUpClicked()
     {
-        intent=Intent(this,SignUpActivity::class.java)
+        intent=Intent(this, SignUpActivity::class.java)
         startActivity(intent)
     }
 }

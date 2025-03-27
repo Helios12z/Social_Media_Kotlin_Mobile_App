@@ -1,8 +1,7 @@
-package com.example.socialmediaproject
+package com.example.socialmediaproject.service
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request

@@ -1,4 +1,4 @@
-package com.example.socialmediaproject
+package com.example.socialmediaproject.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -15,10 +15,9 @@ import org.json.JSONObject
 import android.util.Base64
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.socialmediaproject.R
 import com.google.firebase.Firebase
-import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
@@ -40,7 +39,7 @@ class PostingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        isposting=true
+        isposting =true
         val postContent = intent?.getStringExtra("post_content") ?: ""
         val imageList = intent?.getParcelableArrayListExtra<Uri>("image_list") ?: arrayListOf()
         val privacy = intent?.getStringExtra("privacy") ?: "Công khai"
@@ -150,25 +149,25 @@ class PostingService : Service() {
                                 val postid=docref.id
                                 savePostStatsToRealtimeDatabase(postid) {
                                     updateNotification("Đăng bài thành công!")
-                                    isposting=false
+                                    isposting =false
                                     stopSelf()
                                 }
                             }
                             .addOnFailureListener {
                                 updateNotification("Đăng bài thất bại!")
-                                isposting=false
+                                isposting =false
                                 stopSelf()
                             }
                     } catch (e: Exception) {
                         Log.e("UploadPost", "Lỗi khi xử lý bài đăng", e)
                         updateNotification("Lỗi khi xử lý bài đăng!")
-                        isposting=false
+                        isposting =false
                         stopSelf()
                     }
                 }
             } else {
                 updateNotification("Lỗi trong quá trình phân tích!")
-                isposting=false
+                isposting =false
                 stopSelf()
             }
         }
