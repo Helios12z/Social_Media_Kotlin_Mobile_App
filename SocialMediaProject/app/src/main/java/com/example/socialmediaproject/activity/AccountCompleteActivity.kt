@@ -6,6 +6,7 @@ import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -13,7 +14,6 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.socialmediaproject.databinding.ActivityAccountCompleteBinding
@@ -23,11 +23,13 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.yalantis.ucrop.UCrop
+import java.io.File
 import java.util.Date
 import java.util.Locale
 
-private const val REQUEST_AVATAR_PICK = 100
-private const val REQUEST_WALL_CAPTURE = 101
+private const val REQUEST_AVATAR_PICK = 1000
+private const val REQUEST_WALL_CAPTURE = 1001
 class AccountCompleteActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAccountCompleteBinding
@@ -44,6 +46,7 @@ class AccountCompleteActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
     private lateinit var gender:String
+    private var cropType: Int=0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +92,6 @@ class AccountCompleteActivity : AppCompatActivity() {
         imgcoverphoto.setOnClickListener {
             openGalleryForWall()
         }
-        var fullname:String
         var birthday:String
         var address:String
         var phone:String
@@ -114,7 +116,7 @@ class AccountCompleteActivity : AppCompatActivity() {
                         "phonenumber" to phone,
                         "bio" to bio,
                         "birthday" to birthday,
-                        "gender" to gender
+                        "gender" to gender,
                     )
                     db.collection("Users").document(userid).set(userupdate, SetOptions.merge()).addOnSuccessListener {
                         Toast.makeText(this, "Cập nhật tài khoản hoàn tất!", Toast.LENGTH_SHORT).show()
@@ -154,15 +156,12 @@ class AccountCompleteActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode== RESULT_OK && data!=null) {
-            val imguri=data.data
-            if (requestCode == REQUEST_AVATAR_PICK) {
-                avataruri=imguri?:Uri.EMPTY
-                imgavatar.setImageURI(avataruri)
-            }
-            if (requestCode== REQUEST_WALL_CAPTURE) {
-                walluri=imguri?:Uri.EMPTY
-                imgcoverphoto.setImageURI(walluri)
+        if (resultCode == RESULT_OK && data != null) {
+            val imgUri = data.data
+            when (requestCode) {
+                REQUEST_AVATAR_PICK -> startCrop(imgUri?:Uri.EMPTY, true)
+                REQUEST_WALL_CAPTURE -> startCrop(imgUri?:Uri.EMPTY, false)
+                UCrop.REQUEST_CROP -> handleCropResult(data)
             }
         }
     }
@@ -179,5 +178,30 @@ class AccountCompleteActivity : AppCompatActivity() {
                 dialog, which ->
         }
         builder.show()
+    }
+
+    private fun startCrop(sourceUri: Uri, isAvatar: Boolean) {
+        cropType = if (isAvatar) REQUEST_AVATAR_PICK else REQUEST_WALL_CAPTURE
+        val fileName = "cropped_${System.currentTimeMillis()}.jpg"
+        val destinationFile = File(cacheDir, fileName)
+        val destinationUri = Uri.fromFile(destinationFile)
+        val uCrop = UCrop.of(sourceUri, destinationUri)
+            .withAspectRatio(if (isAvatar) 1f else 16f, if (isAvatar) 1f else 9f)
+            .withMaxResultSize(1080, 1080)
+        uCrop.start(this)
+    }
+
+    private fun handleCropResult(data: Intent) {
+        val resultUri = UCrop.getOutput(data)
+        Log.d("UCrop", "Cropped Image URI: $resultUri")
+        if (resultUri != null) {
+            if (cropType == REQUEST_AVATAR_PICK) {
+                avataruri = resultUri
+                imgavatar.setImageURI(avataruri)
+            } else {
+                walluri = resultUri
+                imgcoverphoto.setImageURI(walluri)
+            }
+        }
     }
 }

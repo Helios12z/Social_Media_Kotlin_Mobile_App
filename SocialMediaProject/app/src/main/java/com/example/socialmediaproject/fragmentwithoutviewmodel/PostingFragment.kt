@@ -64,6 +64,7 @@ class PostingFragment : Fragment() {
             db.collection("Users").document(userid).get().addOnSuccessListener { document ->
                 if (document.exists()) {
                     val username = document.getString("name")
+
                     binding.tvUsername.text = username
                 }
             }
