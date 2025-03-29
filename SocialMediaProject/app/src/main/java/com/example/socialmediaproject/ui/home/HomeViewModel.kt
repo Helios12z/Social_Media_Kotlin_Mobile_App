@@ -143,7 +143,7 @@ class HomeViewModel : ViewModel() {
 
     private fun updateLikeStatus(post: PostViewModel, position: Int, userId: String, results: QuerySnapshot?) {
         val ref=realtimedb.getReference("PostStats").child(post.id)
-            ref.get().addOnSuccessListener { result ->
+        ref.get().addOnSuccessListener { result ->
             val likeCount = result.child("likecount").getValue(Int::class.java) ?: 0
             val updates = HashMap<String, Any>()
             if (post.isLiked) {

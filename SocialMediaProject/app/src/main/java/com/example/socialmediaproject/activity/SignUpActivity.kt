@@ -14,6 +14,7 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivitySignUpBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlin.math.sign
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var logintext: TextView
@@ -59,11 +60,13 @@ class SignUpActivity : AppCompatActivity() {
                     }
                     else
                     {
+                        signupbutton.isEnabled=false
                         val usersRef = db.collection("Users")
                         usersRef.whereEqualTo("email", email).get()
                             .addOnSuccessListener { emailResult ->
                                 if (!emailResult.isEmpty) {
                                     Toast.makeText(this, "Email đã tồn tại!", Toast.LENGTH_SHORT).show()
+                                    signupbutton.isEnabled=true
                                 }
                                 else {
                                     firebaseauth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) {
@@ -72,10 +75,13 @@ class SignUpActivity : AppCompatActivity() {
                                         val userid=task.result.user?.uid
                                         if (userid!=null) AddNewUserToDb(binding.name.text.toString(), userid, binding.email.text.toString())
                                     }
-                                    else Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
+                                    else  {
+                                        Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
+                                        signupbutton.isEnabled=true
                                     }
                                 }
                             }
+                        }
                     }
                 }
                 else Toast.makeText(this, "Mật khẩu nhập lại không đúng!", Toast.LENGTH_SHORT).show()
@@ -122,6 +128,7 @@ class SignUpActivity : AppCompatActivity() {
             finish()
         }.addOnFailureListener {
             Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
+            binding.signUpButton.isEnabled=true
         }
     }
 }

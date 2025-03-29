@@ -252,13 +252,13 @@ class PostingService : Service() {
             "commentcount" to 0,
         )
         databaseRef.setValue(postStats)
-            .addOnSuccessListener {
-                Log.d("RealtimeDB", "Thêm dữ liệu vào Realtime Database thành công!")
-                callback()
-            }
-            .addOnFailureListener { e ->
-                Log.e("RealtimeDB", "Lỗi khi thêm dữ liệu vào Realtime Database", e)
-                callback()
-            }
+        .addOnSuccessListener {
+            Log.d("RealtimeDB", "Thêm dữ liệu vào Realtime Database thành công!")
+            callback()
+        }
+        .addOnFailureListener { e ->
+            Log.e("RealtimeDB", "Lỗi khi thêm dữ liệu vào Realtime Database", e)
+            callback()
+        }
     }
 }

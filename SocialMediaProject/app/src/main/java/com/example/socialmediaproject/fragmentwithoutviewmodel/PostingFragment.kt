@@ -19,6 +19,8 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.MediaAdapter
 import com.example.socialmediaproject.service.NotificationService
 import com.example.socialmediaproject.service.PostingService
@@ -64,7 +66,15 @@ class PostingFragment : Fragment() {
             db.collection("Users").document(userid).get().addOnSuccessListener { document ->
                 if (document.exists()) {
                     val username = document.getString("name")
-
+                    val userimageuri=document.getString("avatarurl")
+                    if (userimageuri!=null) {
+                        Glide.with(requireContext())
+                            .load(userimageuri)
+                            .placeholder(R.drawable.avataricon)
+                            .error(R.drawable.avataricon)
+                            .into(binding.imgProfile)
+                    }
+                    else binding.imgProfile.setImageResource(R.drawable.avataricon)
                     binding.tvUsername.text = username
                 }
             }

@@ -39,6 +39,7 @@ class LoginActivity : AppCompatActivity() {
             val password=findViewById<TextInputEditText>(R.id.password)
             if (email.text.toString().isNotEmpty() && password.text.toString().isNotEmpty())
             {
+                loginbutton.isEnabled=false
                 firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
                     .addOnCompleteListener() {
                         task->
@@ -53,10 +54,17 @@ class LoginActivity : AppCompatActivity() {
                                     Log.e("LoginError", "Lỗi khi chuyển sang MainActivity: ${err.message}")
                                 }
                             }
-                            else Toast.makeText(this, "Tên đăng nhập hay mật khẩu không chính xác!", Toast.LENGTH_SHORT).show()
+                            else
+                            {
+                                Toast.makeText(this, "Tên đăng nhập hay mật khẩu không chính xác!", Toast.LENGTH_SHORT).show()
+                                loginbutton.isEnabled=true
+                            }
                     }
             }
-            else Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
+            else {
+                Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
+                loginbutton.isEnabled=true
+            }
         }
     }
 

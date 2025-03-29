@@ -6,6 +6,7 @@ import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
@@ -24,7 +25,13 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.yalantis.ucrop.UCrop
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 import java.util.Date
 import java.util.Locale
 
@@ -47,6 +54,9 @@ class AccountCompleteActivity : AppCompatActivity() {
     private lateinit var db: FirebaseFirestore
     private lateinit var gender:String
     private var cropType: Int=0
+    private var isAvatarUploading = false
+    private var isWallUploading = false
+    private val API_KEY = "b5a914cc1aedaa51a1a0a5a4db8ed3ff"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +69,7 @@ class AccountCompleteActivity : AppCompatActivity() {
         imgavatar=binding.imgAvatar
         imgcoverphoto=binding.imgCoverPhoto
         savebtn=binding.btnSaveProfile
+        updateSaveButtonState()
         db=FirebaseFirestore.getInstance()
         auth=FirebaseAuth.getInstance()
         val genderlist= mutableListOf<String>()
@@ -111,12 +122,15 @@ class AccountCompleteActivity : AppCompatActivity() {
                 birthday=tilbirthday.editText?.text.toString()
                 val userid=auth.currentUser?.uid
                 if (userid!=null) {
+                    savebtn.isEnabled=false
                     val userupdate= hashMapOf(
                         "address" to address,
                         "phonenumber" to phone,
                         "bio" to bio,
                         "birthday" to birthday,
                         "gender" to gender,
+                        "avatarurl" to avataruri.toString(),
+                        "wallurl" to walluri.toString()
                     )
                     db.collection("Users").document(userid).set(userupdate, SetOptions.merge()).addOnSuccessListener {
                         Toast.makeText(this, "Cập nhật tài khoản hoàn tất!", Toast.LENGTH_SHORT).show()
@@ -193,15 +207,86 @@ class AccountCompleteActivity : AppCompatActivity() {
 
     private fun handleCropResult(data: Intent) {
         val resultUri = UCrop.getOutput(data)
-        Log.d("UCrop", "Cropped Image URI: $resultUri")
         if (resultUri != null) {
             if (cropType == REQUEST_AVATAR_PICK) {
-                avataruri = resultUri
-                imgavatar.setImageURI(avataruri)
+                imgavatar.setImageURI(resultUri)
+                isAvatarUploading=true
+                updateSaveButtonState()
+                uploadImageToImgbb(resultUri) {
+                    imgbburl->runOnUiThread {
+                        if (imgbburl!=null) avataruri=Uri.parse(imgbburl)
+                        isAvatarUploading=false
+                        updateSaveButtonState()
+                    }
+                }
             } else {
-                walluri = resultUri
-                imgcoverphoto.setImageURI(walluri)
+                imgcoverphoto.setImageURI(resultUri)
+                isWallUploading=true
+                updateSaveButtonState()
+                uploadImageToImgbb(resultUri) {
+                    imgbburl->runOnUiThread {
+                        if (imgbburl!=null) walluri=Uri.parse(imgbburl)
+                        isWallUploading=false
+                        updateSaveButtonState()
+                    }
+                }
             }
         }
+    }
+
+    private fun uploadImageToImgbb(image: Uri) {
+
+    }
+
+    private fun updateSaveButtonState() {
+        savebtn.isEnabled = !isAvatarUploading && !isWallUploading
+    }
+
+    private fun uriToBase64(uri: Uri): String? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            val outputStream = ByteArrayOutputStream()
+            val buffer = ByteArray(1024)
+            var bytesRead: Int
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+            inputStream.close()
+            Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun uploadImageToImgbb(imageUri: Uri, callback: (String?) -> Unit) {
+        Thread {
+            try {
+                val base64Image = uriToBase64(imageUri) ?: return@Thread callback(null)
+                val client = OkHttpClient()
+                val requestBody = FormBody.Builder()
+                    .add("key", API_KEY)
+                    .add("image", base64Image)
+                    .build()
+
+                val request = Request.Builder()
+                    .url("https://api.imgbb.com/1/upload")
+                    .post(requestBody)
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) {
+                        callback(null)
+                        return@use
+                    }
+                    val jsonResponse = JSONObject(response.body!!.string())
+                    val imageUrl = jsonResponse.getJSONObject("data").getString("url")
+                    callback(imageUrl)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                callback(null)
+            }
+        }.start()
     }
 }
