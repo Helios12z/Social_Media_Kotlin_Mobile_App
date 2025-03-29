@@ -33,7 +33,6 @@ class AccountCompleteActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAccountCompleteBinding
     private lateinit var tilbirthday: TextInputLayout
     private lateinit var tiladdress: TextInputLayout
-    private lateinit var tilfullname: TextInputLayout
     private lateinit var tilphone: TextInputLayout
     private lateinit var tilbio: TextInputLayout
     private lateinit var imgavatar: ShapeableImageView
@@ -52,7 +51,6 @@ class AccountCompleteActivity : AppCompatActivity() {
         setContentView(binding.root)
         tilbirthday=binding.tilBirthday
         tiladdress=binding.tilAddress
-        tilfullname=binding.tilFirstName
         tilphone=binding.tilPhone
         tilbio=binding.tilBio
         imgavatar=binding.imgAvatar
@@ -97,9 +95,9 @@ class AccountCompleteActivity : AppCompatActivity() {
         var phone:String
         var bio:String
         savebtn.setOnClickListener {
-            if (tilfullname.editText?.text.isNullOrEmpty() || tilbirthday.editText?.text.isNullOrEmpty())
+            if (tilbirthday.editText?.text.isNullOrEmpty())
             {
-                Toast.makeText(this, "Vui lòng nhập đầy đủ họ tên và ngày sinh nhật!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Vui lòng nhập đầy ngày sinh nhật!", Toast.LENGTH_SHORT).show()
             }
             else {
                 if (tiladdress.editText?.text.isNullOrEmpty()) address=""
@@ -108,7 +106,6 @@ class AccountCompleteActivity : AppCompatActivity() {
                 else phone=tilphone.editText?.text.toString()
                 if (tilbio.editText?.text.isNullOrEmpty()) bio=""
                 else bio=tilbio.editText?.text.toString()
-                fullname=tilfullname.editText?.text.toString()
                 birthday=tilbirthday.editText?.text.toString()
                 val userid=auth.currentUser?.uid
                 if (userid!=null) {
@@ -116,7 +113,6 @@ class AccountCompleteActivity : AppCompatActivity() {
                         "address" to address,
                         "phonenumber" to phone,
                         "bio" to bio,
-                        "fullname" to fullname,
                         "birthday" to birthday,
                         "gender" to gender
                     )

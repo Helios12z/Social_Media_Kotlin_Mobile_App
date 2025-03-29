@@ -38,20 +38,6 @@
             app:shapeAppearanceOverlay="@style/CircleImageView" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilFirstName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Họ và tên"
-                android:inputType="textPersonName"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilBirthday"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -72,7 +58,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/spinner_border"
             android:layout_marginTop="4dp"
-            android:padding="17dp"
+            android:padding="8dp"
             android:layout_marginBottom="8dp"/>
 
         <com.google.android.material.textfield.TextInputLayout
