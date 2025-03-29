@@ -18,6 +18,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.socialmediaproject.databinding.ActivityAccountCompleteBinding
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -35,7 +36,7 @@ class AccountCompleteActivity : AppCompatActivity() {
     private lateinit var tilfullname: TextInputLayout
     private lateinit var tilphone: TextInputLayout
     private lateinit var tilbio: TextInputLayout
-    private lateinit var imgavatar: ImageView
+    private lateinit var imgavatar: ShapeableImageView
     private lateinit var imgcoverphoto: ImageView
     private lateinit var genderspinner: Spinner
     private lateinit var avataruri: Uri
@@ -47,7 +48,6 @@ class AccountCompleteActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         binding=ActivityAccountCompleteBinding.inflate(layoutInflater)
         setContentView(binding.root)
         tilbirthday=binding.tilBirthday
