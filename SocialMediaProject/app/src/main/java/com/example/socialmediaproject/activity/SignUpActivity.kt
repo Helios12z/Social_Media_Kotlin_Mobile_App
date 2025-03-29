@@ -53,7 +53,13 @@ class SignUpActivity : AppCompatActivity() {
             {
                 if (password==confirmpassword)
                 {
-                    val usersRef = db.collection("Users")
+                    val emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+                    if (!email.matches(emailPattern)) {
+                        Toast.makeText(this, "Email không đúng định dạng!", Toast.LENGTH_SHORT).show()
+                    }
+                    else
+                    {
+                        val usersRef = db.collection("Users")
                         usersRef.whereEqualTo("email", email).get()
                             .addOnSuccessListener { emailResult ->
                                 if (!emailResult.isEmpty) {
@@ -70,6 +76,7 @@ class SignUpActivity : AppCompatActivity() {
                                     }
                                 }
                             }
+                    }
                 }
                 else Toast.makeText(this, "Mật khẩu nhập lại không đúng!", Toast.LENGTH_SHORT).show()
             }

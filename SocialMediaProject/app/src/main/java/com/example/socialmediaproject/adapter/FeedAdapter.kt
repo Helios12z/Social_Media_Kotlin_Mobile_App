@@ -1,4 +1,4 @@
-package com.example.socialmediaproject
+package com.example.socialmediaproject.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -11,9 +11,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.PostViewModel
+import com.example.socialmediaproject.R
 import com.google.android.material.imageview.ShapeableImageView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 
 class FeedAdapter(
     private val context: Context,

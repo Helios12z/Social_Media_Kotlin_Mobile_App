@@ -19,7 +19,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.socialmediaproject.MediaAdapter
+import com.example.socialmediaproject.adapter.MediaAdapter
 import com.example.socialmediaproject.service.NotificationService
 import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.databinding.FragmentPostingBinding
@@ -91,7 +91,7 @@ class PostingFragment : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
         }
-        mediaadapter=MediaAdapter(imagelist, ::removeImage)
+        mediaadapter= MediaAdapter(imagelist, ::removeImage)
         rv_selected_media = binding.rvSelectedMedia
         rv_selected_media.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         rv_selected_media.adapter = mediaadapter

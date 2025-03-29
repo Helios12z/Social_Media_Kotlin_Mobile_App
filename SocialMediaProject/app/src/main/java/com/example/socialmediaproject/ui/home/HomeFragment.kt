@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.example.socialmediaproject.FeedAdapter
+import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.PostViewModel
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.fragmentwithoutviewmodel.ViewingImageFragment

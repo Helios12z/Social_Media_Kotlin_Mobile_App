@@ -1,6 +1,7 @@
 package com.example.socialmediaproject.activity
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
@@ -9,7 +10,6 @@ import com.example.socialmediaproject.databinding.ActivityAfterFirstCheckBinding
 
 class AfterFirstCheckActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAfterFirstCheckBinding
-    private lateinit var btnno: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,6 +18,11 @@ class AfterFirstCheckActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.btnNo.setOnClickListener {
             OnButtonNoClicked()
+        }
+        binding.btnYes.setOnClickListener {
+            val intent= Intent(this, AccountCompleteActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 
