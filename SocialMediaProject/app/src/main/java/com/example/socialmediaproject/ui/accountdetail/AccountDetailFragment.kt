@@ -47,8 +47,6 @@ class AccountDetailFragment : Fragment() {
     private val REQUEST_AVATAR_PICK = 1000
     private val REQUEST_WALL_CAPTURE = 1001
     private var cropType: Int=0
-    private lateinit var avatarurl: Uri
-    private lateinit var wallurl: Uri
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
     private var gender: String=""
@@ -101,6 +99,8 @@ class AccountDetailFragment : Fragment() {
                 binding.tilPhone.editText?.setText(result.getString("phonenumber"))
                 binding.tilAddress.editText?.setText(result.getString("address"))
                 gender=result.getString("gender")?:""
+                val selectedindex=genderlist.indexOfFirst { it.equals(gender) }
+                if (selectedindex>=0) genderspinner.setSelection(selectedindex)
                 val avatarurl = result.getString("avatarurl")
                 if (avatarurl != null) {
                     Glide.with(requireContext())
@@ -117,26 +117,6 @@ class AccountDetailFragment : Fragment() {
                         .error(R.drawable.loginbackground)
                         .into(binding.imgCoverPhoto)
                 }
-            }
-        }
-        viewModel.avataruri.observe(viewLifecycleOwner) {uri->
-            avatarurl = uri ?: Uri.EMPTY
-            if (uri != Uri.EMPTY) {
-                Glide.with(requireContext())
-                    .load(uri)
-                    .placeholder(R.drawable.avataricon)
-                    .error(R.drawable.avataricon)
-                    .into(binding.imgAvatar)
-            }
-        }
-        viewModel.walluri.observe(viewLifecycleOwner) {uri->
-            wallurl = uri ?: Uri.EMPTY
-            if (uri != Uri.EMPTY) {
-                Glide.with(requireContext())
-                    .load(uri)
-                    .placeholder(R.drawable.loginbackground)
-                    .error(R.drawable.loginbackground)
-                    .into(binding.imgCoverPhoto)
             }
         }
         viewModel.isUploading.observe(viewLifecycleOwner) { isUploading ->
@@ -177,12 +157,14 @@ class AccountDetailFragment : Fragment() {
     }
 
     private fun openGalleryForAvatar() {
+        cropType=REQUEST_AVATAR_PICK
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         intent.type = "image/*"
         startActivityForResult(intent, REQUEST_AVATAR_PICK)
     }
 
     private fun openGalleryForWall() {
+        cropType=REQUEST_WALL_CAPTURE
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         intent.type = "image/*"
         startActivityForResult(intent, REQUEST_WALL_CAPTURE)
@@ -201,7 +183,6 @@ class AccountDetailFragment : Fragment() {
     }
 
     private fun startCrop(sourceUri: Uri, isAvatar: Boolean) {
-        cropType = if (isAvatar) REQUEST_AVATAR_PICK else REQUEST_WALL_CAPTURE
         val fileName = "cropped_${System.currentTimeMillis()}.jpg"
         val destinationFile = File(requireContext().cacheDir, fileName)
         val destinationUri = Uri.fromFile(destinationFile)
@@ -235,10 +216,10 @@ class AccountDetailFragment : Fragment() {
                 if (!existingData.containsKey("birthday") || birthday.isNotEmpty()) {
                     userUpdate["birthday"] = birthday
                 }
-                if (!existingData.containsKey("avatarurl") || viewModel.avataruri.value.toString().isNotEmpty()) {
+                if (tmp1!=Uri.EMPTY) {
                     userUpdate["avatarurl"] = viewModel.avataruri.value.toString()
                 }
-                if (!existingData.containsKey("wallurl") || viewModel.walluri.value.toString().isNotEmpty()) {
+                if (tmp2!=Uri.EMPTY) {
                     userUpdate["wallurl"] = viewModel.walluri.value.toString()
                 }
                 if (!existingData.containsKey("gender") || gender.isNotEmpty()) {
@@ -276,10 +257,18 @@ class AccountDetailFragment : Fragment() {
         val resultUri = UCrop.getOutput(data)
         if (resultUri != null) {
             if (cropType == REQUEST_AVATAR_PICK) {
-                binding.imgAvatar.setImageURI(resultUri)
+                Glide.with(requireContext())
+                    .load(resultUri)
+                    .placeholder(R.drawable.avataricon)
+                    .error(R.drawable.avataricon)
+                    .into(binding.imgAvatar)
                 tmp1=resultUri
             } else {
-                binding.imgCoverPhoto.setImageURI(resultUri)
+                Glide.with(requireContext())
+                    .load(resultUri)
+                    .placeholder(R.drawable.loginbackground)
+                    .error(R.drawable.loginbackground)
+                    .into(binding.imgCoverPhoto)
                 tmp2=resultUri
             }
         }
