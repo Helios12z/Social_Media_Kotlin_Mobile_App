@@ -32,24 +32,28 @@ class UpdateAccountWorker(context: Context, workerParams: WorkerParameters): Cor
         val context=applicationContext
         val userUpdate = mutableMapOf<String, Any>()
         inputData.getString("avatarUri")?.let { uriString ->
-            val avatarUrl = uploadImageToImgbb(context, Uri.parse(uriString))
-            if (avatarUrl != null) {
-                userUpdate["avatarurl"] = avatarUrl
+            if (uriString!="NO") {
+                val avatarUrl = uploadImageToImgbb(context, Uri.parse(uriString))
+                if (avatarUrl != null) {
+                    userUpdate["avatarurl"] = avatarUrl
+                }
             }
+            else userUpdate["avatarurl"]=""
         }
         inputData.getString("wallUri")?.let { uriString ->
-            val wallUrl = uploadImageToImgbb(context, Uri.parse(uriString))
-            if (wallUrl != null) {
-                userUpdate["wallurl"] = wallUrl
+            if (uriString!="NO") {
+                val wallUrl = uploadImageToImgbb(context, Uri.parse(uriString))
+                if (wallUrl != null) {
+                    userUpdate["wallurl"] = wallUrl
+                }
             }
+            else userUpdate["wallurl"]=""
         }
         inputData.getString("birthday")?.let { userUpdate["birthday"] = it }
         inputData.getString("address")?.let { userUpdate["address"] = it }
         inputData.getString("phone")?.let { userUpdate["phonenumber"] = it }
         inputData.getString("bio")?.let { userUpdate["bio"] = it }
         inputData.getString("gender")?.let { userUpdate["gender"] = it }
-        inputData.getString("avatarUrl")?.let { userUpdate["avatarurl"] = it }
-        inputData.getString("wallUrl")?.let { userUpdate["wallurl"] = it }
         return try {
             db.collection("Users").document(userId).set(userUpdate, SetOptions.merge()).await()
             sendNotification("Cập nhật tài khoản thành công!")

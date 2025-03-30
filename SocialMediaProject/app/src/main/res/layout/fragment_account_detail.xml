@@ -31,6 +31,13 @@
             android:scaleType="centerCrop"
             android:src="@drawable/loginbackground"
             android:layout_marginBottom="16dp"/>
+        <Button
+            android:id="@+id/deletewallbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Xóa Ảnh Bìa"
+            android:layout_marginBottom="10dp"
+            android:layout_gravity="center"/>
 
         <androidx.constraintlayout.utils.widget.MotionLabel
             android:layout_width="wrap_content"
@@ -46,6 +53,14 @@
             android:layout_gravity="center"
             android:layout_marginBottom="16dp"
             app:shapeAppearanceOverlay="@style/CircleImageView" />
+
+        <Button
+            android:id="@+id/deleteavatarbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Xóa Avatar"
+            android:layout_marginBottom="10dp"
+            android:layout_gravity="center"/>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilBirthday"

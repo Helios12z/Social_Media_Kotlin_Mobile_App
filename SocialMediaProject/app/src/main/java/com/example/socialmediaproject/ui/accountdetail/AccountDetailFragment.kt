@@ -17,6 +17,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -107,19 +108,25 @@ class AccountDetailFragment : Fragment() {
                 if (selectedindex>=0) genderspinner.setSelection(selectedindex)
                 val avatarurl = result.getString("avatarurl")
                 if (avatarurl != null) {
-                    Glide.with(requireContext())
-                        .load(avatarurl)
-                        .placeholder(R.drawable.avataricon)
-                        .error(R.drawable.avataricon)
-                        .into(binding.imgAvatar)
+                    if (avatarurl=="") binding.imgAvatar.setImageResource(R.drawable.avataricon)
+                    else {
+                        Glide.with(requireContext())
+                            .load(avatarurl)
+                            .placeholder(R.drawable.avataricon)
+                            .error(R.drawable.avataricon)
+                            .into(binding.imgAvatar)
+                    }
                 }
                 val wallurl = result.getString("wallurl")
                 if (wallurl != null) {
-                    Glide.with(requireContext())
-                        .load(wallurl)
-                        .placeholder(R.drawable.loginbackground)
-                        .error(R.drawable.loginbackground)
-                        .into(binding.imgCoverPhoto)
+                    if (wallurl=="") binding.imgCoverPhoto.setImageResource(R.drawable.loginbackground)
+                    else {
+                        Glide.with(requireContext())
+                            .load(wallurl)
+                            .placeholder(R.drawable.loginbackground)
+                            .error(R.drawable.loginbackground)
+                            .into(binding.imgCoverPhoto)
+                    }
                 }
             }
         }
@@ -128,6 +135,14 @@ class AccountDetailFragment : Fragment() {
         }
         binding.imgCoverPhoto.setOnClickListener {
             openGalleryForWall()
+        }
+        binding.deleteavatarbutton.setOnClickListener {
+            binding.imgAvatar.setImageResource(R.drawable.avataricon)
+            tmp1="NO".toUri()
+        }
+        binding.deletewallbutton.setOnClickListener {
+            binding.imgCoverPhoto.setImageResource(R.drawable.loginbackground)
+            tmp2="NO".toUri()
         }
         binding.btnSaveProfile.setOnClickListener {
             if (tmp1== Uri.EMPTY && tmp2== Uri.EMPTY
