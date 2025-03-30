@@ -72,6 +72,12 @@ class MainActivity : AppCompatActivity() {
                     navController.navigate(R.id.navigation_home)
                     true
                 }
+                R.id.navigation_account -> {
+                    if (!navController.popBackStack(R.id.navigation_account, false)) {
+                        navController.navigate(R.id.navigation_account)
+                    }
+                    true
+                }
                 else -> false
             }
         }

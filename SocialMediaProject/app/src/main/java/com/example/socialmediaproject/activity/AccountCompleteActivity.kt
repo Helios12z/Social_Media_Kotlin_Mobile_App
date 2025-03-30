@@ -234,10 +234,6 @@ class AccountCompleteActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadImageToImgbb(image: Uri) {
-
-    }
-
     private fun updateSaveButtonState() {
         savebtn.isEnabled = !isAvatarUploading && !isWallUploading
     }

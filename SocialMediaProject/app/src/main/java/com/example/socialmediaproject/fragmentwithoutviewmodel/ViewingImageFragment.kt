@@ -11,6 +11,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class ViewingImageFragment : Fragment() {
 
@@ -32,6 +33,10 @@ class ViewingImageFragment : Fragment() {
         closebutton.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.isEnabled=false
+        bottomnavbar.visibility=View.INVISIBLE
+        bottomnavbar.setOnTouchListener { _, _ -> true }
         return view
     }
 
@@ -43,5 +48,13 @@ class ViewingImageFragment : Fragment() {
             fragment.arguments=args
             return fragment
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.isEnabled=true
+        bottomnavbar.visibility=View.VISIBLE
+        bottomnavbar.setOnTouchListener(null)
     }
 }
