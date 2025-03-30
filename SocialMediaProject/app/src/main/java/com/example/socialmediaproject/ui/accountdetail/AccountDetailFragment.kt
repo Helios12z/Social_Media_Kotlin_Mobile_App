@@ -18,6 +18,7 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.FragmentAccountDetailBinding
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -70,7 +71,7 @@ class AccountDetailFragment : Fragment() {
         auth=FirebaseAuth.getInstance()
         val genderlist= mutableListOf<String>()
         db.collection("Genders").get().addOnSuccessListener {
-            documents->if (documents!=null) {
+                documents->if (documents!=null) {
                 for (document in documents) {
                     genderlist.add(document.getString("name")?:"")
                 }
@@ -92,13 +93,51 @@ class AccountDetailFragment : Fragment() {
                 }
             }
         }
-        val auth = FirebaseAuth.getInstance()
-        val db = FirebaseFirestore.getInstance()
-        viewModel.avataruri.observe(viewLifecycleOwner) {
-            uri -> avatarurl=uri?:Uri.EMPTY
+        val userid=auth.currentUser?.uid ?: ""
+        db.collection("Users").document(userid).get().addOnSuccessListener {
+            result->if (result!=null) {
+                binding.tilBirthday.editText?.setText(result.getString("birthday"))
+                binding.tilBio.editText?.setText(result.getString("bio"))
+                binding.tilPhone.editText?.setText(result.getString("phonenumber"))
+                binding.tilAddress.editText?.setText(result.getString("address"))
+                gender=result.getString("gender")?:""
+                val avatarurl = result.getString("avatarurl")
+                if (avatarurl != null) {
+                    Glide.with(requireContext())
+                        .load(avatarurl)
+                        .placeholder(R.drawable.avataricon)
+                        .error(R.drawable.avataricon)
+                        .into(binding.imgAvatar)
+                }
+                val wallurl = result.getString("wallurl")
+                if (wallurl != null) {
+                    Glide.with(requireContext())
+                        .load(wallurl)
+                        .placeholder(R.drawable.loginbackground)
+                        .error(R.drawable.loginbackground)
+                        .into(binding.imgCoverPhoto)
+                }
+            }
         }
-        viewModel.walluri.observe(viewLifecycleOwner) {
-            uri -> wallurl=uri?:Uri.EMPTY
+        viewModel.avataruri.observe(viewLifecycleOwner) {uri->
+            avatarurl = uri ?: Uri.EMPTY
+            if (uri != Uri.EMPTY) {
+                Glide.with(requireContext())
+                    .load(uri)
+                    .placeholder(R.drawable.avataricon)
+                    .error(R.drawable.avataricon)
+                    .into(binding.imgAvatar)
+            }
+        }
+        viewModel.walluri.observe(viewLifecycleOwner) {uri->
+            wallurl = uri ?: Uri.EMPTY
+            if (uri != Uri.EMPTY) {
+                Glide.with(requireContext())
+                    .load(uri)
+                    .placeholder(R.drawable.loginbackground)
+                    .error(R.drawable.loginbackground)
+                    .into(binding.imgCoverPhoto)
+            }
         }
         viewModel.isUploading.observe(viewLifecycleOwner) { isUploading ->
             binding.btnSaveProfile.isEnabled = !isUploading
@@ -115,7 +154,8 @@ class AccountDetailFragment : Fragment() {
                 && binding.tilBirthday.editText?.text.isNullOrEmpty()
                 && binding.tilBio.editText?.text.isNullOrEmpty()
                 && binding.tilPhone.editText?.text.isNullOrEmpty()
-                && binding.tilAddress.editText?.text.isNullOrEmpty()) {
+                && binding.tilAddress.editText?.text.isNullOrEmpty()
+                && gender.isEmpty()) {
                     Toast.makeText(requireContext(), "Không thêm gì mới sao cập nhật được bạn!", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
             }
