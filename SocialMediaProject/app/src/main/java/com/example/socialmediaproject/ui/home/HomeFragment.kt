@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -139,12 +141,9 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val post=homeviewmodel.postlist.value?.get(postPosition)?:return
         val images=post?.imageUrls
         val imageurl=images?.get(imagePosition)
-        Log.d("IMAGE URL CLICKED: ", imageurl.toString())
         if (imageurl!=null) {
-            val fragment= ViewingImageFragment.newInstance(imageurl)
-            requireActivity().supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment_activity_main, fragment)
-                .addToBackStack(null)
-                .commit()
+            val bundle = bundleOf("IMAGE_URL" to imageurl)
+            findNavController().navigate(R.id.viewingimagefragment, bundle)
         }
     }
 }

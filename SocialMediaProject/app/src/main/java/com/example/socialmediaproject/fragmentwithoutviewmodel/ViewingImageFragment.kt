@@ -35,9 +35,7 @@ class ViewingImageFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.isEnabled=false
-        bottomnavbar.visibility=View.INVISIBLE
-        bottomnavbar.setOnTouchListener { _, _ -> true }
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         return view
     }
 
@@ -54,8 +52,6 @@ class ViewingImageFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.isEnabled=true
-        bottomnavbar.visibility=View.VISIBLE
-        bottomnavbar.setOnTouchListener(null)
+        bottomnavbar.animate().translationY(0f).setDuration(200).start()
     }
 }

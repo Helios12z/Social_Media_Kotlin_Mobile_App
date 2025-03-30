@@ -25,4 +25,15 @@
         android:name="com.example.socialmediaproject.ui.accountdetail.AccountDetailFragment"
         android:label="Account"
         tools:layout="@layout/fragment_account_detail"/>
+
+    <fragment android:id="@+id/viewingimagefragment"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.ViewingImageFragment"
+        android:label="Image"
+        tools:layout="@layout/fragment_viewing_image">
+        <argument
+            android:name="IMAGE_URL"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
 </navigation>
