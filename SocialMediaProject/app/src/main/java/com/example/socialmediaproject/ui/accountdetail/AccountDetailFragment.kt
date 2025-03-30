@@ -18,9 +18,13 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.FragmentAccountDetailBinding
+import com.example.socialmediaproject.service.UpdateAccountWorker
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -119,10 +123,6 @@ class AccountDetailFragment : Fragment() {
                 }
             }
         }
-        viewModel.isUploading.observe(viewLifecycleOwner) { isUploading ->
-            binding.btnSaveProfile.isEnabled = !isUploading
-            binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
-        }
         binding.imgAvatar.setOnClickListener {
             openGalleryForAvatar()
         }
@@ -141,16 +141,20 @@ class AccountDetailFragment : Fragment() {
             }
             else {
                 binding.btnSaveProfile.isEnabled = false
-                val uploadJobs = mutableListOf<Deferred<Unit>>()
-                lifecycleScope.launch {
-                    if (tmp1 != Uri.EMPTY) {
-                        uploadJobs.add(async { viewModel.uploadAvatar(requireContext(), tmp1) })
-                    }
-                    if (tmp2 != Uri.EMPTY) {
-                        uploadJobs.add(async { viewModel.uploadWall(requireContext(), tmp2) })
-                    }
-                    uploadJobs.awaitAll()
-                    saveProfile(db, auth)
+                binding.progressBar.visibility=View.VISIBLE
+                val data= workDataOf(
+                    "avatarUri" to (if (tmp1 == Uri.EMPTY) null else tmp1.toString()),
+                    "wallUri" to (if (tmp2 == Uri.EMPTY) null else tmp2.toString()),
+                    "birthday" to binding.tilBirthday.editText?.text.toString(),
+                    "address" to binding.tilAddress.editText?.text.toString(),
+                    "phone" to binding.tilPhone.editText?.text.toString(),
+                    "bio" to binding.tilBio.editText?.text.toString(),
+                    "gender" to gender
+                )
+                viewModel.startUploadWorker(data, requireContext())
+                viewModel.workStatus.observe(viewLifecycleOwner) {
+                    isUploading->binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
+                    binding.btnSaveProfile.isEnabled = !isUploading
                 }
             }
         }
@@ -190,54 +194,6 @@ class AccountDetailFragment : Fragment() {
             .withAspectRatio(if (isAvatar) 1f else 16f, if (isAvatar) 1f else 9f)
             .withMaxResultSize(1080, 1080)
         uCrop.start(requireContext(), this)
-    }
-
-    private fun saveProfile(db: FirebaseFirestore, auth: FirebaseAuth) {
-        val birthday = binding.tilBirthday.editText?.text.toString()
-        val address = binding.tilAddress.editText?.text.toString()
-        val phone = binding.tilPhone.editText?.text.toString()
-        val bio = binding.tilBio.editText?.text.toString()
-        val userId = auth.currentUser?.uid
-        if (userId != null) {
-            binding.btnSaveProfile.isEnabled=false
-            val userRef = db.collection("Users").document(userId)
-            userRef.get().addOnSuccessListener { document ->
-                val existingData = document.data ?: emptyMap()
-                val userUpdate = mutableMapOf<String, Any>()
-                if (!existingData.containsKey("address") || address.isNotEmpty()) {
-                    userUpdate["address"] = address
-                }
-                if (!existingData.containsKey("phonenumber") || phone.isNotEmpty()) {
-                    userUpdate["phonenumber"] = phone
-                }
-                if (!existingData.containsKey("bio") || bio.isNotEmpty()) {
-                    userUpdate["bio"] = bio
-                }
-                if (!existingData.containsKey("birthday") || birthday.isNotEmpty()) {
-                    userUpdate["birthday"] = birthday
-                }
-                if (tmp1!=Uri.EMPTY) {
-                    userUpdate["avatarurl"] = viewModel.avataruri.value.toString()
-                }
-                if (tmp2!=Uri.EMPTY) {
-                    userUpdate["wallurl"] = viewModel.walluri.value.toString()
-                }
-                if (!existingData.containsKey("gender") || gender.isNotEmpty()) {
-                    userUpdate["gender"] = gender
-                }
-                if (userUpdate.isNotEmpty()) {
-                    userRef.set(userUpdate, SetOptions.merge())
-                        .addOnSuccessListener {
-                            Toast.makeText(requireContext(), "Cập nhật tài khoản hoàn tất!", Toast.LENGTH_SHORT).show()
-                            parentFragmentManager.popBackStack()
-                        }
-                        .addOnFailureListener {
-                            Toast.makeText(requireContext(), "Cập nhật tài khoản thất bại!", Toast.LENGTH_SHORT).show()
-                            binding.btnSaveProfile.isEnabled=true
-                        }
-                }
-            }
-        }
     }
 
     private fun setupBirthdayPicker() {

@@ -70,4 +70,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation ("com.github.yalantis:ucrop:2.2.9-native")
+    implementation ("androidx.work:work-runtime-ktx:2.8.1")
 }
