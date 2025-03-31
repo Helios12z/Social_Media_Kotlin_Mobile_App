@@ -36,4 +36,10 @@
             android:defaultValue="" />
     </fragment>
 
+    <fragment android:id="@+id/navigation_search"
+        android:name="com.example.socialmediaproject.ui.search.SearchFragment"
+        android:label="Search"
+        tools:layout="@layout/fragment_search">
+    </fragment>
+
 </navigation>

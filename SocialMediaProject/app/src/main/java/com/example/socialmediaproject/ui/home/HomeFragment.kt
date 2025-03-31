@@ -1,7 +1,6 @@
 package com.example.socialmediaproject.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,9 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.adapter.FeedAdapter
-import com.example.socialmediaproject.PostViewModel
+import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
-import com.example.socialmediaproject.fragmentwithoutviewmodel.ViewingImageFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 

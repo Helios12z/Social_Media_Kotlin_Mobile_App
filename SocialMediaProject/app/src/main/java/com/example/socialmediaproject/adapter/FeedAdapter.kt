@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.socialmediaproject.PostViewModel
+import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
 import com.google.android.material.imageview.ShapeableImageView
 

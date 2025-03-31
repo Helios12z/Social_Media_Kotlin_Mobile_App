@@ -1,4 +1,4 @@
-package com.example.socialmediaproject
+package com.example.socialmediaproject.dataclass
 
 import java.text.SimpleDateFormat
 import java.util.Date

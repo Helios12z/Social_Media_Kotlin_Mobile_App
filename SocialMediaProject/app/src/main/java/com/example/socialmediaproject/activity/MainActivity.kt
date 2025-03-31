@@ -78,6 +78,12 @@ class MainActivity : AppCompatActivity() {
                     }
                     true
                 }
+                R.id.navigation_search->{
+                    if (!navController.popBackStack(R.id.navigation_search, false)) {
+                        navController.navigate(R.id.navigation_search)
+                    }
+                    true
+                }
                 else -> false
             }
         }
