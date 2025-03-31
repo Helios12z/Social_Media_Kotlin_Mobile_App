@@ -21,7 +21,7 @@
         android:label="Posting"
         tools:layout="@layout/fragment_posting"/>
 
-    <fragment android:id="@+id/navigation_account"
+    <fragment android:id="@+id/navigation_accountdetail"
         android:name="com.example.socialmediaproject.ui.accountdetail.AccountDetailFragment"
         android:label="Account"
         tools:layout="@layout/fragment_account_detail"/>
@@ -40,6 +40,14 @@
         android:name="com.example.socialmediaproject.ui.search.SearchFragment"
         android:label="Search"
         tools:layout="@layout/fragment_search">
+    </fragment>
+
+    <fragment android:id="@+id/navigation_account"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.ChoiceFragment"
+        android:label="Choice"
+        tools:layout="@layout/fragment_choice">
+            <action android:id="@+id/action_choiceFragment_to_accountDetailFragment"
+                    app:destination="@id/navigation_accountdetail"/>
     </fragment>
 
 </navigation>

@@ -91,23 +91,6 @@ class SearchFragment : Fragment() {
                 }
             }
         }
-
-        viewModel.incomingRequestCount.observe(viewLifecycleOwner) { count ->
-            if (count > 0) {
-                binding.textViewNotificationBadge.text = count.toString()
-                binding.textViewNotificationBadge.visibility = View.VISIBLE
-            } else {
-                binding.textViewNotificationBadge.visibility = View.GONE
-            }
-            if (count > 0) {
-                val intent = Intent(requireContext(), NotificationService::class.java).apply {
-                    action = NotificationService.ACTION.START.toString()
-                    putExtra("content", "Bạn có $count lời mời kết bạn mới.")
-                }
-                requireContext().startService(intent)
-            }
-        }
-
     }
 
     private fun setupSwipeRefresh() {

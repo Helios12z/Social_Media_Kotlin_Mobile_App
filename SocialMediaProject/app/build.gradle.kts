@@ -45,6 +45,8 @@ dependencies {
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.database)
     implementation(libs.core.ktx)
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.firebase.messaging)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation(libs.androidx.core.ktx)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
@@ -71,4 +73,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation ("com.github.yalantis:ucrop:2.2.9-native")
     implementation ("androidx.work:work-runtime-ktx:2.8.1")
+    implementation ("com.onesignal:OneSignal:5.0.0")
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 }

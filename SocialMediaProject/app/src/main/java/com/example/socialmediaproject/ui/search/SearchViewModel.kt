@@ -225,7 +225,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-
     private fun sendNotificationService(content: String) {
         val intent = Intent(context, NotificationService::class.java).apply {
             action = NotificationService.ACTION.START.toString()

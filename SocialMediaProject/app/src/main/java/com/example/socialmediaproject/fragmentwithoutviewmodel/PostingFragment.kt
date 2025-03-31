@@ -54,11 +54,6 @@ class PostingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ActivityCompat.requestPermissions(
-            requireActivity(),
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            0
-        )
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
         val userid = auth.currentUser?.uid
