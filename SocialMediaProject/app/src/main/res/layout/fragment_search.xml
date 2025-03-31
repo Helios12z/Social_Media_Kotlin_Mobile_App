@@ -68,8 +68,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:contentDescription="Mời bạn bè"
-        android:src="@drawable/plus"
+        android:contentDescription="Tìm kiếm"
+        android:src="@drawable/searchicon"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

@@ -1,14 +1,12 @@
 package com.example.socialmediaproject.ui.search
 
 import android.app.Application
-import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.FriendRecommendation
 import com.example.socialmediaproject.dataclass.FriendRequest
@@ -27,8 +25,8 @@ import java.util.Date
 
 class SearchViewModel(application: Application) : AndroidViewModel(application) {
     private val context=application.applicationContext
-    private lateinit var db: FirebaseFirestore
-    private lateinit var auth: FirebaseAuth
+    private val db: FirebaseFirestore=FirebaseFirestore.getInstance()
+    private val auth: FirebaseAuth=FirebaseAuth.getInstance()
     private val _recommendations= MutableStateFlow<List<FriendRecommendation>>(emptyList())
     val recommendations: StateFlow<List<FriendRecommendation>> = _recommendations
     private val _isLoading = MutableStateFlow(false)
@@ -40,11 +38,14 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val sentRequestsStatus = mutableMapOf<String, RequestStatus>()
     private val _friendRequestCount = MutableLiveData<Int>()
     val friendRequestCount: LiveData<Int> = _friendRequestCount
+    private var lastRequestCount=0
+
+    init {
+        listenForIncomingFriendRequests()
+    }
 
     fun fetchRecommendations() {
         viewModelScope.launch {
-            auth=FirebaseAuth.getInstance()
-            db=FirebaseFirestore.getInstance()
             _isLoading.value=true
             _errorMessage.value=null
             val currentUserId=auth.currentUser?.uid ?: return@launch
@@ -104,8 +105,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun fetchFriendRequest() {
         viewModelScope.launch {
-            db=FirebaseFirestore.getInstance()
-            auth=FirebaseAuth.getInstance()
             val userid=auth.currentUser?.uid ?: ""
             var requests: Int=0
             db.collection("friend_requests").whereEqualTo("receiverId", userid).get().addOnSuccessListener {
@@ -123,8 +122,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
     fun sendFriendRequest(recommendation: FriendRecommendation) {
         viewModelScope.launch {
-            auth=FirebaseAuth.getInstance()
-            db=FirebaseFirestore.getInstance()
             val senderId=auth.currentUser?.uid ?: return@launch
             val receiverId=recommendation.userId
             updateRecommendationStatus(receiverId, RequestStatus.SENDING)
@@ -167,22 +164,22 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun listenForIncomingFriendRequests() {
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
         val currentUserId = auth.currentUser?.uid ?: return
         db.collection("friend_requests")
         .whereEqualTo("receiverId", currentUserId)
         .whereEqualTo("status", "pending")
         .addSnapshotListener { snapshots, e ->
             if (e != null) {
-                _errorMessage.value = "Lỗi lắng nghe lời mời: ${e.localizedMessage}"
                 return@addSnapshotListener
             }
             val count = snapshots?.size() ?: 0
-            _incomingRequestCount.postValue(count)
-            if (count > 0) {
-                sendNotificationService("Bạn có ${count} lời mời kết bạn mới!")
+            if (count != lastRequestCount) {
+                _incomingRequestCount.postValue(count)
+                if (count > 0) {
+                    sendNotificationService("Bạn có ${count} lời mời kết bạn mới!")
+                }
             }
+            lastRequestCount = count
         }
     }
 
