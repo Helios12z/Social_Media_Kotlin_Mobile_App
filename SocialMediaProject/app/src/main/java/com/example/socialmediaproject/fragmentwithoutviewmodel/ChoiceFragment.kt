@@ -61,7 +61,7 @@ class ChoiceFragment : Fragment() {
     }
 
     private fun userLogOut() {
-        WorkManager.getInstance(requireContext()).cancelUniqueWork("FriendRequestWorker")
+        WorkManager.getInstance(requireContext()).cancelAllWorkByTag("FriendRequestWorker")
         FirebaseAuth.getInstance().signOut()
         val intent = Intent(requireContext(), LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

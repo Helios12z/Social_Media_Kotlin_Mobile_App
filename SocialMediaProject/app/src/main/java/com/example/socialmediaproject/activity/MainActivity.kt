@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -18,6 +19,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.socialmediaproject.service.PostingService
@@ -123,11 +125,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startFriendRequestWorker() {
-        val workRequest = PeriodicWorkRequestBuilder<FriendRequestWorker>(1, TimeUnit.MINUTES).build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "FriendRequestWorker",
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
+        val workRequest = OneTimeWorkRequestBuilder<FriendRequestWorker>().build()
+        WorkManager.getInstance(this).enqueue(workRequest)
     }
 }

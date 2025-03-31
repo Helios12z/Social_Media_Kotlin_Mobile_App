@@ -1,15 +1,20 @@
 package com.example.socialmediaproject.service
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import java.util.concurrent.TimeUnit
 
 class FriendRequestWorker(context: Context, params: WorkerParameters): CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         checkForFriendRequests()
+        scheduleNextWorker()
         return Result.success()
     }
 
@@ -29,5 +34,13 @@ class FriendRequestWorker(context: Context, params: WorkerParameters): Coroutine
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun scheduleNextWorker() {
+        val workRequest = OneTimeWorkRequestBuilder<FriendRequestWorker>()
+            .setInitialDelay(1, TimeUnit.MINUTES)
+            .addTag("FriendRequestWorker")
+            .build()
+        WorkManager.getInstance(applicationContext).enqueue(workRequest)
     }
 }
