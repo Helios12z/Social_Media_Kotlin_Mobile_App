@@ -129,13 +129,13 @@ class LoginActivity : AppCompatActivity() {
     private fun autoLogin(email: String, password: String) {
         firebaseauth=FirebaseAuth.getInstance()
         firebaseauth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                } else {
-                    sharedPreferences.edit().clear().apply()
-                }
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+            } else {
+                sharedPreferences.edit().clear().apply()
             }
+        }
     }
 }
