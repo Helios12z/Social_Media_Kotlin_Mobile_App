@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.navigation.fragment.findNavController
 import androidx.work.WorkManager
 import com.bumptech.glide.Glide
@@ -59,7 +60,14 @@ class ChoiceFragment : Fragment() {
                 navigateToAccountDetailFragment()
             }
             binding.cardLogout.setOnClickListener {
-                userLogOut(useremail)
+                val builder= AlertDialog.Builder(requireContext())
+                builder.setTitle("Xác nhận")
+                builder.setMessage("Bạn có muốn đăng xuất?")
+                builder.setPositiveButton("Có") { dialog, which ->
+                    userLogOut(useremail)
+                }
+                builder.setNegativeButton("Không") { dialog, which -> }
+                builder.show()
             }
         }
         .addOnFailureListener {

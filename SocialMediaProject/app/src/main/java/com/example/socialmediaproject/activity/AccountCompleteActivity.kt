@@ -188,9 +188,7 @@ class AccountCompleteActivity : AppCompatActivity() {
         builder.setPositiveButton("Có") { dialog, which ->
             finish()
         }
-        builder.setNegativeButton("Không") {
-                dialog, which ->
-        }
+        builder.setNegativeButton("Không") { dialog, which -> }
         builder.show()
     }
 
