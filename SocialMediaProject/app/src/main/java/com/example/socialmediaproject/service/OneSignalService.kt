@@ -33,15 +33,9 @@ fun sendPushNotification(userId: String, message: String) {
         includedExternalUserIds = listOf(userId),
         contents = NotificationContent(en=message, vie = message)
     )
-    Log.d("OneSignalSend", "Attempting to send notification. UserID: $userId, Payload: $payload")
     CoroutineScope(Dispatchers.IO).launch {
         try {
-            val response = service.sendNotification(payload)
-            if (response.isSuccessful) {
-                Log.d("OneSignalSend", "API call successful (Code: ${response.code()}). Body: ${response.body()?.string()}")
-            } else {
-                Log.e("OneSignalSend", "API call failed. Code: ${response.code()}. Error Body: ${response.errorBody()?.string()}")
-            }
+            service.sendNotification(payload)
         } catch (e: Exception) {
             Log.e("OneSignalSend_ERROR", "Network/Send Error: ${e.message}", e)
         }
