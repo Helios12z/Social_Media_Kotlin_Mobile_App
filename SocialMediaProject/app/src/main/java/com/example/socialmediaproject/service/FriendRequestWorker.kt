@@ -32,7 +32,7 @@ class FriendRequestWorker(context: Context, params: WorkerParameters): Coroutine
                 sendPushNotification(currentUserId, "Bạn có $count lời mời kết bạn mới!")
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e("ONE SIGNAL ERROR", e.message.toString())
         }
     }
 

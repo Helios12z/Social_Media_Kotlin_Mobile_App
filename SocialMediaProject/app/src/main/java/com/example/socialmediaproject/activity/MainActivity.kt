@@ -18,9 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.R
@@ -29,7 +27,7 @@ import com.example.socialmediaproject.service.FriendRequestWorker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
-import java.util.concurrent.TimeUnit
+import com.onesignal.OneSignal
 
 class MainActivity : AppCompatActivity() {
 
@@ -125,6 +123,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startFriendRequestWorker() {
+        auth=FirebaseAuth.getInstance()
+        val userid=auth.currentUser?.uid ?: ""
+        OneSignal.User.addAlias("external_id", userid)
         val workRequest = OneTimeWorkRequestBuilder<FriendRequestWorker>().build()
         WorkManager.getInstance(this).enqueue(workRequest)
     }
