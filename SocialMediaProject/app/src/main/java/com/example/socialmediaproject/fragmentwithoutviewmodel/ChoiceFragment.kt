@@ -18,6 +18,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class ChoiceFragment : Fragment() {
     private lateinit var binding: FragmentChoiceBinding
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
+    private lateinit var useremail: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,8 +32,8 @@ class ChoiceFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val db: FirebaseFirestore=FirebaseFirestore.getInstance()
-        val auth: FirebaseAuth = FirebaseAuth.getInstance()
+        db=FirebaseFirestore.getInstance()
+        auth = FirebaseAuth.getInstance()
         val userid=auth.currentUser?.uid ?: ""
         binding.choiceprogressbar.visibility=View.VISIBLE
         binding.tvUserName.visibility=View.INVISIBLE
@@ -41,6 +44,7 @@ class ChoiceFragment : Fragment() {
             binding.tvUserEmail.visibility=View.VISIBLE
             binding.tvUserName.text=result.getString("name")
             binding.tvUserEmail.text=result.getString("email")
+            useremail=result.getString("email").toString()
             if (result.getString("avatarurl")!=null || result.getString("avatarurl")!="") {
                 Glide.with(requireContext())
                     .load(result.getString("avatarurl"))
@@ -52,7 +56,7 @@ class ChoiceFragment : Fragment() {
                 navigateToAccountDetailFragment()
             }
             binding.cardLogout.setOnClickListener {
-                userLogOut()
+                userLogOut(useremail)
             }
         }
         .addOnFailureListener {
@@ -60,14 +64,23 @@ class ChoiceFragment : Fragment() {
         }
     }
 
-    private fun userLogOut() {
-        //implement delete Claims document function
+    private fun userLogOut(useremail: String) {
+        db=FirebaseFirestore.getInstance()
         WorkManager.getInstance(requireContext()).cancelAllWorkByTag("FriendRequestWorker")
-        FirebaseAuth.getInstance().signOut()
-        val intent = Intent(requireContext(), LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        requireActivity().finish()
+        db.collection("Claims").whereEqualTo("useremail", useremail).get().addOnSuccessListener {
+            documents->
+            for (document in documents) {
+                db.collection("Claims").document(document.id).delete()
+            }
+            auth.signOut()
+            val intent = Intent(requireContext(), LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            requireActivity().finish()
+        }
+        .addOnFailureListener {
+            Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun navigateToAccountDetailFragment() {

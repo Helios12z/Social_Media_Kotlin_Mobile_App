@@ -42,10 +42,10 @@ class LoginActivity : AppCompatActivity() {
             if (email.text.toString().isNotEmpty() && password.text.toString().isNotEmpty())
             {
                 loginbutton.isEnabled=false
-                loginbutton.setBackgroundColor(resources.getColor(R.color.gray))
                 db=FirebaseFirestore.getInstance()
                 db.collection("Claims").whereEqualTo("useremail", email.text.toString()).get().addOnSuccessListener {
-                    results->if (results!=null) {
+                    results->if (!results.isEmpty) {
+                        loginbutton.isEnabled=true
                         Toast.makeText(this, "Đăng xuất tài khoản trên thiết bị khác để đăng nhập!", Toast.LENGTH_SHORT).show()
                     }
                     else {
@@ -70,7 +70,6 @@ class LoginActivity : AppCompatActivity() {
                             {
                                 Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
                                 loginbutton.isEnabled=true
-                                loginbutton.setBackgroundColor(resources.getColor(R.color.purple_200))
                             }
                         }
                     }
