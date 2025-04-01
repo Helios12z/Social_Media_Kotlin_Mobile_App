@@ -61,6 +61,7 @@ class ChoiceFragment : Fragment() {
     }
 
     private fun userLogOut() {
+        //implement delete Claims document function
         WorkManager.getInstance(requireContext()).cancelAllWorkByTag("FriendRequestWorker")
         FirebaseAuth.getInstance().signOut()
         val intent = Intent(requireContext(), LoginActivity::class.java)

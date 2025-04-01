@@ -14,6 +14,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.socialmediaproject.R
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var title: TextView
@@ -21,6 +22,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var intent: Intent
     private lateinit var loginbutton: Button
     private lateinit var firebaseauth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,12 +42,22 @@ class LoginActivity : AppCompatActivity() {
             if (email.text.toString().isNotEmpty() && password.text.toString().isNotEmpty())
             {
                 loginbutton.isEnabled=false
-                firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
-                    .addOnCompleteListener() {
-                        task->
+                loginbutton.setBackgroundColor(resources.getColor(R.color.gray))
+                db=FirebaseFirestore.getInstance()
+                db.collection("Claims").whereEqualTo("useremail", email.text.toString()).get().addOnSuccessListener {
+                    results->if (results!=null) {
+                        Toast.makeText(this, "Đăng xuất tài khoản trên thiết bị khác để đăng nhập!", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                    firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
+                        .addOnCompleteListener() {
+                                task->
                             if (task.isSuccessful) {
                                 Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
                                 try {
+                                    db.collection("Claims").add(hashMapOf(
+                                        "useremail" to email.text.toString()
+                                    ))
                                     intent = Intent(this, MainActivity::class.java)
                                     startActivity(intent)
                                     finish()
@@ -56,10 +68,13 @@ class LoginActivity : AppCompatActivity() {
                             }
                             else
                             {
-                                Toast.makeText(this, "Tên đăng nhập hay mật khẩu không chính xác!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
                                 loginbutton.isEnabled=true
+                                loginbutton.setBackgroundColor(resources.getColor(R.color.purple_200))
                             }
+                        }
                     }
+                }
             }
             else {
                 Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
