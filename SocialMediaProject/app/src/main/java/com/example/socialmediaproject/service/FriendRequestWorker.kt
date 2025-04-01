@@ -25,11 +25,17 @@ class FriendRequestWorker(context: Context, params: WorkerParameters): Coroutine
             val snapshots = db.collection("friend_requests")
                 .whereEqualTo("receiverId", currentUserId)
                 .whereEqualTo("status", "pending")
+                .whereEqualTo("notified", false)
                 .get()
                 .await()
             val count = snapshots.size()
             if (count > 0) {
                 sendPushNotification(currentUserId, "Bạn có $count lời mời kết bạn mới!")
+                val batch = db.batch()
+                for (doc in snapshots.documents) {
+                    batch.update(doc.reference, "notified", true)
+                }
+                batch.commit().await()
             }
         } catch (e: Exception) {
             Log.e("ONE SIGNAL ERROR", e.message.toString())

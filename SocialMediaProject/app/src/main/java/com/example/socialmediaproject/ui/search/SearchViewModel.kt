@@ -3,6 +3,7 @@ package com.example.socialmediaproject.ui.search
 import android.app.Application
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -139,6 +140,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     senderId = senderId,
                     receiverId = receiverId,
                     status = "pending",
+                    notified = false,
                     timestamp = Date()
                 )
                 requestDocRef.set(newRequest).await()
@@ -168,6 +170,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         db.collection("friend_requests")
         .whereEqualTo("receiverId", currentUserId)
         .whereEqualTo("status", "pending")
+        .whereEqualTo("notified", false)
         .addSnapshotListener { snapshots, e ->
             if (e != null) {
                 return@addSnapshotListener
@@ -175,9 +178,12 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             val count = snapshots?.size() ?: 0
             if (count != lastRequestCount) {
                 _incomingRequestCount.postValue(count)
-                if (count > 0) {
-                    sendNotificationService("Bạn có ${count} lời mời kết bạn mới!")
+                if (count > 0) sendNotificationService("Bạn có ${count} lời mời kết bạn mới!")
+                val batch = db.batch()
+                snapshots?.documents?.forEach { doc ->
+                    batch.update(doc.reference, "notified", true)
                 }
+                batch.commit()
             }
             lastRequestCount = count
         }
@@ -200,7 +206,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     batch.update(friendRef, "friends", FieldValue.arrayUnion(receiverId))
                 }.await()
                 _incomingRequestCount.postValue((_incomingRequestCount.value ?: 0) - 1)
-                sendNotificationService("Đã chấp nhận lời mời kết bạn!")
+                Toast.makeText(context, "Đã chấp nhận lời mời kết bạn", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Log.e("ERROR ACCEPT FRIEND REQUEST", e.toString())
             }
