@@ -76,6 +76,7 @@ class FriendRecommendAdapter(private val onAddFriendClick: (FriendRecommendation
                 else -> {
                     buttonAddFriend.text = "Kết bạn"
                     buttonAddFriend.isEnabled = true
+                    buttonResend.visibility=View.GONE
                     buttonAddFriend.setBackgroundColor(ContextCompat.getColor(context, R.color.purple_200))
                     buttonAddFriend.setOnClickListener {
                         onAddFriendClick(friend)
