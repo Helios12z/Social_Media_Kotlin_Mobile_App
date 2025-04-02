@@ -247,6 +247,8 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 val requestDocRef = db.collection("friend_requests").document("${senderId}_${receiverId}")
                 val requestSnapshot = requestDocRef.get().await()
+                updateRecommendationStatus(receiverId, RequestStatus.NONE)
+                sentRequestsStatus[receiverId] = RequestStatus.NONE
                 if (!requestSnapshot.exists()) {
                     callback(false)
                     return@launch
