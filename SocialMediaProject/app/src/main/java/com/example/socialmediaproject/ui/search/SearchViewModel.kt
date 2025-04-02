@@ -29,7 +29,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val db: FirebaseFirestore=FirebaseFirestore.getInstance()
     private val auth: FirebaseAuth=FirebaseAuth.getInstance()
     private val _recommendations= MutableStateFlow<List<FriendRecommendation>>(emptyList())
+    private val _sentRequests=MutableStateFlow<List<FriendRecommendation>>(emptyList())
     val recommendations: StateFlow<List<FriendRecommendation>> = _recommendations
+    val sentRequests: StateFlow<List<FriendRecommendation>> = _sentRequests
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
     private val _errorMessage = MutableStateFlow<String?>(null)
@@ -253,6 +255,49 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 callback(true)
             } catch (e: Exception) {
                 callback(false)
+            }
+        }
+    }
+
+    fun fetchSentRequests() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            val currentUserId = auth.currentUser?.uid ?: return@launch
+            try {
+                val sentPendingRequests = db.collection("friend_requests")
+                    .whereEqualTo("senderId", currentUserId)
+                    .whereEqualTo("status", "pending")
+                    .get().await()
+                val sentPendingReceiverIds = sentPendingRequests.documents.mapNotNull { it.getString("receiverId") }
+                val sentRequestsUsers = mutableListOf<User>()
+                if (sentPendingReceiverIds.isNotEmpty()) {
+                    val usersSnapshot = db.collection("Users")
+                        .whereIn("userid", sentPendingReceiverIds)
+                        .get()
+                        .await()
+
+                    for (doc in usersSnapshot.documents) {
+                        val user = doc.toObject<User>()
+                        if (user != null) {
+                            sentRequestsUsers.add(user)
+                        }
+                    }
+                }
+
+                _sentRequests.value = sentRequestsUsers.map { user ->
+                    FriendRecommendation(
+                        userId = user.userid,
+                        name = user.name,
+                        avatarurl = user.avatarurl,
+                        mutualFriendsCount = 0,
+                        requestStatus = RequestStatus.SENT
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("ERROR FETCH SENT REQUESTS", e.toString())
+            } finally {
+                _isLoading.value = false
             }
         }
     }

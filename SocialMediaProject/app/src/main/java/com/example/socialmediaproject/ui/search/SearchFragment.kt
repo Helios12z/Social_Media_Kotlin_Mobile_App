@@ -16,6 +16,7 @@ import com.example.socialmediaproject.databinding.FragmentSearchBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModelProvider
+import com.example.socialmediaproject.adapter.SentRequestAdapter
 
 class SearchFragment : Fragment() {
     private val viewModel: SearchViewModel by viewModels {
@@ -27,6 +28,7 @@ class SearchFragment : Fragment() {
     }
     private lateinit var binding: FragmentSearchBinding
     private lateinit var friendRecommendAdapter: FriendRecommendAdapter
+    private lateinit var sentRequestAdapter: SentRequestAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,11 +46,22 @@ class SearchFragment : Fragment() {
             onResendClick = {
                 receiverId, callback -> viewModel.resendFriendRequest(receiverId, callback)
             })
+        sentRequestAdapter= SentRequestAdapter(
+            onResendClick = {
+                receiverId, callback -> viewModel.resendFriendRequest(receiverId, callback)
+            }
+        )
         binding.recyclerViewFriendRecommend.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = friendRecommendAdapter
         }
+        binding.recyclerViewSentRequest.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = sentRequestAdapter
+        }
         viewModel.fetchRecommendations()
+        viewModel.fetchSentRequests()
+
         setupRecyclerView()
         setupSwipeRefresh()
         observeViewModel()
@@ -57,6 +70,7 @@ class SearchFragment : Fragment() {
     private fun setupRecyclerView() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.fetchRecommendations()
+            viewModel.fetchSentRequests()
         }
     }
 
@@ -68,6 +82,12 @@ class SearchFragment : Fragment() {
                         friendRecommendAdapter.submitList(recommendations)
                         binding.textViewEmpty.visibility = if (recommendations.isEmpty() && !viewModel.isLoading.value) View.VISIBLE else View.GONE
                         binding.recyclerViewFriendRecommend.visibility = if (recommendations.isNotEmpty()) View.VISIBLE else View.GONE
+                    }
+                }
+                launch {
+                    viewModel.sentRequests.collect { sentRequests ->
+                        sentRequestAdapter.submitList(sentRequests)
+                        binding.recyclerViewSentRequest.visibility = if (sentRequests.isNotEmpty()) View.VISIBLE else View.GONE
                     }
                 }
                 launch {
@@ -97,6 +117,7 @@ class SearchFragment : Fragment() {
     private fun setupSwipeRefresh() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.fetchRecommendations()
+            viewModel.fetchSentRequests()
         }
     }
 }
