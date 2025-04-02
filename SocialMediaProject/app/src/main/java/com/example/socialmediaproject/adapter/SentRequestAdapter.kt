@@ -41,7 +41,7 @@ class SentRequestAdapter(private val onResendClick: (String, (Boolean)->Unit)->U
                 onResendClick(friend.userId) {
                     success->if (success) {
                         buttonResendRequest.visibility=View.GONE
-                        resendNotification.visibility=View.GONE
+                        resendNotification.visibility=View.VISIBLE
                     }
                 }
             }
