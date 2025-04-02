@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +16,8 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.RequestStatus
 import com.google.android.material.imageview.ShapeableImageView
 
-class FriendRecommendAdapter(private val onAddFriendClick: (FriendRecommendation) -> Unit) :
+class FriendRecommendAdapter(private val onAddFriendClick: (FriendRecommendation) -> Unit,
+                             private val onResendClick: (String, (Boolean)->Unit)->Unit) :
     ListAdapter<FriendRecommendation, FriendRecommendAdapter.ViewHolder>(FriendDiffCallback()) {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -23,9 +25,12 @@ class FriendRecommendAdapter(private val onAddFriendClick: (FriendRecommendation
         val textViewName: TextView = view.findViewById(R.id.textViewName)
         val textViewMutualFriends: TextView = view.findViewById(R.id.textViewMutualFriends)
         val buttonAddFriend: Button = view.findViewById(R.id.buttonAddFriend)
+        val buttonResend: Button = view.findViewById(R.id.buttonresend)
         private val context = view.context
 
-        fun bind(friend: FriendRecommendation, onAddFriendClick: (FriendRecommendation) -> Unit) {
+        fun bind(friend: FriendRecommendation,
+                 onAddFriendClick: (FriendRecommendation) -> Unit,
+                 onResendClick: (String, (Boolean)->Unit)->Unit) {
             textViewName.text = friend.name
             textViewMutualFriends.text = if (friend.mutualFriendsCount > 0) {
                 "${friend.mutualFriendsCount} bạn chung"
@@ -48,6 +53,17 @@ class FriendRecommendAdapter(private val onAddFriendClick: (FriendRecommendation
                 RequestStatus.SENT -> {
                     buttonAddFriend.text = "Đã gửi"
                     buttonAddFriend.isEnabled = false
+                    buttonResend.visibility=View.VISIBLE
+                    buttonResend.setOnClickListener {
+                        onResendClick(friend.userId) {
+                            success->if (success) {
+                            buttonResend.visibility = View.GONE
+                            buttonAddFriend.isEnabled = true
+                            buttonAddFriend.text = "Kết bạn"
+                            buttonAddFriend.setBackgroundColor(ContextCompat.getColor(context, R.color.purple_200))
+                            }
+                        }
+                    }
                     buttonAddFriend.setBackgroundColor(ContextCompat.getColor(context, R.color.gray))
                 }
                 RequestStatus.ERROR -> {
@@ -80,7 +96,7 @@ class FriendRecommendAdapter(private val onAddFriendClick: (FriendRecommendation
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val friend = getItem(position)
-        holder.bind(friend, onAddFriendClick)
+        holder.bind(friend, onAddFriendClick, onResendClick)
     }
 
     class FriendDiffCallback : DiffUtil.ItemCallback<FriendRecommendation>() {

@@ -238,4 +238,22 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         }
         ContextCompat.startForegroundService(context, intent)
     }
+
+    fun resendFriendRequest(receiverId: String, callback: (Boolean)->Unit) {
+        val senderId=auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            try {
+                val requestDocRef = db.collection("friend_requests").document("${senderId}_${receiverId}")
+                val requestSnapshot = requestDocRef.get().await()
+                if (!requestSnapshot.exists()) {
+                    callback(false)
+                    return@launch
+                }
+                requestDocRef.delete().await()
+                callback(true)
+            } catch (e: Exception) {
+                callback(false)
+            }
+        }
+    }
 }

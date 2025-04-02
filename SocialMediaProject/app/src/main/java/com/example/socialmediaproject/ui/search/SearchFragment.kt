@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.ui.search
 
-import android.content.Intent
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -17,7 +16,6 @@ import com.example.socialmediaproject.databinding.FragmentSearchBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModelProvider
-import com.example.socialmediaproject.service.NotificationService
 
 class SearchFragment : Fragment() {
     private val viewModel: SearchViewModel by viewModels {
@@ -40,9 +38,12 @@ class SearchFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        friendRecommendAdapter= FriendRecommendAdapter { friend->
-            viewModel.sendFriendRequest(friend)
-        }
+        friendRecommendAdapter= FriendRecommendAdapter(
+            onAddFriendClick = {
+                friend->viewModel.sendFriendRequest(friend) },
+            onResendClick = {
+                receiverId, callback -> viewModel.resendFriendRequest(receiverId, callback)
+            })
         binding.recyclerViewFriendRecommend.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = friendRecommendAdapter
