@@ -30,8 +30,10 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val auth: FirebaseAuth=FirebaseAuth.getInstance()
     private val _recommendations= MutableStateFlow<List<FriendRecommendation>>(emptyList())
     private val _sentRequests=MutableStateFlow<List<FriendRecommendation>>(emptyList())
+    private val _receivedRequests= MutableStateFlow<List<FriendRecommendation>>(emptyList())
     val recommendations: StateFlow<List<FriendRecommendation>> = _recommendations
     val sentRequests: StateFlow<List<FriendRecommendation>> = _sentRequests
+    val receivedRequests: StateFlow<List<FriendRecommendation>> = _receivedRequests
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
     private val _errorMessage = MutableStateFlow<String?>(null)
@@ -191,7 +193,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun acceptFriendRequest(senderId: String) {
+    fun acceptFriendRequest(senderId: String, callback: (Boolean) -> Unit) {
         val receiverId = auth.currentUser?.uid ?: return
         viewModelScope.launch {
             try {
@@ -200,35 +202,41 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 val friendRef = db.collection("Users").document(senderId)
                 val requestSnapshot = requestDocRef.get().await()
                 if (!requestSnapshot.exists()) {
+                    callback(false)
                     return@launch
                 }
+                updateRecommendationStatus(receiverId, RequestStatus.NONE)
+                sentRequestsStatus[receiverId] = RequestStatus.NONE
                 db.runBatch { batch ->
                     batch.update(requestDocRef, "status", "accepted")
                     batch.update(userRef, "friends", FieldValue.arrayUnion(senderId))
                     batch.update(friendRef, "friends", FieldValue.arrayUnion(receiverId))
                 }.await()
                 _incomingRequestCount.postValue((_incomingRequestCount.value ?: 0) - 1)
-                Toast.makeText(context, "Đã chấp nhận lời mời kết bạn", Toast.LENGTH_SHORT).show()
+                callback(true)
             } catch (e: Exception) {
-                Log.e("ERROR ACCEPT FRIEND REQUEST", e.toString())
+                callback(false)
             }
         }
     }
 
-    fun rejectFriendRequest(senderId: String) {
+    fun rejectFriendRequest(senderId: String, callback: (Boolean) -> Unit) {
         val receiverId = auth.currentUser?.uid ?: return
         viewModelScope.launch {
             try {
                 val requestDocRef = db.collection("friend_requests").document("${senderId}_${receiverId}")
                 val requestSnapshot = requestDocRef.get().await()
                 if (!requestSnapshot.exists()) {
+                    callback(false)
                     return@launch
                 }
+                updateRecommendationStatus(receiverId, RequestStatus.NONE)
+                sentRequestsStatus[receiverId] = RequestStatus.NONE
                 requestDocRef.delete().await()
                 _incomingRequestCount.postValue((_incomingRequestCount.value ?: 0) - 1)
-                sendNotificationService("Đã từ chối lời mời kết bạn")
+                callback(true)
             } catch (e: Exception) {
-                Log.e("ERROR REJECT FRIEND REQUEST", e.toString())
+                callback(false)
             }
         }
     }
@@ -303,4 +311,50 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
+
+    fun fetchReceivedFriendRequests() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            val currentUserId = auth.currentUser?.uid ?: return@launch
+            try {
+                val receivedPendingRequests = db.collection("friend_requests")
+                    .whereEqualTo("receiverId", currentUserId)
+                    .whereEqualTo("status", "pending")
+                    .get().await()
+                val receivedPendingSenderIds = receivedPendingRequests.documents.mapNotNull { it.getString("senderId") }
+                val receivedRequestsUsers = mutableListOf<User>()
+                if (receivedPendingSenderIds.isNotEmpty()) {
+                    val usersSnapshot = db.collection("Users")
+                        .whereIn("userid", receivedPendingSenderIds)
+                        .get()
+                        .await()
+                    for (doc in usersSnapshot.documents) {
+                        val user = doc.toObject(User::class.java)
+                        if (user != null) {
+                            receivedRequestsUsers.add(user)
+                        } else {
+                            Log.w("FETCH_RECEIVED", "Failed to parse user document: ${doc.id}")
+                        }
+                    }
+                }
+                _receivedRequests.value = receivedRequestsUsers.map { user ->
+                    FriendRecommendation(
+                        userId = user.userid,
+                        name = user.name,
+                        avatarurl = user.avatarurl,
+                        mutualFriendsCount = 0,
+                        requestStatus = RequestStatus.SENT
+                    )
+                }
+                Log.d("FETCH_RECEIVED", "Fetched ${receivedRequestsUsers.size} received requests.")
+            } catch (e: Exception) {
+                Log.e("FETCH_RECEIVED_ERROR", "Error fetching received friend requests", e)
+                _errorMessage.value = "Failed to load received requests: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
 }

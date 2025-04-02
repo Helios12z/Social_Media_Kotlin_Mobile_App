@@ -16,6 +16,7 @@ import com.example.socialmediaproject.databinding.FragmentSearchBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModelProvider
+import com.example.socialmediaproject.adapter.ReceivedFriendRequestAdapter
 import com.example.socialmediaproject.adapter.SentRequestAdapter
 
 class SearchFragment : Fragment() {
@@ -29,6 +30,7 @@ class SearchFragment : Fragment() {
     private lateinit var binding: FragmentSearchBinding
     private lateinit var friendRecommendAdapter: FriendRecommendAdapter
     private lateinit var sentRequestAdapter: SentRequestAdapter
+    private lateinit var receivedFriendRequestAdapter: ReceivedFriendRequestAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,6 +53,14 @@ class SearchFragment : Fragment() {
                 receiverId, callback -> viewModel.resendFriendRequest(receiverId, callback)
             }
         )
+        receivedFriendRequestAdapter= ReceivedFriendRequestAdapter(
+            onRejectClick = {
+                receiverId, callback -> viewModel.rejectFriendRequest(receiverId, callback)
+            },
+            onAcceptClick = {
+                receiverId, callback -> viewModel.acceptFriendRequest(receiverId, callback)
+            }
+        )
         binding.recyclerViewFriendRecommend.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = friendRecommendAdapter
@@ -59,9 +69,13 @@ class SearchFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = sentRequestAdapter
         }
+        binding.recyclerViewInvitation.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = receivedFriendRequestAdapter
+        }
         viewModel.fetchRecommendations()
         viewModel.fetchSentRequests()
-
+        viewModel.fetchReceivedFriendRequests()
         setupRecyclerView()
         setupSwipeRefresh()
         observeViewModel()
@@ -71,6 +85,7 @@ class SearchFragment : Fragment() {
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.fetchRecommendations()
             viewModel.fetchSentRequests()
+            viewModel.fetchReceivedFriendRequests()
         }
     }
 
@@ -88,6 +103,12 @@ class SearchFragment : Fragment() {
                     viewModel.sentRequests.collect { sentRequests ->
                         sentRequestAdapter.submitList(sentRequests)
                         binding.recyclerViewSentRequest.visibility = if (sentRequests.isNotEmpty()) View.VISIBLE else View.GONE
+                    }
+                }
+                launch {
+                    viewModel.receivedRequests.collect { receivedRequests->
+                        receivedFriendRequestAdapter.submitList(receivedRequests)
+                        binding.recyclerViewInvitation.visibility = if (receivedRequests.isNotEmpty()) View.VISIBLE else View.GONE
                     }
                 }
                 launch {
