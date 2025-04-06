@@ -48,6 +48,13 @@
         tools:layout="@layout/fragment_choice">
             <action android:id="@+id/action_choiceFragment_to_accountDetailFragment"
                     app:destination="@id/navigation_accountdetail"/>
+            <action android:id="@+id/action_choiceFragment_to_mainPageFragment"
+                    app:destination="@id/navigation_mainpage"/>
     </fragment>
+
+    <fragment android:id="@+id/navigation_mainpage"
+        android:name="com.example.socialmediaproject.ui.mainpage.MainPageFragment"
+        android:label="MainPage"
+        tools:layout="@layout/fragment_main_page"/>
 
 </navigation>

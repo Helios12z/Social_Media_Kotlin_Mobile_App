@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.activity.LoginActivity
 import com.example.socialmediaproject.databinding.FragmentChoiceBinding
+import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -68,6 +69,13 @@ class ChoiceFragment : Fragment() {
                 }
                 builder.setNegativeButton("Không") { dialog, which -> }
                 builder.show()
+            }
+            binding.cardAccountHome.setOnClickListener {
+                val gotofragment=MainPageFragment()
+                val bundle=Bundle()
+                bundle.putString("wall_user_id", userid)
+                gotofragment.arguments=bundle
+                findNavController().navigate(R.id.action_choiceFragment_to_mainPageFragment, bundle)
             }
         }
         .addOnFailureListener {

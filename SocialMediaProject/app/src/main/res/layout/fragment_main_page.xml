@@ -18,6 +18,7 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <LinearLayout
+                android:id="@+id/wall_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
@@ -141,7 +142,7 @@
             </LinearLayout>
 
             <Button
-                android:id="@+id/profile_action_button"
+                android:id="@+id/button_add_friend"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Kết bạn"
@@ -153,10 +154,24 @@
                 android:elevation="2dp"/>
 
             <Button
-                android:id="@+id/button_chatting"
+                android:id="@+id/button_unfriend"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Kết bạn"
+                android:text="Hủy kết bạn"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:background="@drawable/button_background"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                android:elevation="2dp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/button_chat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nhắn tin"
+                android:layout_marginTop="10dp"
                 android:textAllCaps="false"
                 android:textSize="16sp"
                 android:background="@drawable/button_background"
