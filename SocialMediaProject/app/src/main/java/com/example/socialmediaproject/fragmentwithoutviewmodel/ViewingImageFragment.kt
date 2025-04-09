@@ -36,6 +36,7 @@ class ViewingImageFragment : Fragment() {
         }
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
         return view
     }
 
@@ -53,5 +54,6 @@ class ViewingImageFragment : Fragment() {
         super.onDestroyView()
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(0f).setDuration(200).start()
+        bottomnavbar.visibility=View.VISIBLE
     }
 }
