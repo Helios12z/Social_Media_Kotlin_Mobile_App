@@ -49,22 +49,21 @@ class MainPageFragment : Fragment() {
                 }
                 else {
                     db.collection("Users").document(currentUserId).get().addOnSuccessListener {
-                            result->if (result.exists()) {
-                            val friends=result.get("friends") as? List<String>
+                            newresult->if (newresult.exists()) {
+                            val friends=newresult.get("friends") as? List<String>
                             if (friends?.contains(wallUserId) == true) {
                                 binding.buttonAddFriend.visibility = View.GONE
                                 binding.buttonUnfriend.visibility = View.VISIBLE
                                 binding.buttonChat.visibility = View.VISIBLE
                             }
-                            binding.profileFollowersCount.text=friends?.size.toString()
-                            var postcount=0
-                            db.collection("Posts").whereEqualTo("userid", currentUserId).get().addOnSuccessListener {
-                                results->if (results!=null) {
-                                    postcount=results.size()
-                                }
-                                binding.profilePostsCount.text=postcount.toString()
-                            }
                         }
+                    }
+                }
+                val friendlist=result.get("friends") as? List<String> ?: emptyList()
+                binding.profileFollowersCount.text=friendlist.size.toString()
+                db.collection("Posts").whereEqualTo("userid", wallUserId).get().addOnSuccessListener {
+                    listitem->if (listitem!=null) {
+                        binding.profilePostsCount.text=listitem.size().toString()
                     }
                 }
                 binding.progressBar.visibility = View.GONE
