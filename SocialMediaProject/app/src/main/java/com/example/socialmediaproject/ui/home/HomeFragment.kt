@@ -16,6 +16,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
+import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -101,11 +102,12 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onUserClicked(position: Int) {
-        Toast.makeText(
-            requireContext(),
-            "Xem trang cá nhân của: ${postList[position].userName}",
-            Toast.LENGTH_SHORT
-        ).show()
+        val post=homeviewmodel.postlist.value?.get(position)?:return
+        val goToFragment=MainPageFragment()
+        val bundle=Bundle()
+        bundle.putString("wall_user_id", post.userId)
+        goToFragment.arguments=bundle
+        findNavController().navigate(R.id.action_homeFragment_to_mainPageFragment, bundle)
     }
 
     override fun onMoreOptionsClicked(position: Int, anchorView: View) {

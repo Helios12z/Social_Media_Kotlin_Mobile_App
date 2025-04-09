@@ -71,11 +71,12 @@
 
             <TextView
                 android:id="@+id/profile_bio"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="This is my bio. I love coding and building cool apps!"
+                android:text="Bio"
                 android:textSize="16sp"
                 android:textColor="#333333"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="20dp"/>
 
             <LinearLayout

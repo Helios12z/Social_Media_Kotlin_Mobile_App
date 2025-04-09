@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -23,6 +24,9 @@ class MainPageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding=FragmentMainPageBinding.inflate(inflater, container, false)
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
         return binding.root
     }
 
@@ -69,5 +73,12 @@ class MainPageFragment : Fragment() {
                 binding.progressBar.visibility = View.GONE
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(0f).setDuration(200).start()
+        bottomnavbar.visibility=View.VISIBLE
     }
 }
