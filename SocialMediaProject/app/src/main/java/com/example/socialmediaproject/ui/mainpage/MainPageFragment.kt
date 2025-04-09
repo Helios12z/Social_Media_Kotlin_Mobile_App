@@ -37,10 +37,11 @@ class MainPageFragment : Fragment() {
                     .error(R.drawable.avataricon)
                     .into(binding.profileAvatar)
                 binding.profileUsername.text = result.getString("name")
-                binding.profileBio.text = result.getString("bio")
+                if (result.getString("bio")=="") binding.profileBio.visibility=View.GONE
+                else binding.profileBio.text = result.getString("bio")
                 Glide.with(requireContext()).load(result.getString("wallurl"))
-                    .placeholder(R.drawable.profile_background_gradient)
-                    .error(R.drawable.profile_background_gradient)
+                    .placeholder(R.color.white)
+                    .error(R.color.white)
                     .into(binding.wallImage)
                 val currentUserId=auth.currentUser?.uid ?: ""
                 if (currentUserId==wallUserId) {
@@ -54,6 +55,14 @@ class MainPageFragment : Fragment() {
                                 binding.buttonAddFriend.visibility = View.GONE
                                 binding.buttonUnfriend.visibility = View.VISIBLE
                                 binding.buttonChat.visibility = View.VISIBLE
+                            }
+                            binding.profileFollowersCount.text=friends?.size.toString()
+                            var postcount=0
+                            db.collection("Posts").whereEqualTo("userid", currentUserId).get().addOnSuccessListener {
+                                results->if (results!=null) {
+                                    postcount=results.size()
+                                }
+                                binding.profilePostsCount.text=postcount.toString()
                             }
                         }
                     }
