@@ -16,7 +16,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 
-class MainPageViewModel() : ViewModel() {
+class MainPageViewModel : ViewModel() {
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
