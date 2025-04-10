@@ -65,7 +65,7 @@ class ChoiceFragment : Fragment() {
                 builder.setTitle("Xác nhận")
                 builder.setMessage("Bạn có muốn đăng xuất?")
                 builder.setPositiveButton("Có") { dialog, which ->
-                    userLogOut(useremail)
+                    userLogOut()
                 }
                 builder.setNegativeButton("Không") { dialog, which -> }
                 builder.show()
@@ -83,7 +83,7 @@ class ChoiceFragment : Fragment() {
         }
     }
 
-    private fun userLogOut(useremail: String) {
+    private fun userLogOut() {
         db=FirebaseFirestore.getInstance()
         WorkManager.getInstance(requireContext()).cancelAllWorkByTag("FriendRequestWorker")
         auth.signOut()
