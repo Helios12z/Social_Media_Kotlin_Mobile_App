@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.activity.OnBackPressedCallback
+import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.google.android.material.bottomnavigation.BottomNavigationView

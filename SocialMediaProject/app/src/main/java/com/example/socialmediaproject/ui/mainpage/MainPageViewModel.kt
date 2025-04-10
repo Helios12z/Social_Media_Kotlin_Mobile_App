@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.socialmediaproject.dataclass.PostViewModel
+import com.example.socialmediaproject.dataclass.UserMainPageInfo
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Firebase
@@ -27,6 +28,40 @@ class MainPageViewModel : ViewModel() {
 
     private val _isloading= MutableLiveData<Boolean>()
     val isloading: LiveData<Boolean> = _isloading
+
+    val userInfo = MutableLiveData<UserMainPageInfo>()
+    val isFriend = MutableLiveData<Boolean>()
+    val isCurrentUser = MutableLiveData<Boolean>()
+    val followersCount = MutableLiveData<Int>()
+    val postsCount = MutableLiveData<Int>()
+
+    fun loadUserData(wallUserId: String) {
+        val currentUserId = auth.currentUser?.uid ?: ""
+        db.collection("Users").document(wallUserId).get().addOnSuccessListener { result ->
+            if (result.exists()) {
+                val avatarUrl = result.getString("avatarurl") ?: ""
+                val name = result.getString("name") ?: ""
+                val bio = result.getString("bio") ?: ""
+                val wallUrl = result.getString("wallurl") ?: ""
+                userInfo.value = UserMainPageInfo(avatarUrl, name, bio, wallUrl)
+                isCurrentUser.value = (currentUserId == wallUserId)
+                val friendList = result.get("friends") as? List<String> ?: emptyList()
+                followersCount.value = friendList.size
+                db.collection("Posts").whereEqualTo("userid", wallUserId)
+                    .get().addOnSuccessListener { posts ->
+                        postsCount.value = posts.size()
+                    }
+                if (currentUserId != wallUserId) {
+                    db.collection("Users").document(currentUserId).get().addOnSuccessListener { currentUserDoc ->
+                        if (currentUserDoc.exists()) {
+                            val currentUserFriends = currentUserDoc.get("friends") as? List<String>
+                            isFriend.value = currentUserFriends?.contains(wallUserId) == true
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     fun loadPosts() {
         _isloading.value=true

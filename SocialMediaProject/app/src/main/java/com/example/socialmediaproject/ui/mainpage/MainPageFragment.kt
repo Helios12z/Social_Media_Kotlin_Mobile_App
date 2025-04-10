@@ -1,8 +1,6 @@
 package com.example.socialmediaproject.ui.mainpage
 
-import androidx.fragment.app.viewModels
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.os.bundleOf
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -24,7 +23,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
-    private val viewModel: MainPageViewModel by viewModels()
+    private lateinit var viewModel: MainPageViewModel
     private lateinit var binding: FragmentMainPageBinding
     private var auth: FirebaseAuth = FirebaseAuth.getInstance()
     private var db: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -39,6 +38,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         savedInstanceState: Bundle?
     ): View {
         binding=FragmentMainPageBinding.inflate(inflater, container, false)
+        viewModel=ViewModelProvider(requireActivity())[MainPageViewModel::class.java]
         wallUserId = arguments?.getString("wall_user_id") ?: ""
         viewModel.wallUserId=wallUserId
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
@@ -54,45 +54,52 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //progress bar here
-        db.collection("Users").document(wallUserId).get().addOnSuccessListener {
-            result->if (result.exists()) {
-                Glide.with(requireContext()).load(result.getString("avatarurl"))
-                    .placeholder(R.drawable.avataricon)
-                    .error(R.drawable.avataricon)
-                    .into(binding.profileAvatar)
-                binding.profileUsername.text = result.getString("name")
-                if (result.getString("bio")=="") binding.profileBio.visibility=View.GONE
-                else binding.profileBio.text = result.getString("bio")
-                Glide.with(requireContext()).load(result.getString("wallurl"))
-                    .placeholder(R.color.white)
-                    .error(R.color.white)
-                    .into(binding.wallImage)
-                val currentUserId=auth.currentUser?.uid ?: ""
-                if (currentUserId==wallUserId) {
-                    binding.buttonAddFriend.visibility=View.GONE
-                }
-                else {
-                    db.collection("Users").document(currentUserId).get().addOnSuccessListener {
-                            newresult->if (newresult.exists()) {
-                            val friends=newresult.get("friends") as? List<String>
-                            if (friends?.contains(wallUserId) == true) {
-                                binding.buttonAddFriend.visibility = View.GONE
-                                binding.buttonUnfriend.visibility = View.VISIBLE
-                                binding.buttonChat.visibility = View.VISIBLE
-                            }
-                        }
-                    }
-                }
-                val friendlist=result.get("friends") as? List<String> ?: emptyList()
-                binding.profileFollowersCount.text=friendlist.size.toString()
-                db.collection("Posts").whereEqualTo("userid", wallUserId).get().addOnSuccessListener { listitem ->
-                    if (listitem != null) {
-                        binding.profilePostsCount.text = listitem.size().toString()
-                    }
-                }
-                //progress bar here
+        viewModel.loadUserData(wallUserId)
+        viewModel.userInfo.observe(viewLifecycleOwner) { user ->
+            Glide.with(requireContext()).load(user.avatarUrl)
+                .placeholder(R.drawable.avataricon)
+                .error(R.drawable.avataricon)
+                .into(binding.profileAvatar)
+            binding.profileUsername.text = user.name
+
+            if (user.bio.isEmpty()) {
+                binding.profileBio.visibility = View.GONE
+            } else {
+                binding.profileBio.visibility = View.VISIBLE
+                binding.profileBio.text = user.bio
             }
+            Glide.with(requireContext()).load(user.wallUrl)
+                .placeholder(R.color.white)
+                .error(R.color.white)
+                .into(binding.wallImage)
+            binding.profileAvatar.setOnClickListener {
+                if (user.avatarUrl.isNotEmpty()) {
+                    val bundle = bundleOf("IMAGE_URL" to user.avatarUrl)
+                    findNavController().navigate(R.id.viewingimagefragment, bundle)
+                }
+            }
+            binding.wallImage.setOnClickListener {
+                if (user.wallUrl.isNotEmpty()) {
+                    val bundle = bundleOf("IMAGE_URL" to user.wallUrl)
+                    findNavController().navigate(R.id.viewingimagefragment, bundle)
+                }
+            }
+        }
+        viewModel.isCurrentUser.observe(viewLifecycleOwner) { isCurrent ->
+            binding.buttonAddFriend.visibility = if (isCurrent) View.GONE else View.VISIBLE
+        }
+        viewModel.isFriend.observe(viewLifecycleOwner) { isFriend ->
+            if (isFriend) {
+                binding.buttonAddFriend.visibility = View.GONE
+                binding.buttonUnfriend.visibility = View.VISIBLE
+                binding.buttonChat.visibility = View.VISIBLE
+            }
+        }
+        viewModel.followersCount.observe(viewLifecycleOwner) {
+            binding.profileFollowersCount.text = it.toString()
+        }
+        viewModel.postsCount.observe(viewLifecycleOwner) {
+            binding.profilePostsCount.text = it.toString()
         }
     }
 
@@ -202,5 +209,12 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             val bundle = bundleOf("IMAGE_URL" to imageurl)
             findNavController().navigate(R.id.viewingimagefragment, bundle)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
     }
 }
