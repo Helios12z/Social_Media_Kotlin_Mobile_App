@@ -16,11 +16,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 
-class MainPageViewModel : ViewModel() {
+class MainPageViewModel() : ViewModel() {
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
-    var wallUserId: String=""
+    var wallUserId = ""
 
     private val _postlist=MutableLiveData<List<PostViewModel>>()
     val postlist: LiveData<List<PostViewModel>> = _postlist
@@ -28,11 +28,7 @@ class MainPageViewModel : ViewModel() {
     private val _isloading= MutableLiveData<Boolean>()
     val isloading: LiveData<Boolean> = _isloading
 
-    init {
-        loadPosts()
-    }
-
-    private fun loadPosts() {
+    fun loadPosts() {
         _isloading.value=true
         auth = FirebaseAuth.getInstance()
         db=FirebaseFirestore.getInstance()
@@ -45,14 +41,15 @@ class MainPageViewModel : ViewModel() {
             .addOnSuccessListener { documents ->
                 val finalPostList = mutableListOf<PostViewModel>()
                 val tasks = mutableListOf<Task<*>>()
+                Log.d("NUMBER OF POSTS GOT: ", documents.size().toString())
                 for (doc in documents) {
                     val userid = doc.getString("userid") ?: ""
                     val userTask = db.collection("Users").document(userid).get()
                     val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
                     val likesTask = db.collection("Likes")
-                        .whereEqualTo("userid", currentUserId)
-                        .whereEqualTo("postid", doc.id)
-                        .get()
+                    .whereEqualTo("userid", currentUserId)
+                    .whereEqualTo("postid", doc.id)
+                    .get()
                     tasks.add(userTask)
                     tasks.add(postStatsTask)
                     tasks.add(likesTask)
@@ -153,7 +150,7 @@ class MainPageViewModel : ViewModel() {
                                 _isloading.value=false
                             }
                         }
-                        .addOnFailureListener {
+                        .addOnFailureListener() {
                             Log.e("LOI LAY DATABASE: ", it.toString())
                         }
                     }

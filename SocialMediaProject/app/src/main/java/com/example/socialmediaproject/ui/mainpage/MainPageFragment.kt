@@ -2,6 +2,7 @@ package com.example.socialmediaproject.ui.mainpage
 
 import androidx.fragment.app.viewModels
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -31,27 +32,28 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var feedAdapter: FeedAdapter
     private val postList = mutableListOf<PostViewModel>()
+    private var wallUserId =  ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding=FragmentMainPageBinding.inflate(inflater, container, false)
+        wallUserId = arguments?.getString("wall_user_id") ?: ""
+        viewModel.wallUserId=wallUserId
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
-        val view=inflater.inflate(R.layout.fragment_main_page, container, false)
-        initViews(view)
+        initViews(binding.root)
         setupRecyclerView()
         setupSwipeRefresh()
         observeViewModel()
+        viewModel.loadPosts()
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val wallUserId=arguments?.getString("wall_user_id") ?: ""
-        viewModel.wallUserId=wallUserId
         binding.progressBar.visibility=View.VISIBLE
         db.collection("Users").document(wallUserId).get().addOnSuccessListener {
             result->if (result.exists()) {
