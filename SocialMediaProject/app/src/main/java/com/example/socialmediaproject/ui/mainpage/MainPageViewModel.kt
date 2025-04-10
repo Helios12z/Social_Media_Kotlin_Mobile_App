@@ -223,7 +223,7 @@ class MainPageViewModel : ViewModel() {
         loadPosts()
     }
 
-    public fun toggleLike(post: PostViewModel, position: Int) {
+    fun toggleLike(post: PostViewModel, position: Int) {
         auth=FirebaseAuth.getInstance()
         db=FirebaseFirestore.getInstance()
         val userId = auth.currentUser?.uid ?: return

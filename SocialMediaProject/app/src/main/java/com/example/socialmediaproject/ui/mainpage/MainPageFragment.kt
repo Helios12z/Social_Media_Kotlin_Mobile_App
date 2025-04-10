@@ -54,7 +54,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.progressBar.visibility=View.VISIBLE
+        //progress bar here
         db.collection("Users").document(wallUserId).get().addOnSuccessListener {
             result->if (result.exists()) {
                 Glide.with(requireContext()).load(result.getString("avatarurl"))
@@ -91,7 +91,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                         binding.profilePostsCount.text = listitem.size().toString()
                     }
                 }
-                binding.progressBar.visibility = View.GONE
+                //progress bar here
             }
         }
     }
