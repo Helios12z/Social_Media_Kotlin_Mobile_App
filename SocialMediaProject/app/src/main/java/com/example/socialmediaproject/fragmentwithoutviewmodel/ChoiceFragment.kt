@@ -86,26 +86,13 @@ class ChoiceFragment : Fragment() {
     private fun userLogOut(useremail: String) {
         db=FirebaseFirestore.getInstance()
         WorkManager.getInstance(requireContext()).cancelAllWorkByTag("FriendRequestWorker")
-        db.collection("Claims").whereEqualTo("useremail", useremail).get().addOnSuccessListener {
-            documents->
-            for (document in documents) {
-                db.collection("Claims").document(document.id).delete().addOnSuccessListener {
-                    auth.signOut()
-                    sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
-                    sharedPreferences.edit().clear().apply()
-                    val intent = Intent(requireContext(), LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    requireActivity().finish()
-                }
-                .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-        .addOnFailureListener {
-            Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show()
-        }
+        auth.signOut()
+        sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
+        sharedPreferences.edit().clear().apply()
+        val intent = Intent(requireContext(), LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     private fun navigateToAccountDetailFragment() {

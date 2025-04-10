@@ -41,7 +41,6 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         setupRecyclerView()
         setupSwipeRefresh()
         observeViewModel()
-
         return view
     }
 

@@ -56,47 +56,27 @@ class LoginActivity : AppCompatActivity() {
             {
                 loginbutton.isEnabled=false
                 db=FirebaseFirestore.getInstance()
-                db.collection("Claims").whereEqualTo("useremail", email.text.toString()).get().addOnSuccessListener {
-                    results->if (!results.isEmpty) {
-                        loginbutton.isEnabled=true
-                        Toast.makeText(this, "Đăng xuất tài khoản trên thiết bị khác để đăng nhập!", Toast.LENGTH_SHORT).show()
-                    }
-                    else {
-                    firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
-                        .addOnCompleteListener() {
-                            task-> if (task.isSuccessful) {
-                                Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
-                                try {
-                                    db.collection("Claims").add(hashMapOf("useremail" to email.text.toString()
-                                    )).addOnSuccessListener {
-                                        if (rememberme.isChecked) {
-                                            sharedPreferences.edit()
-                                                .putBoolean("rememberMe", true)
-                                                .putString("email", email.text.toString())
-                                                .putString("password", password.text.toString())
-                                                .apply()
-                                        } else {
-                                            sharedPreferences.edit().clear().apply()
-                                        }
-                                        intent = Intent(this, MainActivity::class.java)
-                                        startActivity(intent)
-                                        finish()
-                                    }
-                                    .addOnFailureListener {
-                                        Toast.makeText(this, "Lỗi khi đăng nhập!", Toast.LENGTH_SHORT).show()
-                                        loginbutton.isEnabled=true
-                                    }
-                                }
-                                catch(err: Exception) {
-                                    Log.e("LoginError", "Lỗi khi chuyển sang MainActivity: ${err.message}")
-                                }
-                            }
-                            else
-                            {
-                                Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
-                                loginbutton.isEnabled=true
-                            }
+                firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
+                .addOnCompleteListener() {
+                    task-> if (task.isSuccessful) {
+                        Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                        if (rememberme.isChecked) {
+                            sharedPreferences.edit()
+                            .putBoolean("rememberMe", true)
+                            .putString("email", email.text.toString())
+                            .putString("password", password.text.toString())
+                            .apply()
+                        } else {
+                            sharedPreferences.edit().clear().apply()
                         }
+                        intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    else
+                    {
+                        Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
+                        loginbutton.isEnabled=true
                     }
                 }
             }
