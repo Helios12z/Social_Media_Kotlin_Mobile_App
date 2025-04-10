@@ -44,7 +44,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
-        initViews(binding.root)
+        initViews()
         setupRecyclerView()
         setupSwipeRefresh()
         observeViewModel()
@@ -103,7 +103,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         bottomnavbar.visibility=View.VISIBLE
     }
 
-    private fun initViews(view: View) {
+    private fun initViews() {
         recyclerViewFeed = binding.recyclerViewPosts
         swipeRefreshLayout = binding.swipeRefreshLayout
     }
