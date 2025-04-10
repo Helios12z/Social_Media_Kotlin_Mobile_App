@@ -17,7 +17,6 @@
             android:layout_height="wrap_content"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <!-- Cover Image -->
             <ImageView
                 android:id="@+id/wall_image"
                 android:layout_width="match_parent"
@@ -25,13 +24,11 @@
                 android:scaleType="centerCrop"
                 android:background="@color/white" />
 
-            <!-- Content Container -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_collapseMode="parallax">
 
-                <!-- White background panel that starts halfway through avatar -->
                 <View
                     android:id="@+id/white_panel"
                     android:layout_width="match_parent"
@@ -39,7 +36,6 @@
                     android:layout_marginTop="190dp"
                     android:background="#F5F5F5" />
 
-                <!-- Avatar that overlaps the cover image and white panel -->
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/profile_avatar"
                     android:layout_width="120dp"
@@ -51,7 +47,6 @@
                     app:shapeAppearanceOverlay="@style/CircleImageView"
                     android:elevation="8dp" />
 
-                <!-- Content LinearLayout that starts below the avatar -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -62,7 +57,6 @@
                     android:paddingEnd="16dp"
                     android:paddingBottom="16dp">
 
-                    <!-- Username -->
                     <TextView
                         android:id="@+id/profile_username"
                         android:layout_width="wrap_content"
@@ -74,7 +68,6 @@
                         android:textColor="#000000"
                         android:layout_marginBottom="16dp" />
 
-                    <!-- Bio -->
                     <TextView
                         android:id="@+id/profile_bio"
                         android:layout_width="wrap_content"
@@ -85,7 +78,6 @@
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="20dp" />
 
-                    <!-- Stats panel -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -155,7 +147,6 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- Buttons -->
                     <Button
                         android:id="@+id/button_add_friend"
                         android:layout_width="match_parent"
@@ -199,7 +190,6 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Posts RecyclerView -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
