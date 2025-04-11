@@ -35,6 +35,8 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private var wallUserId =  ""
     private var isCurrentUserFlag = false
     private var isFriendFlag = false
+    private lateinit var appBarLayout: AppBarLayout
+    private var appBarOffset: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,7 +53,9 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         setupRecyclerView()
         setupSwipeRefresh()
         observeViewModel()
-        viewModel.loadPosts()
+        if (viewModel.postlist.value.isNullOrEmpty()) {
+            viewModel.loadPosts()
+        }
         return binding.root
     }
 
@@ -105,6 +109,10 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         viewModel.postsCount.observe(viewLifecycleOwner) {
             binding.profilePostsCount.text = it.toString()
         }
+        appBarLayout=binding.appBarLayout
+        appBarLayout.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBarLayout, verticalOffset ->
+            appBarOffset = verticalOffset
+        })
     }
 
     override fun onDestroyView() {
@@ -220,6 +228,9 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+        appBarLayout.post {
+            appBarLayout.setExpanded(appBarOffset == 0, false)
+        }
     }
 
     private fun updateFriendshipUI() {
