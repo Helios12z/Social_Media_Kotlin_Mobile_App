@@ -65,29 +65,24 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                     .placeholder(R.drawable.avataricon)
                     .error(R.drawable.avataricon)
                     .into(binding.profileAvatar)
-
                 binding.profileUsername.text = user.name
-
                 if (user.bio.isEmpty()) {
                     binding.profileBio.visibility = View.GONE
                 } else {
                     binding.profileBio.visibility = View.VISIBLE
                     binding.profileBio.text = user.bio
                 }
-
                 Glide.with(requireContext())
                     .load(user.wallUrl)
                     .placeholder(R.color.white)
                     .error(R.color.white)
                     .into(binding.wallImage)
-
                 binding.profileAvatar.setOnClickListener {
                     if (user.avatarUrl.isNotEmpty()) {
                         val bundle = bundleOf("IMAGE_URL" to user.avatarUrl)
                         findNavController().navigate(R.id.viewingimagefragment, bundle)
                     }
                 }
-
                 binding.wallImage.setOnClickListener {
                     if (user.wallUrl.isNotEmpty()) {
                         val bundle = bundleOf("IMAGE_URL" to user.wallUrl)
