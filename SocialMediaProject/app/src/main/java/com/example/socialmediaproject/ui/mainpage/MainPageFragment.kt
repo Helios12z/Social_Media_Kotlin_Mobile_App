@@ -18,6 +18,7 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
 import com.example.socialmediaproject.dataclass.PostViewModel
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,6 +33,8 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private lateinit var feedAdapter: FeedAdapter
     private val postList = mutableListOf<PostViewModel>()
     private var wallUserId =  ""
+    private var isCurrentUserFlag = false
+    private var isFriendFlag = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,44 +59,50 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         super.onViewCreated(view, savedInstanceState)
         viewModel.loadUserData(wallUserId)
         viewModel.userInfo.observe(viewLifecycleOwner) { user ->
-            Glide.with(requireContext()).load(user.avatarUrl)
-                .placeholder(R.drawable.avataricon)
-                .error(R.drawable.avataricon)
-                .into(binding.profileAvatar)
-            binding.profileUsername.text = user.name
+            if (binding.profileUsername.text != user.name) {
+                Glide.with(requireContext())
+                    .load(user.avatarUrl)
+                    .placeholder(R.drawable.avataricon)
+                    .error(R.drawable.avataricon)
+                    .into(binding.profileAvatar)
 
-            if (user.bio.isEmpty()) {
-                binding.profileBio.visibility = View.GONE
-            } else {
-                binding.profileBio.visibility = View.VISIBLE
-                binding.profileBio.text = user.bio
-            }
-            Glide.with(requireContext()).load(user.wallUrl)
-                .placeholder(R.color.white)
-                .error(R.color.white)
-                .into(binding.wallImage)
-            binding.profileAvatar.setOnClickListener {
-                if (user.avatarUrl.isNotEmpty()) {
-                    val bundle = bundleOf("IMAGE_URL" to user.avatarUrl)
-                    findNavController().navigate(R.id.viewingimagefragment, bundle)
+                binding.profileUsername.text = user.name
+
+                if (user.bio.isEmpty()) {
+                    binding.profileBio.visibility = View.GONE
+                } else {
+                    binding.profileBio.visibility = View.VISIBLE
+                    binding.profileBio.text = user.bio
                 }
-            }
-            binding.wallImage.setOnClickListener {
-                if (user.wallUrl.isNotEmpty()) {
-                    val bundle = bundleOf("IMAGE_URL" to user.wallUrl)
-                    findNavController().navigate(R.id.viewingimagefragment, bundle)
+
+                Glide.with(requireContext())
+                    .load(user.wallUrl)
+                    .placeholder(R.color.white)
+                    .error(R.color.white)
+                    .into(binding.wallImage)
+
+                binding.profileAvatar.setOnClickListener {
+                    if (user.avatarUrl.isNotEmpty()) {
+                        val bundle = bundleOf("IMAGE_URL" to user.avatarUrl)
+                        findNavController().navigate(R.id.viewingimagefragment, bundle)
+                    }
+                }
+
+                binding.wallImage.setOnClickListener {
+                    if (user.wallUrl.isNotEmpty()) {
+                        val bundle = bundleOf("IMAGE_URL" to user.wallUrl)
+                        findNavController().navigate(R.id.viewingimagefragment, bundle)
+                    }
                 }
             }
         }
         viewModel.isCurrentUser.observe(viewLifecycleOwner) { isCurrent ->
-            binding.buttonAddFriend.visibility = if (isCurrent) View.GONE else View.VISIBLE
+            isCurrentUserFlag = isCurrent
+            updateFriendshipUI()
         }
         viewModel.isFriend.observe(viewLifecycleOwner) { isFriend ->
-            if (isFriend) {
-                binding.buttonAddFriend.visibility = View.GONE
-                binding.buttonUnfriend.visibility = View.VISIBLE
-                binding.buttonChat.visibility = View.VISIBLE
-            }
+            isFriendFlag = isFriend
+            updateFriendshipUI()
         }
         viewModel.followersCount.observe(viewLifecycleOwner) {
             binding.profileFollowersCount.text = it.toString()
@@ -216,5 +225,23 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+    }
+
+    private fun updateFriendshipUI() {
+        if (isCurrentUserFlag) {
+            binding.buttonAddFriend.visibility = View.GONE
+            binding.buttonUnfriend.visibility = View.GONE
+            binding.buttonChat.visibility = View.GONE
+        } else {
+            if (isFriendFlag) {
+                binding.buttonAddFriend.visibility = View.GONE
+                binding.buttonUnfriend.visibility = View.VISIBLE
+                binding.buttonChat.visibility = View.VISIBLE
+            } else {
+                binding.buttonAddFriend.visibility = View.VISIBLE
+                binding.buttonUnfriend.visibility = View.GONE
+                binding.buttonChat.visibility = View.GONE
+            }
+        }
     }
 }
