@@ -52,8 +52,10 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         setupRecyclerView()
         setupSwipeRefresh()
         observeViewModel()
-        if (viewModel.postlist.value.isNullOrEmpty()) {
-            viewModel.loadPosts()
+        viewModel.userInfo.observe(viewLifecycleOwner) {
+            user-> if (user.userId!=wallUserId || viewModel.postlist.value.isNullOrEmpty()) {
+               viewModel.loadPosts()
+            }
         }
         return binding.root
     }

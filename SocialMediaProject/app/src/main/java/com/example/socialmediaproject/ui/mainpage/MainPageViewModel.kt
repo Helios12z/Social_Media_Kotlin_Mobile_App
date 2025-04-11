@@ -36,6 +36,8 @@ class MainPageViewModel : ViewModel() {
     val postsCount = MutableLiveData<Int>()
 
     fun loadUserData(wallUserId: String) {
+        auth=FirebaseAuth.getInstance()
+        db=FirebaseFirestore.getInstance()
         val currentUserId = auth.currentUser?.uid ?: ""
         db.collection("Users").document(wallUserId).get().addOnSuccessListener { result ->
             if (result.exists()) {
@@ -43,7 +45,7 @@ class MainPageViewModel : ViewModel() {
                 val name = result.getString("name") ?: ""
                 val bio = result.getString("bio") ?: ""
                 val wallUrl = result.getString("wallurl") ?: ""
-                userInfo.value = UserMainPageInfo(avatarUrl, name, bio, wallUrl)
+                userInfo.value = UserMainPageInfo(avatarUrl, result.id, name, bio, wallUrl)
                 isCurrentUser.value = (currentUserId == wallUserId)
                 val friendList = result.get("friends") as? List<String> ?: emptyList()
                 followersCount.value = friendList.size
