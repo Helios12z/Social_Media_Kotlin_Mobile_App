@@ -27,8 +27,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private lateinit var viewModel: MainPageViewModel
     private lateinit var binding: FragmentMainPageBinding
-    private var auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private var db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private lateinit var recyclerViewFeed: RecyclerView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var feedAdapter: FeedAdapter
