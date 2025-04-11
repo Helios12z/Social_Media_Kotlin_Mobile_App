@@ -156,7 +156,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 sentRequestsStatus.remove(receiverId)
                 Log.e("ERROR SEND FRIEND REQUEST", e.toString())
             }
-
         }
     }
 
@@ -194,27 +193,24 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun acceptFriendRequest(senderId: String, callback: (Boolean) -> Unit) {
-        val receiverId = auth.currentUser?.uid ?: return
+        val receiverId = auth.currentUser?.uid ?: run {
+            callback(false)
+            return
+        }
         viewModelScope.launch {
             try {
                 val requestDocRef = db.collection("friend_requests").document("${senderId}_${receiverId}")
                 val userRef = db.collection("Users").document(receiverId)
                 val friendRef = db.collection("Users").document(senderId)
-                val requestSnapshot = requestDocRef.get().await()
-                if (!requestSnapshot.exists()) {
-                    callback(false)
-                    return@launch
-                }
-                updateRecommendationStatus(receiverId, RequestStatus.NONE)
-                sentRequestsStatus[receiverId] = RequestStatus.NONE
                 db.runBatch { batch ->
-                    batch.update(requestDocRef, "status", "accepted")
-                    batch.update(userRef, "friends", FieldValue.arrayUnion(senderId))
                     batch.update(friendRef, "friends", FieldValue.arrayUnion(receiverId))
+                    batch.update(userRef, "friends", FieldValue.arrayUnion(senderId))
+                    batch.delete(requestDocRef)
                 }.await()
                 _incomingRequestCount.postValue((_incomingRequestCount.value ?: 0) - 1)
                 callback(true)
             } catch (e: Exception) {
+                Log.e("FriendRequest", "Error accepting friend request from $senderId for $receiverId", e)
                 callback(false)
             }
         }
@@ -356,5 +352,4 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
     }
-
 }
