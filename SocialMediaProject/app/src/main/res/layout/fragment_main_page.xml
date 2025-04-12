@@ -61,7 +61,6 @@
                     android:paddingEnd="16dp"
                     android:paddingBottom="16dp">
 
-                    <!-- Rest of your layout unchanged -->
                     <TextView
                         android:id="@+id/profile_username"
                         android:layout_width="wrap_content"
@@ -164,32 +163,41 @@
                         android:padding="12dp"
                         android:elevation="2dp" />
 
-                    <Button
-                        android:id="@+id/button_unfriend"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Hủy kết bạn"
-                        android:textAllCaps="false"
-                        android:textSize="16sp"
-                        android:background="@drawable/button_background"
-                        android:textColor="#FFFFFF"
-                        android:padding="12dp"
-                        android:elevation="2dp"
-                        android:visibility="gone" />
+                        android:orientation="horizontal"
+                        android:layout_marginTop="4dp">
 
-                    <Button
-                        android:id="@+id/button_chat"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Nhắn tin"
-                        android:layout_marginTop="10dp"
-                        android:textAllCaps="false"
-                        android:textSize="16sp"
-                        android:background="@drawable/button_background"
-                        android:textColor="#FFFFFF"
-                        android:padding="12dp"
-                        android:elevation="2dp"
-                        android:visibility="gone" />
+                        <Button
+                            android:id="@+id/button_unfriend"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Bạn bè"
+                            android:layout_marginEnd="8dp"
+                            android:textAllCaps="false"
+                            android:textSize="16sp"
+                            android:background="@drawable/button_background"
+                            android:textColor="#FFFFFF"
+                            android:padding="12dp"
+                            android:elevation="2dp"
+                            android:visibility="gone" />
+
+                        <Button
+                            android:id="@+id/button_chat"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Nhắn tin"
+                            android:textAllCaps="false"
+                            android:textSize="16sp"
+                            android:background="@drawable/button_background"
+                            android:textColor="#FFFFFF"
+                            android:padding="12dp"
+                            android:elevation="2dp"
+                            android:visibility="gone" />
+                    </LinearLayout>
                 </LinearLayout>
             </RelativeLayout>
         </com.google.android.material.appbar.CollapsingToolbarLayout>

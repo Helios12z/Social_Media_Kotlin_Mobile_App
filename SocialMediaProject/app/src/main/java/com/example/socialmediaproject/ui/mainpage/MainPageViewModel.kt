@@ -1,10 +1,15 @@
 package com.example.socialmediaproject.ui.mainpage
 
 import android.util.Log
+import android.view.View
+import android.widget.Button
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.socialmediaproject.dataclass.FriendRequest
 import com.example.socialmediaproject.dataclass.PostViewModel
+import com.example.socialmediaproject.dataclass.RequestStatus
 import com.example.socialmediaproject.dataclass.UserMainPageInfo
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -13,13 +18,19 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.database
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.Date
+import kotlin.concurrent.thread
 
 class MainPageViewModel : ViewModel() {
-    private lateinit var db: FirebaseFirestore
-    private lateinit var auth: FirebaseAuth
+    private val db: FirebaseFirestore=FirebaseFirestore.getInstance()
+    private val auth: FirebaseAuth=FirebaseAuth.getInstance()
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
     var wallUserId = ""
 
@@ -36,8 +47,6 @@ class MainPageViewModel : ViewModel() {
     val postsCount = MutableLiveData<Int>()
 
     fun loadUserData(wallUserId: String) {
-        auth=FirebaseAuth.getInstance()
-        db=FirebaseFirestore.getInstance()
         val currentUserId = auth.currentUser?.uid ?: ""
         db.collection("Users").document(wallUserId).get().addOnSuccessListener { result ->
             if (result.exists()) {
@@ -67,8 +76,6 @@ class MainPageViewModel : ViewModel() {
 
     fun loadPosts() {
         _isloading.value=true
-        auth = FirebaseAuth.getInstance()
-        db=FirebaseFirestore.getInstance()
         val currentUserId=auth.currentUser?.uid ?: ""
         if (wallUserId==currentUserId) {
             db.collection("Posts")
@@ -261,8 +268,6 @@ class MainPageViewModel : ViewModel() {
     }
 
     fun toggleLike(post: PostViewModel, position: Int) {
-        auth=FirebaseAuth.getInstance()
-        db=FirebaseFirestore.getInstance()
         val userId = auth.currentUser?.uid ?: return
         db.collection("Likes")
             .whereEqualTo("userid", userId)
@@ -318,6 +323,84 @@ class MainPageViewModel : ViewModel() {
 
             ref.updateChildren(updates).addOnCompleteListener {
                 _postlist.value = _postlist.value
+            }
+        }
+    }
+
+    fun acceptFriendRequest() {
+
+    }
+
+    fun rejectFriendRequest() {
+
+    }
+
+    fun cancelFriendRequest() {
+
+    }
+
+    fun unfriend(buttonFriend: Button, buttonChat: Button, buttonAdd: Button, receiverId: String) {
+        viewModelScope.launch {
+            buttonFriend.isEnabled=false
+            buttonChat.isEnabled=false
+            val senderId = auth.currentUser?.uid ?: return@launch
+            try {
+                val userdoc=db.collection("Users").document(senderId).get().await()
+                if (userdoc.exists()) {
+                    val friendlist = userdoc.get("friends") as? List<String>
+                    if (friendlist?.contains(receiverId) == false) {
+                        buttonFriend.visibility= View.GONE
+                        buttonChat.visibility=View.GONE
+                        buttonAdd.visibility=View.VISIBLE
+                        return@launch
+                    }
+                }
+                buttonFriend.setText("Đang hủy kết bạn")
+                db.collection("Users").document(senderId).update("friends", FieldValue.arrayRemove(receiverId)).await()
+                db.collection("Users").document(receiverId).update("friends", FieldValue.arrayRemove(senderId)).await()
+                buttonFriend.visibility= View.GONE
+                buttonChat.visibility=View.GONE
+                buttonAdd.visibility=View.VISIBLE
+            }
+            catch(e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun sendFriendRequest(sendButton: Button, receiverId: String) {
+        viewModelScope.launch {
+            val senderId = auth.currentUser?.uid ?: return@launch
+            try {
+                val userdoc=db.collection("Users").document(senderId).get().await()
+                if (userdoc.exists()) {
+                    val friendlist = userdoc.get("friends") as? List<String>
+                    if (friendlist?.contains(receiverId) == true) {
+                        sendButton.setText("Bạn bè")
+                        return@launch
+                    }
+                }
+                sendButton.setText("Đang gửi...")
+                sendButton.isEnabled = false
+                val requestId = "${senderId}_${receiverId}"
+                val requestDocRef = db.collection("friend_requests").document(requestId)
+                val existingRequest = requestDocRef.get().await()
+                if (existingRequest.exists() && existingRequest.getString("status") != "rejected") {
+                    return@launch
+                }
+                val newRequest = FriendRequest(
+                    senderId = senderId,
+                    receiverId = receiverId,
+                    status = "pending",
+                    notified = false,
+                    timestamp = Date()
+                )
+                requestDocRef.set(newRequest).await()
+                sendButton.setText("Đã gửi lời mời")
+                sendButton.isEnabled = true
+            }
+            catch(e: Exception) {
+                e.printStackTrace()
             }
         }
     }

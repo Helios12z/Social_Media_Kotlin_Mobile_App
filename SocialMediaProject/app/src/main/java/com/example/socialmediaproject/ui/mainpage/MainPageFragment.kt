@@ -108,6 +108,12 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         viewModel.postsCount.observe(viewLifecycleOwner) {
             binding.profilePostsCount.text = it.toString()
         }
+        binding.buttonAddFriend.setOnClickListener {
+            viewModel.sendFriendRequest(binding.buttonAddFriend, wallUserId)
+        }
+        binding.buttonUnfriend.setOnClickListener {
+            viewModel.unfriend(binding.buttonUnfriend, binding.buttonChat, binding.buttonAddFriend, wallUserId)
+        }
     }
 
     override fun onDestroyView() {
