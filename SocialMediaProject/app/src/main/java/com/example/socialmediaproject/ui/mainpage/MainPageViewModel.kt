@@ -43,6 +43,8 @@ class MainPageViewModel : ViewModel() {
     val userInfo = MutableLiveData<UserMainPageInfo>()
     val isFriend = MutableLiveData<Boolean>()
     val isCurrentUser = MutableLiveData<Boolean>()
+    val isSendingFriendRequest = MutableLiveData<Boolean>()
+    val isReceivingFriendRequest = MutableLiveData<Boolean>()
     val followersCount = MutableLiveData<Int>()
     val postsCount = MutableLiveData<Int>()
 
