@@ -172,7 +172,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         btn1.text = "Chấp nhận"
         btn2.text = "Từ chối"
         btn1.setOnClickListener {
-
+            viewModel.acceptFriendRequest(binding.buttonUnfriend, binding.buttonChat, binding.buttonAddFriend, wallUserId)
             dialog.dismiss()
         }
         btn2.setOnClickListener {

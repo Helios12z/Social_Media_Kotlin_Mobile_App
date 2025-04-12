@@ -23,7 +23,6 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import okhttp3.internal.notify
 import java.util.Date
 
 class MainPageViewModel : ViewModel() {
@@ -344,8 +343,26 @@ class MainPageViewModel : ViewModel() {
         }
     }
 
-    fun acceptFriendRequest() {
-
+    fun acceptFriendRequest(buttonFriend: Button, buttonChat: Button, oldButton: Button, senderId: String) {
+        val receiverId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            try {
+                val requestDocRef = db.collection("friend_requests").document("${senderId}_${receiverId}")
+                val userRef = db.collection("Users").document(receiverId)
+                val friendRef = db.collection("Users").document(senderId)
+                db.runBatch { batch ->
+                    batch.update(friendRef, "friends", FieldValue.arrayUnion(receiverId))
+                    batch.update(userRef, "friends", FieldValue.arrayUnion(senderId))
+                    batch.delete(requestDocRef)
+                }.await()
+                buttonFriend.visibility= View.VISIBLE
+                buttonFriend.setText("Bạn bè")
+                buttonChat.visibility=View.VISIBLE
+                oldButton.visibility=View.GONE
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     fun rejectFriendRequest() {
@@ -387,6 +404,7 @@ class MainPageViewModel : ViewModel() {
                         buttonFriend.visibility= View.GONE
                         buttonChat.visibility=View.GONE
                         buttonAdd.visibility=View.VISIBLE
+                        buttonAdd.text="Kết bạn"
                         return@launch
                     }
                 }
@@ -396,6 +414,7 @@ class MainPageViewModel : ViewModel() {
                 buttonFriend.visibility= View.GONE
                 buttonChat.visibility=View.GONE
                 buttonAdd.visibility=View.VISIBLE
+                buttonAdd.text="Kết bạn"
             }
             catch(e: Exception) {
                 e.printStackTrace()
