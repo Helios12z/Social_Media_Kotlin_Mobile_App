@@ -100,6 +100,14 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             isFriendFlag = isFriend
             updateFriendshipUI()
         }
+        viewModel.isSendingFriendRequest.observe(viewLifecycleOwner) { isSending ->
+            isSendingFriendRequest = isSending
+            updateFriendshipUI()
+        }
+        viewModel.isReceivingFriendRequest.observe(viewLifecycleOwner) { isReceiving ->
+            isReceivingFriendRequest = isReceiving
+            updateFriendshipUI()
+        }
         viewModel.followersCount.observe(viewLifecycleOwner) {
             binding.profileFollowersCount.text = it.toString()
         }
@@ -109,6 +117,9 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         binding.buttonAddFriend.setOnClickListener {
             if (binding.buttonAddFriend.text == "Đã gửi lời mời") {
                 showBottomSheetUnfriend()
+            }
+            else if (binding.buttonAddFriend.text == "Đã gửi cho bạn lời mời kết bạn") {
+                showBottomSheetCheck()
             }
             else viewModel.sendFriendRequest(binding.buttonAddFriend, binding.buttonChat, wallUserId)
         }
@@ -147,6 +158,25 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             dialog.dismiss()
         }
         btn2.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.setContentView(view)
+        dialog.show()
+    }
+
+    private fun showBottomSheetCheck() {
+        val dialog = BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_dialog, null)
+        val btn1 = view.findViewById<Button>(R.id.button1)
+        val btn2 = view.findViewById<Button>(R.id.button2)
+        btn1.text = "Chấp nhận"
+        btn2.text = "Từ chối"
+        btn1.setOnClickListener {
+
+            dialog.dismiss()
+        }
+        btn2.setOnClickListener {
+
             dialog.dismiss()
         }
         dialog.setContentView(view)
@@ -279,9 +309,17 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                 binding.buttonUnfriend.visibility = View.VISIBLE
                 binding.buttonChat.visibility = View.VISIBLE
             } else {
-                binding.buttonAddFriend.visibility = View.VISIBLE
-                binding.buttonUnfriend.visibility = View.GONE
-                binding.buttonChat.visibility = View.GONE
+                if (isSendingFriendRequest) {
+                    binding.buttonAddFriend.text="Đã gửi lời mời"
+                }
+                else if (isReceivingFriendRequest) {
+                    binding.buttonAddFriend.text="Đã gửi cho bạn lời mời kết bạn"
+                }
+                else {
+                    binding.buttonAddFriend.visibility = View.VISIBLE
+                    binding.buttonUnfriend.visibility = View.GONE
+                    binding.buttonChat.visibility = View.GONE
+                }
             }
         }
     }

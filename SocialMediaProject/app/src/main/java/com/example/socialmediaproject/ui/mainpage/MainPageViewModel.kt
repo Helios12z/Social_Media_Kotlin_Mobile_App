@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.FriendRequest
 import com.example.socialmediaproject.dataclass.PostViewModel
-import com.example.socialmediaproject.dataclass.RequestStatus
 import com.example.socialmediaproject.dataclass.UserMainPageInfo
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -22,11 +21,10 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import okhttp3.internal.notify
 import java.util.Date
-import kotlin.concurrent.thread
 
 class MainPageViewModel : ViewModel() {
     private val db: FirebaseFirestore=FirebaseFirestore.getInstance()
@@ -50,28 +48,45 @@ class MainPageViewModel : ViewModel() {
 
     fun loadUserData(wallUserId: String) {
         val currentUserId = auth.currentUser?.uid ?: ""
-        db.collection("Users").document(wallUserId).get().addOnSuccessListener { result ->
-            if (result.exists()) {
-                val avatarUrl = result.getString("avatarurl") ?: ""
-                val name = result.getString("name") ?: ""
-                val bio = result.getString("bio") ?: ""
-                val wallUrl = result.getString("wallurl") ?: ""
-                userInfo.value = UserMainPageInfo(avatarUrl, result.id, name, bio, wallUrl)
-                isCurrentUser.value = (currentUserId == wallUserId)
-                val friendList = result.get("friends") as? List<String> ?: emptyList()
-                followersCount.value = friendList.size
-                db.collection("Posts").whereEqualTo("userid", wallUserId)
-                    .get().addOnSuccessListener { posts ->
-                        postsCount.value = posts.size()
-                    }
-                if (currentUserId != wallUserId) {
-                    db.collection("Users").document(currentUserId).get().addOnSuccessListener { currentUserDoc ->
-                        if (currentUserDoc.exists()) {
-                            val currentUserFriends = currentUserDoc.get("friends") as? List<String>
-                            isFriend.value = currentUserFriends?.contains(wallUserId) == true
+        viewModelScope.launch {
+            try {
+                db.collection("Users").document(wallUserId).get().addOnSuccessListener { result ->
+                    if (result.exists()) {
+                        val avatarUrl = result.getString("avatarurl") ?: ""
+                        val name = result.getString("name") ?: ""
+                        val bio = result.getString("bio") ?: ""
+                        val wallUrl = result.getString("wallurl") ?: ""
+                        userInfo.value = UserMainPageInfo(avatarUrl, result.id, name, bio, wallUrl)
+                        isCurrentUser.value = (currentUserId == wallUserId)
+                        val friendList = result.get("friends") as? List<String> ?: emptyList()
+                        followersCount.value = friendList.size
+                        db.collection("Posts").whereEqualTo("userid", wallUserId)
+                            .get().addOnSuccessListener { posts ->
+                                postsCount.value = posts.size()
+                            }
+                        if (currentUserId != wallUserId) {
+                            db.collection("Users").document(currentUserId).get().addOnSuccessListener { currentUserDoc ->
+                                if (currentUserDoc.exists()) {
+                                    val currentUserFriends = currentUserDoc.get("friends") as? List<String>
+                                    isFriend.value = currentUserFriends?.contains(wallUserId) == true
+                                }
+                            }
                         }
                     }
                 }
+                val requestId = "${currentUserId}_${wallUserId}"
+                val reverseRequestId = "${wallUserId}_${currentUserId}"
+                val requestRef = db.collection("friend_requests").document(requestId)
+                val reverseRequestRef = db.collection("friend_requests").document(reverseRequestId)
+                val existingRequest = requestRef.get().await()
+                val reverseRequest = reverseRequestRef.get().await()
+                if (existingRequest.exists()) isSendingFriendRequest.value=true
+                else isSendingFriendRequest.value=false
+                if (reverseRequest.exists()) isReceivingFriendRequest.value=true
+                else isReceivingFriendRequest.value=false
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
