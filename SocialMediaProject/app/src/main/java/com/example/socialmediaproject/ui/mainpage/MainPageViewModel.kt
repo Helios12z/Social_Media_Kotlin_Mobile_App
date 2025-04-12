@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.FriendRequest
 import com.example.socialmediaproject.dataclass.PostViewModel
+import com.example.socialmediaproject.dataclass.RequestStatus
 import com.example.socialmediaproject.dataclass.UserMainPageInfo
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -365,8 +366,28 @@ class MainPageViewModel : ViewModel() {
         }
     }
 
-    fun rejectFriendRequest() {
-
+    fun rejectFriendRequest(buttonCheck: Button, senderId: String) {
+        val receiverId = auth.currentUser?.uid ?: return
+        buttonCheck.isEnabled=false
+        buttonCheck.text="Đang từ chối"
+        viewModelScope.launch {
+            try {
+                val requestDocRef = db.collection("friend_requests").document("${senderId}_${receiverId}")
+                val requestSnapshot = requestDocRef.get().await()
+                if (!requestSnapshot.exists()) {
+                    buttonCheck.text="Kết bạn"
+                    buttonCheck.isEnabled=true
+                    isReceivingFriendRequest.value=false
+                    return@launch
+                }
+                requestDocRef.delete().await()
+                buttonCheck.text="Kết bạn"
+                buttonCheck.isEnabled=true
+                isReceivingFriendRequest.value=false
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     fun cancelFriendRequest(buttonCancle: Button, receiverId: String) {

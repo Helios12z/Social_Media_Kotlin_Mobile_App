@@ -176,7 +176,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             dialog.dismiss()
         }
         btn2.setOnClickListener {
-
+            viewModel.rejectFriendRequest(binding.buttonAddFriend, wallUserId)
             dialog.dismiss()
         }
         dialog.setContentView(view)
