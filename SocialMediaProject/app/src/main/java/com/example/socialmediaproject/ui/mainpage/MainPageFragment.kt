@@ -107,7 +107,10 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             binding.profilePostsCount.text = it.toString()
         }
         binding.buttonAddFriend.setOnClickListener {
-            viewModel.sendFriendRequest(binding.buttonAddFriend, wallUserId)
+            if (binding.buttonAddFriend.text == "Đã gửi lời mời") {
+                showBottomSheetUnfriend()
+            }
+            else viewModel.sendFriendRequest(binding.buttonAddFriend, binding.buttonChat, wallUserId)
         }
         binding.buttonUnfriend.setOnClickListener {
             showBottomSheet()
@@ -123,6 +126,24 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         btn2.text = "Hủy"
         btn1.setOnClickListener {
             viewModel.unfriend(binding.buttonUnfriend, binding.buttonChat, binding.buttonAddFriend, wallUserId)
+            dialog.dismiss()
+        }
+        btn2.setOnClickListener {
+            dialog.dismiss()
+        }
+        dialog.setContentView(view)
+        dialog.show()
+    }
+
+    private fun showBottomSheetUnfriend() {
+        val dialog = BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_dialog, null)
+        val btn1 = view.findViewById<Button>(R.id.button1)
+        val btn2 = view.findViewById<Button>(R.id.button2)
+        btn1.text = "Hủy lời mời"
+        btn2.text = "Hủy"
+        btn1.setOnClickListener {
+            viewModel.cancelFriendRequest(binding.buttonAddFriend, wallUserId)
             dialog.dismiss()
         }
         btn2.setOnClickListener {

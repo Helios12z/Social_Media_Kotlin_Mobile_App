@@ -337,8 +337,26 @@ class MainPageViewModel : ViewModel() {
 
     }
 
-    fun cancelFriendRequest() {
-
+    fun cancelFriendRequest(buttonCancle: Button, receiverId: String) {
+        viewModelScope.launch {
+            buttonCancle.isEnabled=false
+            buttonCancle.text="Đang hủy"
+            val senderId = auth.currentUser?.uid ?: return@launch
+            try {
+                val requestDocRef = db.collection("friend_requests").document("${senderId}_${receiverId}")
+                val requestSnapshot = requestDocRef.get().await()
+                if (!requestSnapshot.exists()) {
+                    buttonCancle.text="Kết bạn"
+                    buttonCancle.isEnabled=true
+                    return@launch
+                }
+                requestDocRef.delete().await()
+                buttonCancle.text="Kết bạn"
+                buttonCancle.isEnabled=true
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     fun unfriend(buttonFriend: Button, buttonChat: Button, buttonAdd: Button, receiverId: String) {
@@ -370,38 +388,53 @@ class MainPageViewModel : ViewModel() {
         }
     }
 
-    fun sendFriendRequest(sendButton: Button, receiverId: String) {
+    fun sendFriendRequest(sendButton: Button, chatButton: Button, receiverId: String) {
         viewModelScope.launch {
             val senderId = auth.currentUser?.uid ?: return@launch
             try {
-                val userdoc=db.collection("Users").document(senderId).get().await()
-                if (userdoc.exists()) {
-                    val friendlist = userdoc.get("friends") as? List<String>
-                    if (friendlist?.contains(receiverId) == true) {
-                        sendButton.setText("Bạn bè")
+                val senderDoc = db.collection("Users").document(senderId).get().await()
+                if (senderDoc.exists()) {
+                    val friendList = senderDoc.get("friends") as? List<String>
+                    if (friendList?.contains(receiverId) == true) {
+                        sendButton.text = "Bạn bè"
+                        chatButton.visibility = View.VISIBLE
                         return@launch
                     }
                 }
-                sendButton.setText("Đang gửi...")
+                sendButton.text = "Đang gửi..."
                 sendButton.isEnabled = false
                 val requestId = "${senderId}_${receiverId}"
-                val requestDocRef = db.collection("friend_requests").document(requestId)
-                val existingRequest = requestDocRef.get().await()
-                if (existingRequest.exists() && existingRequest.getString("status") != "rejected") {
+                val reverseRequestId = "${receiverId}_${senderId}"
+                val requestRef = db.collection("friend_requests").document(requestId)
+                val reverseRequestRef = db.collection("friend_requests").document(reverseRequestId)
+                val existingRequest = requestRef.get().await()
+                val reverseRequest = reverseRequestRef.get().await()
+                if (reverseRequest.exists() && reverseRequest.getString("status") == "pending") {
+                    db.runBatch { batch ->
+                        batch.update(reverseRequestRef, "status", "accepted")
+                        val userRef1 = db.collection("Users").document(senderId)
+                        val userRef2 = db.collection("Users").document(receiverId)
+                        batch.update(userRef1, "friends", FieldValue.arrayUnion(receiverId))
+                        batch.update(userRef2, "friends", FieldValue.arrayUnion(senderId))
+                    }.await()
+                    sendButton.text = "Bạn bè"
+                    chatButton.visibility = View.VISIBLE
+                    sendButton.isEnabled = true
                     return@launch
                 }
-                val newRequest = FriendRequest(
-                    senderId = senderId,
-                    receiverId = receiverId,
-                    status = "pending",
-                    notified = false,
-                    timestamp = Date()
-                )
-                requestDocRef.set(newRequest).await()
-                sendButton.setText("Đã gửi lời mời")
+                if (!existingRequest.exists()) {
+                    val newRequest = FriendRequest(
+                        senderId = senderId,
+                        receiverId = receiverId,
+                        status = "pending",
+                        notified = false,
+                        timestamp = Date()
+                    )
+                    requestRef.set(newRequest).await()
+                }
+                sendButton.text = "Đã gửi lời mời"
                 sendButton.isEnabled = true
-            }
-            catch(e: Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
