@@ -85,7 +85,6 @@ class ChoiceFragment : Fragment() {
 
     private fun userLogOut() {
         db=FirebaseFirestore.getInstance()
-        WorkManager.getInstance(requireContext()).cancelAllWorkByTag("FriendRequestWorker")
         auth.signOut()
         sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()

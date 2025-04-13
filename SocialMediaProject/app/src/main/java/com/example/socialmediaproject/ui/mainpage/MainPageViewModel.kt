@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.FriendRequest
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.dataclass.UserMainPageInfo
+import com.example.socialmediaproject.service.OneSignalHelper
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Firebase
@@ -485,6 +486,14 @@ class MainPageViewModel : ViewModel() {
                         timestamp = Date()
                     )
                     requestRef.set(newRequest).await()
+                    db.collection("Users").document(senderId).get().addOnSuccessListener {
+                        result->if (result.exists()) {
+                            OneSignalHelper.sendPushNotification(
+                                receiverId,
+                                "${result.getString("name")} đã gửi cho bạn lời mời kết bạn"
+                            )
+                        }
+                    }
                 }
                 sendButton.text = "Đã gửi lời mời"
                 sendButton.isEnabled = true

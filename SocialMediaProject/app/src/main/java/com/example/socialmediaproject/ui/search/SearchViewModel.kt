@@ -14,6 +14,7 @@ import com.example.socialmediaproject.dataclass.FriendRequest
 import com.example.socialmediaproject.dataclass.RequestStatus
 import com.example.socialmediaproject.dataclass.User
 import com.example.socialmediaproject.service.NotificationService
+import com.example.socialmediaproject.service.OneSignalHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -150,6 +151,14 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 requestDocRef.set(newRequest).await()
                 updateRecommendationStatus(receiverId, RequestStatus.SENT)
                 sentRequestsStatus[receiverId] = RequestStatus.SENT
+                db.collection("Users").document(senderId).get().addOnSuccessListener {
+                    result->if (result.exists()) {
+                        OneSignalHelper.sendPushNotification(
+                            receiverId,
+                            "${result.getString("name")} đã gửi cho bạn lời mời kết bạn"
+                        )
+                    }
+                }
             }
             catch(e: Exception) {
                 updateRecommendationStatus(receiverId, RequestStatus.ERROR)

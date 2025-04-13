@@ -1,6 +1,7 @@
 package com.example.socialmediaproject.activity
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -19,11 +20,15 @@ import androidx.work.WorkManager
 import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivityMainBinding
-import com.example.socialmediaproject.service.FriendRequestWorker
+import com.example.socialmediaproject.service.sendPushNotification
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.onesignal.OneSignal
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,7 +39,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         askForPermissions()
-        startFriendRequestWorker()
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val token = task.result
@@ -46,6 +50,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         auth= FirebaseAuth.getInstance()
+        checkFriendRequestsOnLogin(this)
         val userid=auth.currentUser?.uid
         val usersref=db.collection("Users")
         usersref.whereEqualTo("userid", userid).get().addOnSuccessListener {
@@ -118,11 +123,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startFriendRequestWorker() {
-        auth=FirebaseAuth.getInstance()
-        val userid=auth.currentUser?.uid ?: ""
-        OneSignal.User.addAlias("external_id", userid)
-        val workRequest = OneTimeWorkRequestBuilder<FriendRequestWorker>().build()
-        WorkManager.getInstance(this).enqueue(workRequest)
+    fun checkFriendRequestsOnLogin(context: Context) {
+        val currentUserId = auth.currentUser?.uid ?: return
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val snapshots = db.collection("friend_requests")
+                    .whereEqualTo("receiverId", currentUserId)
+                    .whereEqualTo("status", "pending")
+                    .whereEqualTo("notified", false)
+                    .get()
+                    .await()
+                val count = snapshots.size()
+                if (count > 0) {
+                    sendPushNotification(currentUserId, "Bạn có $count lời mời kết bạn mới!")
+                    val batch = db.batch()
+                    for (doc in snapshots.documents) {
+                        batch.update(doc.reference, "notified", true)
+                    }
+                    batch.commit().await()
+                }
+            } catch (e: Exception) {
+
+            }
+        }
     }
 }

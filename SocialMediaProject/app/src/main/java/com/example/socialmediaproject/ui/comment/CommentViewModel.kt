@@ -4,10 +4,12 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
+import com.example.socialmediaproject.service.OneSignalHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.launch
+import java.util.regex.Pattern
 
 class CommentViewModel : ViewModel() {
     private val auth: FirebaseAuth=FirebaseAuth.getInstance()
@@ -23,12 +25,11 @@ class CommentViewModel : ViewModel() {
                 parentId = parentId,
                 postId = postId
             )
-            Log.d("CommentViewModel", "Posting comment: $comment")
             db.collection("comments")
             .document(commentId)
             .set(comment)
             .addOnSuccessListener {
-
+                handleMentions(content)
             }
             .addOnFailureListener {
 
@@ -38,44 +39,44 @@ class CommentViewModel : ViewModel() {
 
     fun getComments(onResult: (List<Comment>) -> Unit) {
         db.collection("comments")
-            .orderBy("timestamp", Query.Direction.ASCENDING)
-            .addSnapshotListener { snapshots, error ->
-                if (error != null || snapshots == null) return@addSnapshotListener
-                val comments = snapshots.toObjects(Comment::class.java)
-                val userIds = comments.map { it.userId }.toSet().filter { it.isNotBlank() }
-                val batches = userIds.chunked(10)
-                val userMap = mutableMapOf<String, Pair<String, String>>()
-                var completedBatches = 0
-                batches.forEach { batch ->
-                    db.collection("Users")
-                        .whereIn("userid", batch)
-                        .get()
-                        .addOnSuccessListener { snapshot ->
-                            snapshot.documents.forEach { doc ->
-                                val id = doc.getString("userid") ?: return@forEach
-                                val username = doc.getString("name") ?: "Unknown"
-                                val avatarurl = doc.getString("avatarurl") ?: ""
-                                userMap[id] = Pair(username, avatarurl)
-                            }
-                            completedBatches++
-                            if (completedBatches == batches.size) {
-                                comments.forEach { comment ->
-                                    userMap[comment.userId]?.let { (username, avatar) ->
-                                        comment.username = username
-                                        comment.avatarurl = avatar
-                                    }
-                                }
-                                onResult(comments)
+        .orderBy("timestamp", Query.Direction.ASCENDING)
+        .addSnapshotListener { snapshots, error ->
+            if (error != null || snapshots == null) return@addSnapshotListener
+            val comments = snapshots.toObjects(Comment::class.java)
+            val userIds = comments.map { it.userId }.toSet().filter { it.isNotBlank() }
+            val batches = userIds.chunked(10)
+            val userMap = mutableMapOf<String, Pair<String, String>>()
+            var completedBatches = 0
+            batches.forEach { batch ->
+                db.collection("Users")
+                .whereIn("userid", batch)
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    snapshot.documents.forEach { doc ->
+                        val id = doc.getString("userid") ?: return@forEach
+                        val username = doc.getString("name") ?: "Unknown"
+                        val avatarurl = doc.getString("avatarurl") ?: ""
+                        userMap[id] = Pair(username, avatarurl)
+                    }
+                    completedBatches++
+                    if (completedBatches == batches.size) {
+                        comments.forEach { comment ->
+                            userMap[comment.userId]?.let { (username, avatar) ->
+                                comment.username = username
+                                comment.avatarurl = avatar
                             }
                         }
-                        .addOnFailureListener {
-                            completedBatches++
-                            if (completedBatches == batches.size) {
-                                onResult(comments)
-                            }
-                        }
+                        onResult(comments)
+                    }
+                }
+                .addOnFailureListener {
+                    completedBatches++
+                    if (completedBatches == batches.size) {
+                        onResult(comments)
+                    }
                 }
             }
+        }
     }
 
     fun toggleLikeComment(commentId: String, userId: String) {
@@ -93,6 +94,27 @@ class CommentViewModel : ViewModel() {
             // Success
         }.addOnFailureListener {
             // Fail
+        }
+    }
+
+    private fun handleMentions(content: String) {
+        val pattern = Pattern.compile("@(\\w+)")
+        val matcher = pattern.matcher(content)
+        val mentionedUsernames = mutableSetOf<String>()
+        while (matcher.find()) {
+            mentionedUsernames.add(matcher.group(1))
+        }
+        if (mentionedUsernames.isEmpty()) return
+        db.collection("Users")
+        .whereIn("username", mentionedUsernames.toList())
+        .get()
+        .addOnSuccessListener { snapshot ->
+            for (doc in snapshot.documents) {
+                val userId = doc.getString("userid") ?: continue
+                val playerId = doc.getString("playerId") ?: continue
+                val username = doc.getString("username") ?: "ai đó"
+                OneSignalHelper.sendMentionNotification(playerId, username)
+            }
         }
     }
 }
