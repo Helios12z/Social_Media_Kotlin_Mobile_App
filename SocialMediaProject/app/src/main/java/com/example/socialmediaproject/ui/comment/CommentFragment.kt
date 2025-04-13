@@ -63,15 +63,13 @@ class CommentFragment : Fragment() {
         }
     }
 
-    private fun observeComments(postId:String) {
+    private fun observeComments(postId: String) {
         viewModel.getComments { allComments ->
             val filteredComments = allComments.filter { it.postId == postId }
-            val rootComments = filteredComments.filter { it.parentId == null }.toMutableList()
-            rootComments.forEach { parent ->
-                parent.replies = filteredComments.filter { it.parentId == parent.id }.toMutableList()
-            }
+            val commentTree = buildCommentTree(filteredComments)
+
             adapter = CommentAdapter(
-                rootComments,
+                comments = commentTree,
                 currentUserId = auth.currentUser?.uid ?: "",
                 onReplyClicked = { comment ->
                     replyingTo = comment
@@ -86,10 +84,29 @@ class CommentFragment : Fragment() {
                     viewModel.toggleLikeComment(reply.id, auth.currentUser?.uid ?: "")
                 }
             )
+
             binding.rvComments.apply {
                 adapter = this@CommentFragment.adapter
                 layoutManager = LinearLayoutManager(context)
             }
         }
+    }
+
+    private fun buildCommentTree(comments: List<Comment>): List<Comment> {
+        val rootComments = comments.filter { it.parentId == null }
+        rootComments.forEach { parent ->
+            parent.replies = collectAllRepliesFlat(parent.id, comments).toMutableList()
+        }
+        return rootComments
+    }
+
+    private fun collectAllRepliesFlat(rootId: String, allComments: List<Comment>): List<Comment> {
+        val directReplies = allComments.filter { it.parentId == rootId }
+        val allReplies = mutableListOf<Comment>()
+        allReplies.addAll(directReplies)
+        directReplies.forEach { reply ->
+            allReplies.addAll(collectAllRepliesFlat(reply.id, allComments)) 
+        }
+        return allReplies
     }
 }

@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,28 +39,9 @@ class ReplyAdapter(
         holder.content.text = reply.content
         holder.likeCount.text = reply.likes.size.toString()
         holder.time.text = getTimeAgo(reply.timestamp)
-
         holder.btnLike.setOnClickListener { onLikeClicked(reply) }
-
-        if (depth >= 3) {
-            holder.btnReply.visibility = View.GONE
-        } else {
-            holder.btnReply.visibility = View.VISIBLE
-            holder.btnReply.setOnClickListener { onReplyClicked(reply) }
-        }
-
-        if (depth == 2 && reply.replies.isNotEmpty()) {
-            val childAdapter = ReplyAdapter(
-                replies = reply.replies,
-                currentUserId = currentUserId,
-                onReplyClicked = onReplyClicked,
-                onLikeClicked = onLikeClicked,
-                depth = 3
-            )
-            holder.rvSubReplies?.adapter = childAdapter
-            holder.rvSubReplies?.layoutManager = LinearLayoutManager(holder.itemView.context)
-            holder.rvSubReplies?.visibility = View.VISIBLE
-        }
+        holder.btnReply.visibility = View.VISIBLE
+        holder.btnReply.setOnClickListener { onReplyClicked(reply) }
     }
 
     override fun getItemCount(): Int = replies.size
