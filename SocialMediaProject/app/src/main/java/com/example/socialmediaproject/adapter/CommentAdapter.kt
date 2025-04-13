@@ -1,11 +1,13 @@
 package com.example.socialmediaproject.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.Comment
 import com.google.android.material.imageview.ShapeableImageView
@@ -42,6 +44,13 @@ class CommentAdapter(
         holder.content.text = comment.content
         holder.likeCount.text = comment.likes.size.toString()
         holder.time.text = getTimeAgo(comment.timestamp)
+        if (comment.avatarurl.isNotEmpty()) {
+            Glide.with(holder.avatar.context)
+                .load(comment.avatarurl)
+                .placeholder(R.drawable.avataricon)
+                .error(R.drawable.avataricon)
+                .into(holder.avatar)
+        }
 
         holder.btnLike.setOnClickListener { onLikeClicked(comment) }
         holder.btnReply.setOnClickListener { onReplyClicked(comment) }

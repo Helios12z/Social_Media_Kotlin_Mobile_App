@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +24,6 @@ class ReplyAdapter(
         val likeCount = view.findViewById<TextView>(R.id.tvReplyLikeCount)
         val btnLike = view.findViewById<TextView>(R.id.btnReplyLike)
         val btnReply = view.findViewById<TextView>(R.id.btnReplyToReply)
-        val rvSubReplies = view.findViewById<RecyclerView?>(R.id.rvReplies)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyViewHolder {
@@ -35,7 +33,7 @@ class ReplyAdapter(
 
     override fun onBindViewHolder(holder: ReplyViewHolder, position: Int) {
         val reply = replies[position]
-        holder.username.text = reply.userId
+        holder.username.text = reply.username
         holder.content.text = reply.content
         holder.likeCount.text = reply.likes.size.toString()
         holder.time.text = getTimeAgo(reply.timestamp)
