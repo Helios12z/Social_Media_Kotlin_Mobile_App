@@ -100,7 +100,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:contentDescription="Like button"
-                    android:src="@drawable/heartbutton" />
+                    android:src="@drawable/smallhearticon" />
 
                 <TextView
                     android:id="@+id/textViewLikeCount"

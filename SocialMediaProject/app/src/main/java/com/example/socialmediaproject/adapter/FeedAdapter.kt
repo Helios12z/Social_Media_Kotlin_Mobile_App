@@ -64,7 +64,7 @@ class FeedAdapter(
         }
 
         holder.imageViewLike.setImageResource(
-            if (post.isLiked) R.drawable.heartediconbutton else R.drawable.heartbutton
+            if (post.isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
         )
 
         setupClickListeners(holder, position)

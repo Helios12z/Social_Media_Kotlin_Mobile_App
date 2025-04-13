@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
 import com.example.socialmediaproject.databinding.FragmentCommentBinding
@@ -23,6 +24,7 @@ class CommentFragment : Fragment() {
     private lateinit var adapter: CommentAdapter
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private lateinit var postId: String
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,7 +53,7 @@ class CommentFragment : Fragment() {
                 replyingTo = null
             }
             else {
-                binding.etCommentInput.error = "Làm sao không nhập gì mà đòi comment được bạn!"
+                binding.etCommentInput.error = "Không nhập gì mà đòi comment à!"
             }
         }
 
@@ -59,6 +61,18 @@ class CommentFragment : Fragment() {
             replyingTo = null
             binding.tvReplyingTo.visibility = View.GONE
             binding.btnCancelReply.visibility = View.GONE
+        }
+
+        db.collection("Users").document(auth.currentUser?.uid?:"").get().addOnSuccessListener {
+            result->if (result.exists()) {
+                if (result.getString("avatarurl")!="") {
+                    Glide.with(requireContext())
+                        .load(result.getString("avatarurl"))
+                        .placeholder(R.drawable.avataricon)
+                        .error(R.drawable.avataricon)
+                        .into(binding.ivUserAvatar)
+                }
+            }
         }
     }
 
@@ -75,6 +89,9 @@ class CommentFragment : Fragment() {
                     binding.tvReplyingTo.visibility = View.VISIBLE
                     binding.btnCancelReply.visibility = View.VISIBLE
                     binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
+                    if (binding.etCommentInput.text.toString().trim().isEmpty()) {
+                        binding.etCommentInput.setText("@${comment.username} ")
+                    }
                 },
                 onLikeClicked = { comment ->
                     viewModel.toggleLikeComment(comment.id, auth.currentUser?.uid ?: "")

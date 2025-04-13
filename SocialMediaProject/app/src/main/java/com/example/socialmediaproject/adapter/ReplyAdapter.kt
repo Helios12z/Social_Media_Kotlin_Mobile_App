@@ -36,6 +36,9 @@ class ReplyAdapter(
 
     override fun onBindViewHolder(holder: ReplyViewHolder, position: Int) {
         val reply = replies[position]
+        val isLiked = reply.likes.contains(currentUserId)
+        val iconRes = if (isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
+        holder.btnLike.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0)
         holder.username.text = reply.username
         holder.content.text = reply.content
         holder.likeCount.text = reply.likes.size.toString()

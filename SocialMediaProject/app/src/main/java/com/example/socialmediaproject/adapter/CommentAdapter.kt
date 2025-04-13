@@ -51,10 +51,11 @@ class CommentAdapter(
                 .error(R.drawable.avataricon)
                 .into(holder.avatar)
         }
-
+        val isLiked = comment.likes.contains(currentUserId)
+        val iconRes = if (isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
+        holder.btnLike.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0)
         holder.btnLike.setOnClickListener { onLikeClicked(comment) }
         holder.btnReply.setOnClickListener { onReplyClicked(comment) }
-
         val replyAdapter = ReplyAdapter(
             replies = comment.replies,
             currentUserId = currentUserId,
@@ -62,7 +63,6 @@ class CommentAdapter(
             onLikeClicked = onReplyLikeClicked,
             depth = 2
         )
-
         holder.rvReplies.adapter = replyAdapter
         holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)
     }
