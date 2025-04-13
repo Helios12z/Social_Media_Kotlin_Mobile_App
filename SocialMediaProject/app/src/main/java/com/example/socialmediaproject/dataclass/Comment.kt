@@ -9,5 +9,7 @@ data class Comment(val id: String = "",
                    val parentId: String? = null,
                    val postId: String = "",
                    val likes: List<String> = listOf(),
+                   var username: String ="",
+                   var avatarurl: String = "",
                     @get:Exclude
                     var replies: MutableList<Comment> = mutableListOf())

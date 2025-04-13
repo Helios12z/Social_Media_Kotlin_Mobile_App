@@ -22,7 +22,6 @@ class CommentFragment : Fragment() {
     private var replyingTo: Comment? = null
     private lateinit var adapter: CommentAdapter
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private lateinit var postId: String
 
     override fun onCreateView(
@@ -105,7 +104,7 @@ class CommentFragment : Fragment() {
         val allReplies = mutableListOf<Comment>()
         allReplies.addAll(directReplies)
         directReplies.forEach { reply ->
-            allReplies.addAll(collectAllRepliesFlat(reply.id, allComments)) 
+            allReplies.addAll(collectAllRepliesFlat(reply.id, allComments))
         }
         return allReplies
     }

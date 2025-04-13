@@ -38,7 +38,7 @@ class CommentAdapter(
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
-        holder.username.text = comment.userId
+        holder.username.text = comment.username
         holder.content.text = comment.content
         holder.likeCount.text = comment.likes.size.toString()
         holder.time.text = getTimeAgo(comment.timestamp)
