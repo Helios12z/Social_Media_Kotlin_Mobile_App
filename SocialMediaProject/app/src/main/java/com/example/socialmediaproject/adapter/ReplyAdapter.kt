@@ -6,8 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.Comment
+import com.google.android.material.imageview.ShapeableImageView
 
 class ReplyAdapter(
     private val replies: List<Comment>,
@@ -18,6 +20,7 @@ class ReplyAdapter(
 ) : RecyclerView.Adapter<ReplyAdapter.ReplyViewHolder>() {
 
     inner class ReplyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val avatar=itemView.findViewById<ShapeableImageView>(R.id.ivReplyUserAvatar)
         val username = view.findViewById<TextView>(R.id.tvReplyUsername)
         val time = view.findViewById<TextView>(R.id.tvReplyTime)
         val content = view.findViewById<TextView>(R.id.tvReplyContent)
@@ -40,6 +43,13 @@ class ReplyAdapter(
         holder.btnLike.setOnClickListener { onLikeClicked(reply) }
         holder.btnReply.visibility = View.VISIBLE
         holder.btnReply.setOnClickListener { onReplyClicked(reply) }
+        if (reply.avatarurl.isNotEmpty()) {
+            Glide.with(holder.avatar.context)
+                .load(reply.avatarurl)
+                .placeholder(R.drawable.avataricon)
+                .error(R.drawable.avataricon)
+                .into(holder.avatar)
+        }
     }
 
     override fun getItemCount(): Int = replies.size

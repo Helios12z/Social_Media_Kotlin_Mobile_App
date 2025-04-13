@@ -102,7 +102,7 @@
             android:layout_height="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Hủy trả lời"
-            android:src="@drawable/searchicon"
+            android:src="@drawable/xbutton"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/tvReplyingTo"
             app:layout_constraintEnd_toEndOf="@id/etCommentInput"

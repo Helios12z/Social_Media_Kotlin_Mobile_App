@@ -74,7 +74,7 @@ class CommentFragment : Fragment() {
                     replyingTo = comment
                     binding.tvReplyingTo.visibility = View.VISIBLE
                     binding.btnCancelReply.visibility = View.VISIBLE
-                    binding.tvReplyingTo.text = "Đang trả lời: ${comment.userId}"
+                    binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
                 },
                 onLikeClicked = { comment ->
                     viewModel.toggleLikeComment(comment.id, auth.currentUser?.uid ?: "")
