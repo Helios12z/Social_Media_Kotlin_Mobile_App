@@ -14,12 +14,15 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.firestore.FirebaseFirestore
 
 class FeedAdapter(
     private val context: Context,
     private var postList: List<PostViewModel>,
     private val listener: OnPostInteractionListener
 ) : RecyclerView.Adapter<FeedAdapter.PostViewHolder>() {
+
+    private val db:FirebaseFirestore=FirebaseFirestore.getInstance()
 
     interface OnPostInteractionListener {
         fun onLikeClicked(position: Int)
@@ -37,15 +40,22 @@ class FeedAdapter(
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = postList[position]
+        db.collection("comments")
+            .whereEqualTo("postId", post.id)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val commentCount = snapshot.size()
+                holder.textViewCommentCount.text = "$commentCount"
+            }
+            .addOnFailureListener {
+                holder.textViewCommentCount.text = "0"
+            }
 
         holder.textViewUsername.text = post.userName
         holder.textViewTimestamp.text = post.getTimeAgo()
-
         holder.textViewPostContent.text = post.content
-
         holder.textViewLikeCount.text = post.likeCount.toString()
         holder.textViewCommentCount.text = post.commentCount.toString()
-
         if (post.userAvatarUrl.isNotEmpty()) {
             Glide.with(context)
                 .load(post.userAvatarUrl)
@@ -55,7 +65,6 @@ class FeedAdapter(
         } else {
             holder.imageViewUserAvatar.setImageResource(R.drawable.avataricon)
         }
-
         if (post.imageUrls.isNotEmpty()) {
             holder.recyclerViewImages.visibility = View.VISIBLE
             setupImagesRecyclerView(holder.recyclerViewImages, post.imageUrls, position)
@@ -66,7 +75,6 @@ class FeedAdapter(
         holder.imageViewLike.setImageResource(
             if (post.isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
         )
-
         setupClickListeners(holder, position)
     }
 
