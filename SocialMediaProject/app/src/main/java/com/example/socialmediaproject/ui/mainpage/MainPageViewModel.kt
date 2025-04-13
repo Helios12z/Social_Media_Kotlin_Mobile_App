@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.FriendRequest
 import com.example.socialmediaproject.dataclass.PostViewModel
-import com.example.socialmediaproject.dataclass.RequestStatus
 import com.example.socialmediaproject.dataclass.UserMainPageInfo
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks

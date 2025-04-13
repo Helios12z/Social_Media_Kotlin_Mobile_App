@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivReplyUserAvatar"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/avataricon"
+        app:shapeAppearanceOverlay="@style/CircleImageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvReplyUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Username"
+        android:textColor="@android:color/black"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/ivReplyUserAvatar"
+        app:layout_constraintTop_toTopOf="@id/ivReplyUserAvatar" />
+
+    <TextView
+        android:id="@+id/tvReplyTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="1 giờ trước"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="@id/tvReplyUsername"
+        app:layout_constraintStart_toEndOf="@id/tvReplyUsername"
+        app:layout_constraintTop_toTopOf="@id/tvReplyUsername" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardReplyComment"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        app:cardBackgroundColor="#F5F5F5"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/ivReplyUserAvatar"
+        app:layout_constraintTop_toBottomOf="@id/tvReplyUsername">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/tvReplyContent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Đây là nội dung bình luận trả lời."
+                android:textColor="@android:color/black"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:id="@+id/layoutReplyActions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toEndOf="@id/ivReplyUserAvatar"
+        app:layout_constraintTop_toBottomOf="@id/cardReplyComment">
+
+        <TextView
+            android:id="@+id/btnReplyLike"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:drawableStart="@drawable/smallhearticon"
+            android:drawablePadding="4dp"
+            android:padding="4dp"
+            android:text="Thích"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/tvReplyLikeCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:padding="4dp"
+            android:text="5"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/btnReplyToReply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="?attr/selectableItemBackground"
+            android:drawableStart="@drawable/replyicon"
+            android:drawablePadding="4dp"
+            android:padding="4dp"
+            android:text="Trả lời"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,6 +16,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
+import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -85,11 +86,12 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onCommentClicked(position: Int) {
-        Toast.makeText(
-            requireContext(),
-            "Mở bình luận cho bài viết: ${postList[position].id}",
-            Toast.LENGTH_SHORT
-        ).show()
+        val post=homeviewmodel.postlist.value?.get(position)?:return
+        val goToFragment=CommentFragment()
+        val bundle=Bundle()
+        bundle.putString("post_id", post.id)
+        goToFragment.arguments=bundle
+        findNavController().navigate(R.id.action_homeFragment_to_comment_Fragment, bundle)
     }
 
     override fun onShareClicked(position: Int) {
