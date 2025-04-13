@@ -19,6 +19,7 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
 import com.example.socialmediaproject.dataclass.PostViewModel
+import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -230,11 +231,12 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onCommentClicked(position: Int) {
-        Toast.makeText(
-            requireContext(),
-            "Mở bình luận cho bài viết: ${postList[position].id}",
-            Toast.LENGTH_SHORT
-        ).show()
+        val post=viewModel.postlist.value?.get(position)?:return
+        val goToFragment= CommentFragment()
+        val bundle=Bundle()
+        bundle.putString("post_id", post.id)
+        goToFragment.arguments=bundle
+        findNavController().navigate(R.id.action_main_Page_Fragment_to_comment_Fragment, bundle)
     }
 
     override fun onShareClicked(position: Int) {

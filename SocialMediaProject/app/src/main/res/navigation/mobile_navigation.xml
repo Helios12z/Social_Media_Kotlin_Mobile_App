@@ -65,6 +65,8 @@
     <fragment android:id="@+id/navigation_mainpage"
         android:name="com.example.socialmediaproject.ui.mainpage.MainPageFragment"
         android:label="MainPage"
-        tools:layout="@layout/fragment_main_page"/>
-
+        tools:layout="@layout/fragment_main_page">
+        <action android:id="@+id/action_main_Page_Fragment_to_comment_Fragment"
+            app:destination="@+id/navigation_comment"/>
+    </fragment>
 </navigation>
