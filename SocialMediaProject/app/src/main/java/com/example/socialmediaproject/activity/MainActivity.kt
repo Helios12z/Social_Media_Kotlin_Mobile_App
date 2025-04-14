@@ -20,8 +20,10 @@ import androidx.work.WorkManager
 import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivityMainBinding
+import com.example.socialmediaproject.service.OneSignalHelper
 import com.example.socialmediaproject.service.sendPushNotification
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessaging
 import com.onesignal.OneSignal
@@ -51,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         }
         auth= FirebaseAuth.getInstance()
         checkFriendRequestsOnLogin(this)
+        checkMentionsOnLogin()
         val userid=auth.currentUser?.uid
         val usersref=db.collection("Users")
         usersref.whereEqualTo("userid", userid).get().addOnSuccessListener {
@@ -147,4 +150,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    fun checkMentionsOnLogin() {
+        val currentUserId = auth.currentUser?.uid ?: return
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val snapshot = db.collection("comments")
+                    .whereArrayContains("mentionedUserIds", currentUserId)
+                    .get()
+                    .await()
+                val unnotified = snapshot.documents.filter { doc ->
+                    val notifiedList = doc.get("notifiedUserIds") as? List<*> ?: emptyList<Any>()
+                    !notifiedList.contains(currentUserId)
+                }
+                val count = unnotified.size
+                if (count > 0) {
+                    OneSignalHelper.sendMentionNotification(
+                        playerId = currentUserId,
+                        commentId = "",
+                        message = "Bạn đã được nhắc đến trong $count bình luận"
+                    )
+                    val batch = db.batch()
+                    for (doc in unnotified) {
+                        batch.update(doc.reference, "notifiedUserIds", FieldValue.arrayUnion(currentUserId))
+                    }
+                    batch.commit().await()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 }

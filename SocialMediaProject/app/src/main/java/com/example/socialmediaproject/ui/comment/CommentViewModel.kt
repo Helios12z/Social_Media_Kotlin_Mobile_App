@@ -7,10 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
 import com.example.socialmediaproject.service.OneSignalHelper
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.regex.Pattern
 
 class CommentViewModel : ViewModel() {
@@ -27,7 +27,7 @@ class CommentViewModel : ViewModel() {
                 parentId = parentId,
                 postId = postId,
                 mentionedUserIds = emptyList(),
-                notified = false
+                notifiedUserIds = emptyList()
             )
             db.collection("comments")
             .document(commentId)
@@ -117,10 +117,11 @@ class CommentViewModel : ViewModel() {
             for (doc in snapshot.documents) {
                 val userId = doc.getString("userid") ?: continue
                 mentionedUserIds.add(userId)
-                val username = doc.getString("name") ?: "ai đó"
+                val username = doc.getString("name") ?: "Ai đó"
                 OneSignalHelper.sendMentionNotification(
                     playerId = userId,
-                    message = "$username đã nhắc đến bạn trong một bình luận"
+                    message = "$username đã nhắc đến bạn trong một bình luận",
+                    commentId=commentId
                 )
             }
             if (mentionedUserIds.isNotEmpty()) {
@@ -129,7 +130,7 @@ class CommentViewModel : ViewModel() {
                 .update(
                     mapOf(
                         "mentionedUserIds" to mentionedUserIds,
-                        "notified" to false
+                        "notifiedUserIds" to FieldValue.arrayUnion(*mentionedUserIds.toTypedArray())
                     )
                 )
             }

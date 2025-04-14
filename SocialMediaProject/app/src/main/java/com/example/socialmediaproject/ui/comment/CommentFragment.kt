@@ -126,7 +126,6 @@ class CommentFragment : Fragment() {
                     viewModel.toggleLikeComment(reply.id, auth.currentUser?.uid ?: "")
                 }
             )
-
             binding.rvComments.apply {
                 adapter = this@CommentFragment.adapter
                 layoutManager = LinearLayoutManager(context)

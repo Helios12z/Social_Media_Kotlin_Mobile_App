@@ -12,6 +12,6 @@ data class Comment(val id: String = "",
                    var username: String ="",
                    var avatarurl: String = "",
                    val mentionedUserIds: List<String>,
-                   val notified: Boolean = false,
+                   val notifiedUserIds: List<String> = emptyList(),
                     @get:Exclude
                     var replies: MutableList<Comment> = mutableListOf())
