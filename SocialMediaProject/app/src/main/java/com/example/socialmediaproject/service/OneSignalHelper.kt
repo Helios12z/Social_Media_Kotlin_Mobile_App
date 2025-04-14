@@ -54,13 +54,12 @@ object OneSignalHelper {
             try {
                 val response = service.sendNotification(payload)
                 if (response.isSuccessful) {
-                    Log.d("OneSignal", "Push notification sent to $userId")
                     updateNotifiedStatusIfNeeded(userId)
                 } else {
-                    Log.e("OneSignal", "Push failed: ${response.errorBody()?.string()}")
+                    //Log error
                 }
             } catch (e: Exception) {
-                Log.e("OneSignalSend_ERROR", "Network/Send Error: ${e.message}", e)
+                e.printStackTrace()
             }
         }
     }
@@ -84,6 +83,27 @@ object OneSignalHelper {
             }
         } catch (e: Exception) {
             Log.e("OneSignal", "Failed to update notified status: ${e.message}")
+        }
+    }
+
+    private suspend fun updateMentionNotifiedStatusIfNeeded(userId: String) {
+        val db = FirebaseFirestore.getInstance()
+        try {
+            val snapshot = db.collection("comments")
+                .whereArrayContains("mentionedUserIds", userId)
+                .whereEqualTo("notified", false)
+                .get()
+                .await()
+            if (!snapshot.isEmpty) {
+                val batch = db.batch()
+                for (doc in snapshot.documents) {
+                    batch.update(doc.reference, "notified", true)
+                }
+                batch.commit().await()
+                Log.d("OneSignal", "Updated notified=true for ${snapshot.size()} mentions")
+            }
+        } catch (e: Exception) {
+            Log.e("OneSignal", "Failed to update mention notified status: ${e.message}")
         }
     }
 }

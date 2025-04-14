@@ -1,6 +1,7 @@
 package com.example.socialmediaproject.ui.comment
 
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
@@ -9,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.regex.Pattern
 
 class CommentViewModel : ViewModel() {
@@ -23,13 +25,15 @@ class CommentViewModel : ViewModel() {
                 content = content,
                 userId = auth.currentUser?.uid ?: "",
                 parentId = parentId,
-                postId = postId
+                postId = postId,
+                mentionedUserIds = emptyList(),
+                notified = false
             )
             db.collection("comments")
             .document(commentId)
             .set(comment)
             .addOnSuccessListener {
-                handleMentions(content)
+                handleMentions(content, commentId)
             }
             .addOnFailureListener {
 
@@ -93,12 +97,12 @@ class CommentViewModel : ViewModel() {
         }.addOnSuccessListener {
             // Success
         }.addOnFailureListener {
-            // Fail
+            //Failure
         }
     }
 
-    private fun handleMentions(content: String) {
-        val pattern = Pattern.compile("@(\\w+)")
+    private fun handleMentions(content: String, commentId: String) {
+        val pattern = Pattern.compile("@([\\p{L}\\p{M} .'-]+)")
         val matcher = pattern.matcher(content)
         val mentionedUsernames = mutableSetOf<String>()
         while (matcher.find()) {
@@ -109,11 +113,25 @@ class CommentViewModel : ViewModel() {
         .whereIn("username", mentionedUsernames.toList())
         .get()
         .addOnSuccessListener { snapshot ->
+            val mentionedUserIds = mutableListOf<String>()
             for (doc in snapshot.documents) {
                 val userId = doc.getString("userid") ?: continue
-                val playerId = doc.getString("playerId") ?: continue
-                val username = doc.getString("username") ?: "ai đó"
-                OneSignalHelper.sendMentionNotification(playerId, username)
+                mentionedUserIds.add(userId)
+                val username = doc.getString("name") ?: "ai đó"
+                OneSignalHelper.sendMentionNotification(
+                    playerId = userId,
+                    message = "$username đã nhắc đến bạn trong một bình luận"
+                )
+            }
+            if (mentionedUserIds.isNotEmpty()) {
+                db.collection("comments")
+                .document(commentId)
+                .update(
+                    mapOf(
+                        "mentionedUserIds" to mentionedUserIds,
+                        "notified" to false
+                    )
+                )
             }
         }
     }
