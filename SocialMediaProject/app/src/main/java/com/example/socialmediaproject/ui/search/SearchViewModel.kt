@@ -291,7 +291,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         .whereIn("userid", sentPendingReceiverIds)
                         .get()
                         .await()
-
                     for (doc in usersSnapshot.documents) {
                         val user = doc.toObject<User>()
                         if (user != null) {
@@ -299,7 +298,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         }
                     }
                 }
-
                 _sentRequests.value = sentRequestsUsers.map { user ->
                     FriendRecommendation(
                         userId = user.userid,
@@ -310,7 +308,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 }
             } catch (e: Exception) {
-                Log.e("ERROR FETCH SENT REQUESTS", e.toString())
+                e.printStackTrace()
             } finally {
                 _isLoading.value = false
             }
@@ -339,7 +337,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         if (user != null) {
                             receivedRequestsUsers.add(user)
                         } else {
-                            Log.w("FETCH_RECEIVED", "Failed to parse user document: ${doc.id}")
+                            //log error
                         }
                     }
                 }
@@ -352,10 +350,8 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         requestStatus = RequestStatus.SENT
                     )
                 }
-                Log.d("FETCH_RECEIVED", "Fetched ${receivedRequestsUsers.size} received requests.")
             } catch (e: Exception) {
-                Log.e("FETCH_RECEIVED_ERROR", "Error fetching received friend requests", e)
-                _errorMessage.value = "Failed to load received requests: ${e.message}"
+                e.printStackTrace()
             } finally {
                 _isLoading.value = false
             }
