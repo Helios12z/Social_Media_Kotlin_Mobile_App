@@ -1,7 +1,5 @@
 package com.example.socialmediaproject.ui.comment
 
-import android.util.Log
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
@@ -102,37 +100,41 @@ class CommentViewModel : ViewModel() {
     }
 
     private fun handleMentions(content: String, commentId: String) {
-        val pattern = Pattern.compile("@([\\p{L}\\p{M} .'-]+)")
+        val pattern = Pattern.compile("@([a-zA-Z0-9_]+)")
         val matcher = pattern.matcher(content)
         val mentionedUsernames = mutableSetOf<String>()
         while (matcher.find()) {
             mentionedUsernames.add(matcher.group(1))
         }
         if (mentionedUsernames.isEmpty()) return
-        db.collection("Users")
-        .whereIn("username", mentionedUsernames.toList())
-        .get()
-        .addOnSuccessListener { snapshot ->
-            val mentionedUserIds = mutableListOf<String>()
-            for (doc in snapshot.documents) {
-                val userId = doc.getString("userid") ?: continue
-                mentionedUserIds.add(userId)
-                val username = doc.getString("name") ?: "Ai đó"
-                OneSignalHelper.sendMentionNotification(
-                    playerId = userId,
-                    message = "$username đã nhắc đến bạn trong một bình luận",
-                    commentId=commentId
-                )
-            }
-            if (mentionedUserIds.isNotEmpty()) {
-                db.collection("comments")
-                .document(commentId)
-                .update(
-                    mapOf(
-                        "mentionedUserIds" to mentionedUserIds,
-                        "notifiedUserIds" to FieldValue.arrayUnion(*mentionedUserIds.toTypedArray())
-                    )
-                )
+        db.collection("Users").document(auth.currentUser?.uid?:"").get().addOnSuccessListener {
+            result->if(result.exists()) {
+               val sendername=result.getString("name") ?: "Ai đó"
+                db.collection("Users")
+                .whereIn("name", mentionedUsernames.toList())
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    val mentionedUserIds = mutableListOf<String>()
+                    for (doc in snapshot.documents) {
+                        val userId = doc.getString("userid") ?: continue
+                        mentionedUserIds.add(userId)
+                        OneSignalHelper.sendMentionNotification(
+                            playerId = userId,
+                            message = "$sendername đã nhắc đến bạn trong một bình luận",
+                            commentId=commentId
+                        )
+                    }
+                    if (mentionedUserIds.isNotEmpty()) {
+                        db.collection("comments")
+                        .document(commentId)
+                        .update(
+                            mapOf(
+                                "mentionedUserIds" to mentionedUserIds,
+                                "notifiedUserIds" to FieldValue.arrayUnion(*mentionedUserIds.toTypedArray())
+                            )
+                        )
+                    }
+                }
             }
         }
     }
