@@ -49,6 +49,8 @@ class UpdateAccountWorker(context: Context, workerParams: WorkerParameters): Cor
             }
             else userUpdate["wallurl"]=""
         }
+        inputData.getString("name")?.let { userUpdate["name"] = it }
+        inputData.getString("fullname")?.let { userUpdate["fullname"] = it }
         inputData.getString("birthday")?.let { userUpdate["birthday"] = it }
         inputData.getString("address")?.let { userUpdate["address"] = it }
         inputData.getString("phone")?.let { userUpdate["phonenumber"] = it }

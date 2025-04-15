@@ -54,9 +54,10 @@ class MainPageViewModel : ViewModel() {
                     if (result.exists()) {
                         val avatarUrl = result.getString("avatarurl") ?: ""
                         val name = result.getString("name") ?: ""
+                        val fullName=result.getString("fullname") ?: ""
                         val bio = result.getString("bio") ?: ""
                         val wallUrl = result.getString("wallurl") ?: ""
-                        userInfo.value = UserMainPageInfo(avatarUrl, result.id, name, bio, wallUrl)
+                        userInfo.value = UserMainPageInfo(avatarUrl, result.id, name, fullName, bio, wallUrl)
                         isCurrentUser.value = (currentUserId == wallUserId)
                         val friendList = result.get("friends") as? List<String> ?: emptyList()
                         followersCount.value = friendList.size

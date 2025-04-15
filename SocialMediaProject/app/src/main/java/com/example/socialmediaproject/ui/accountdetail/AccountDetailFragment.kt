@@ -99,6 +99,8 @@ class AccountDetailFragment : Fragment() {
         val userid=auth.currentUser?.uid ?: ""
         db.collection("Users").document(userid).get().addOnSuccessListener {
             result->if (result!=null) {
+                binding.tilNickname.editText?.setText(result.getString("name"))
+                binding.tilFullName.editText?.setText(result.getString("fullname"))
                 binding.tilBirthday.editText?.setText(result.getString("birthday"))
                 binding.tilBio.editText?.setText(result.getString("bio"))
                 binding.tilPhone.editText?.setText(result.getString("phonenumber"))
@@ -146,18 +148,21 @@ class AccountDetailFragment : Fragment() {
         }
         binding.btnSaveProfile.setOnClickListener {
             if (tmp1== Uri.EMPTY && tmp2== Uri.EMPTY
+                && binding.tilNickname.editText?.text.isNullOrEmpty()
                 && binding.tilBirthday.editText?.text.isNullOrEmpty()
                 && binding.tilBio.editText?.text.isNullOrEmpty()
                 && binding.tilPhone.editText?.text.isNullOrEmpty()
                 && binding.tilAddress.editText?.text.isNullOrEmpty()
                 && gender.isEmpty()) {
-                    Toast.makeText(requireContext(), "Không thêm gì mới sao cập nhật được bạn!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Không đủ điều kiện cập nhật!", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
             }
             else {
                 binding.btnSaveProfile.isEnabled = false
                 binding.progressBar.visibility=View.VISIBLE
                 val data= workDataOf(
+                    "name" to binding.tilNickname.editText?.text.toString(),
+                    "fullname" to binding.tilFullName.editText?.text.toString(),
                     "avatarUri" to (if (tmp1 == Uri.EMPTY) null else tmp1.toString()),
                     "wallUri" to (if (tmp2 == Uri.EMPTY) null else tmp2.toString()),
                     "birthday" to binding.tilBirthday.editText?.text.toString(),

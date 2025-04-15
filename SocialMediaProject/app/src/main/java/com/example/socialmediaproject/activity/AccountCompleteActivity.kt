@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
-import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -41,6 +40,7 @@ class AccountCompleteActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAccountCompleteBinding
     private lateinit var tilbirthday: TextInputLayout
+    private lateinit var tilFullName: TextInputLayout
     private lateinit var tiladdress: TextInputLayout
     private lateinit var tilphone: TextInputLayout
     private lateinit var tilbio: TextInputLayout
@@ -66,6 +66,7 @@ class AccountCompleteActivity : AppCompatActivity() {
         tiladdress=binding.tilAddress
         tilphone=binding.tilPhone
         tilbio=binding.tilBio
+        tilFullName=binding.tilFullName
         imgavatar=binding.imgAvatar
         imgcoverphoto=binding.imgCoverPhoto
         savebtn=binding.btnSaveProfile
@@ -107,37 +108,36 @@ class AccountCompleteActivity : AppCompatActivity() {
         var address:String
         var phone:String
         var bio:String
+        var fullname: String
         savebtn.setOnClickListener {
-            if (tilbirthday.editText?.text.isNullOrEmpty())
-            {
-                Toast.makeText(this, "Vui lòng nhập đầy ngày sinh nhật!", Toast.LENGTH_SHORT).show()
-            }
-            else {
-                if (tiladdress.editText?.text.isNullOrEmpty()) address=""
-                else address=tiladdress.editText?.text.toString()
-                if (tilphone.editText?.text.isNullOrEmpty()) phone=""
-                else phone=tilphone.editText?.text.toString()
-                if (tilbio.editText?.text.isNullOrEmpty()) bio=""
-                else bio=tilbio.editText?.text.toString()
-                birthday=tilbirthday.editText?.text.toString()
-                val userid=auth.currentUser?.uid
-                if (userid!=null) {
-                    savebtn.isEnabled=false
-                    val userupdate= hashMapOf(
-                        "address" to address,
-                        "phonenumber" to phone,
-                        "bio" to bio,
-                        "birthday" to birthday,
-                        "gender" to gender,
-                        "avatarurl" to avataruri.toString(),
-                        "wallurl" to walluri.toString()
-                    )
-                    db.collection("Users").document(userid).set(userupdate, SetOptions.merge()).addOnSuccessListener {
-                        Toast.makeText(this, "Cập nhật tài khoản hoàn tất!", Toast.LENGTH_SHORT).show()
-                        val intent=Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
+            if (tilbirthday.editText?.text.isNullOrEmpty()) birthday=""
+            else birthday=tilbirthday.editText?.text.toString()
+            if (tiladdress.editText?.text.isNullOrEmpty()) address=""
+            else address=tiladdress.editText?.text.toString()
+            if (tilphone.editText?.text.isNullOrEmpty()) phone=""
+            else phone=tilphone.editText?.text.toString()
+            if (tilbio.editText?.text.isNullOrEmpty()) bio=""
+            else bio=tilbio.editText?.text.toString()
+            if (tilFullName.editText?.text.isNullOrEmpty()) fullname=""
+            else fullname=tilFullName.editText?.text.toString()
+            val userid=auth.currentUser?.uid
+            if (userid!=null) {
+                savebtn.isEnabled=false
+                val userupdate= hashMapOf(
+                    "address" to address,
+                    "phonenumber" to phone,
+                    "bio" to bio,
+                    "birthday" to birthday,
+                    "gender" to gender,
+                    "avatarurl" to avataruri.toString(),
+                    "wallurl" to walluri.toString(),
+                    "fullname" to fullname
+                )
+                db.collection("Users").document(userid).set(userupdate, SetOptions.merge()).addOnSuccessListener {
+                    Toast.makeText(this, "Cập nhật tài khoản hoàn tất!", Toast.LENGTH_SHORT).show()
+                    val intent=Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 }
             }
         }

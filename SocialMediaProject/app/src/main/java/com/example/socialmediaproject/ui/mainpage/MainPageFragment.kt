@@ -75,6 +75,13 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                 binding.profileBio.visibility = View.VISIBLE
                 binding.profileBio.text = user.bio
             }
+            if (user.fullName.isEmpty()) {
+                binding.profileFullName.visibility=View.GONE
+            }
+            else {
+                binding.profileFullName.visibility=View.VISIBLE
+                binding.profileFullName.text=user.fullName
+            }
             Glide.with(requireContext())
                 .load(user.wallUrl)
                 .placeholder(R.color.white)
