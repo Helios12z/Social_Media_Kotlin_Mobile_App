@@ -50,13 +50,18 @@ class SignUpActivity : AppCompatActivity() {
             val password=binding.password.text.toString()
             val confirmpassword=binding.confirmPassword.text.toString()
             val name=binding.name.text.toString()
-            if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty() && confirmpassword.isNotEmpty())
+            val fullname=binding.fullName.text.toString()
+            val nicknameRegex = "^[a-zA-Z0-9_]+$".toRegex()
+            if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty() && confirmpassword.isNotEmpty() && fullname.isNotEmpty())
             {
                 if (password==confirmpassword)
                 {
                     val emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
                     if (!email.matches(emailPattern)) {
                         Toast.makeText(this, "Email không đúng định dạng!", Toast.LENGTH_SHORT).show()
+                    }
+                    else if (!name.matches(nicknameRegex)) {
+                        Toast.makeText(this, "Nickname chỉ được chứa chữ cái, số và dấu gạch dưới!", Toast.LENGTH_SHORT).show()
                     }
                     else
                     {
@@ -73,7 +78,7 @@ class SignUpActivity : AppCompatActivity() {
                                             task -> if (task.isSuccessful)
                                     {
                                         val userid=task.result.user?.uid
-                                        if (userid!=null) AddNewUserToDb(binding.name.text.toString(), userid, binding.email.text.toString())
+                                        if (userid!=null) AddNewUserToDb(binding.name.text.toString(), binding.fullName.text.toString(), userid, binding.email.text.toString())
                                     }
                                     else  {
                                         Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
@@ -114,11 +119,12 @@ class SignUpActivity : AppCompatActivity() {
         paint.shader = shader
     }
 
-    private fun AddNewUserToDb(name: String, userid: String, email: String)
+    private fun AddNewUserToDb(name: String, fullname: String, userid: String, email: String)
     {
         val user= hashMapOf(
             "userid" to userid,
             "name" to name,
+            "fullname" to fullname,
             "email" to email,
             "role" to "user",
             "isfirsttime" to true
