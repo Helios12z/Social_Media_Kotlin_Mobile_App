@@ -25,10 +25,10 @@ object OneSignalHelper {
         retrofit.create(OneSignalService::class.java)
     }
 
-    fun sendMentionNotification(playerId: String, message: String, commentId: String) {
+    fun sendMentionNotification(userId: String, message: String, commentId: String) {
         val payload = NotificationPayload(
             appId = "e354e0b8-a22b-4662-8696-6d2431f7191c",
-            includedExternalUserIds = listOf(playerId),
+            includedExternalUserIds = listOf(userId),
             contents = NotificationContent(en = message, vie=message)
         )
         CoroutineScope(Dispatchers.IO).launch {
@@ -38,7 +38,7 @@ object OneSignalHelper {
                     val db = FirebaseFirestore.getInstance()
                     db.collection("comments")
                         .document(commentId)
-                        .update("notifiedUserIds", FieldValue.arrayUnion(playerId))
+                        .update("notifiedUserIds", FieldValue.arrayUnion(userId))
                         .addOnSuccessListener {
 
                         }

@@ -119,7 +119,7 @@ class CommentViewModel : ViewModel() {
                         val userId = doc.getString("userid") ?: continue
                         mentionedUserIds.add(userId)
                         OneSignalHelper.sendMentionNotification(
-                            playerId = userId,
+                            userId = userId,
                             message = "$sendername đã nhắc đến bạn trong một bình luận",
                             commentId=commentId
                         )
@@ -129,8 +129,7 @@ class CommentViewModel : ViewModel() {
                         .document(commentId)
                         .update(
                             mapOf(
-                                "mentionedUserIds" to mentionedUserIds,
-                                "notifiedUserIds" to FieldValue.arrayUnion(*mentionedUserIds.toTypedArray())
+                                "mentionedUserIds" to mentionedUserIds
                             )
                         )
                     }

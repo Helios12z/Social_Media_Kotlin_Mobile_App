@@ -164,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                 val count = unnotified.size
                 if (count > 0) {
                     OneSignalHelper.sendMentionNotification(
-                        playerId = currentUserId,
+                        userId = currentUserId,
                         commentId = "",
                         message = "Bạn đã được nhắc đến trong $count bình luận"
                     )
@@ -179,5 +179,4 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 }
