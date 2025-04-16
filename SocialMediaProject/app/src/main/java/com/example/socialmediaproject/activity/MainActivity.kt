@@ -19,7 +19,6 @@ import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivityMainBinding
 import com.example.socialmediaproject.service.OneSignalHelper
-import com.example.socialmediaproject.service.sendPushNotification
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -136,7 +135,7 @@ class MainActivity : AppCompatActivity() {
                     .await()
                 val count = snapshots.size()
                 if (count > 0) {
-                    sendPushNotification(currentUserId, "Bạn có $count lời mời kết bạn mới!")
+                    OneSignalHelper.sendPushNotification(currentUserId, "Bạn có $count lời mời kết bạn mới!")
                     val batch = db.batch()
                     for (doc in snapshots.documents) {
                         batch.update(doc.reference, "notified", true)
@@ -178,5 +177,16 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
+    }
+
+    override fun onBackPressed() {
+        val sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
+        if (!sharedPreferences.getBoolean("rememberMe", false)) {
+            auth=FirebaseAuth.getInstance()
+            OneSignal.logout()
+            sharedPreferences.edit().clear().apply()
+            auth.signOut()
+        }
+        super.onBackPressed()
     }
 }

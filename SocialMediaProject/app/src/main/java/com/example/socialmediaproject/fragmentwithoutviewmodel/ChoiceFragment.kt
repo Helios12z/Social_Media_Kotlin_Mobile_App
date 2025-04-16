@@ -18,6 +18,7 @@ import com.example.socialmediaproject.databinding.FragmentChoiceBinding
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.onesignal.OneSignal
 
 class ChoiceFragment : Fragment() {
     private lateinit var binding: FragmentChoiceBinding
@@ -87,6 +88,7 @@ class ChoiceFragment : Fragment() {
         auth.signOut()
         sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
+        OneSignal.logout()
         val intent = Intent(requireContext(), LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)

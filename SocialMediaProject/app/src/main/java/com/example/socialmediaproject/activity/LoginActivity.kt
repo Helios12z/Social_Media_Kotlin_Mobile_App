@@ -16,6 +16,7 @@ import com.example.socialmediaproject.R
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.onesignal.OneSignal
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var title: TextView
@@ -30,7 +31,6 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        Thread.sleep(1500)
         installSplashScreen()
         sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
         if (sharedPreferences.getBoolean("rememberMe", false)) {
@@ -56,7 +56,7 @@ class LoginActivity : AppCompatActivity() {
                 loginbutton.isEnabled=false
                 db=FirebaseFirestore.getInstance()
                 firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
-                .addOnCompleteListener() {
+                .addOnCompleteListener {
                     task-> if (task.isSuccessful) {
                         Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
                         if (rememberme.isChecked) {
@@ -68,6 +68,7 @@ class LoginActivity : AppCompatActivity() {
                         } else {
                             sharedPreferences.edit().clear().apply()
                         }
+                        OneSignal.login(firebaseauth.currentUser?.uid?:"")
                         intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
                         finish()
@@ -110,6 +111,7 @@ class LoginActivity : AppCompatActivity() {
         firebaseauth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                OneSignal.login(firebaseauth.currentUser?.uid?:"")
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             } else {
