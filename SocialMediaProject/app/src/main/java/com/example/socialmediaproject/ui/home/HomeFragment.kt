@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.os.bundleOf
@@ -28,6 +29,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private lateinit var feedAdapter: FeedAdapter
     private val postList = mutableListOf<PostViewModel>()
     private lateinit var homeviewmodel: HomeViewModel
+    private lateinit var chatbutton: ImageView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,6 +38,10 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         homeviewmodel=ViewModelProvider(requireActivity())[HomeViewModel::class.java]
+        chatbutton=view.findViewById(R.id.button_chat)
+        chatbutton.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_chatFragment)
+        }
         initViews(view)
         setupRecyclerView()
         setupSwipeRefresh()

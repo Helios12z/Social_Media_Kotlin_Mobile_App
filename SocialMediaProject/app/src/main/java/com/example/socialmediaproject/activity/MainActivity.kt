@@ -106,12 +106,6 @@ class MainActivity : AppCompatActivity() {
                     }
                     true
                 }
-                R.id.navigation_chat->{
-                    if (!navController.popBackStack(R.id.navigation_chat, false)) {
-                        navController.navigate(R.id.navigation_chat)
-                    }
-                    true
-                }
                 else -> false
             }
         }

@@ -9,21 +9,20 @@
     <item
         android:id="@+id/navigation_search"
         android:icon="@drawable/searchicon"
-        android:title="Search" />
+        android:title="Tìm kiếm" />
 
     <item
         android:id="@+id/navigation_plus"
         android:icon="@drawable/plus"
-        android:title="Post" />
+        android:title="Đăng" />
 
     <item
-        android:id="@+id/navigation_chat"
-        android:icon="@drawable/chatbutton"
-        android:title="Heels" />
+        android:id="@+id/navigation_notification"
+        android:icon="@drawable/notificationicon"
+        android:title="Thông báo" />
 
     <item
         android:id="@+id/navigation_account"
         android:icon="@drawable/avataricon"
-        android:title="Account" />
-
+        android:title="Tài khoản" />
 </menu>
