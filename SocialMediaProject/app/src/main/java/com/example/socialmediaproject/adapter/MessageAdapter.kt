@@ -14,7 +14,7 @@ import com.example.socialmediaproject.dataclass.Message
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class MessageAdapter(private val currentUserId: String): ListAdapter<Message, MessageAdapter.MessageViewHolder>(DIFF_CALLBACK) {
+class MessageAdapter(private val currentUserId: String, private val senderAvatarUrl: String?): ListAdapter<Message, MessageAdapter.MessageViewHolder>(DIFF_CALLBACK) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Message>() {
             override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean =
@@ -61,7 +61,10 @@ class MessageAdapter(private val currentUserId: String): ListAdapter<Message, Me
             holder.layoutReceived.visibility = View.VISIBLE
             holder.tvReceivedMessage.text = message.text
             holder.tvReceivedTime.text = timeText
-            //Glide.with(holder.itemView.context).load().into(holder.ivSenderAvatar)
+            Glide.with(holder.itemView.context).load(senderAvatarUrl)
+                .placeholder(R.drawable.avataricon)
+                .error(R.drawable.avataricon)
+                .into(holder.ivSenderAvatar)
         }
     }
 }

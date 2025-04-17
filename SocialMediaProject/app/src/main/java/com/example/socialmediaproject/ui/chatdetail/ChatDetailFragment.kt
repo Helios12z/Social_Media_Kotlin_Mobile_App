@@ -49,7 +49,7 @@ class ChatDetailFragment : Fragment() {
         val chatId = if (currentUserId < chatUser.id) "${currentUserId}_${chatUser.id}"
         else "${chatUser.id}_${currentUserId}"
         binding.recyclerViewMessages.layoutManager = LinearLayoutManager(requireContext())
-        val adapter = MessageAdapter(currentUserId)
+        val adapter = MessageAdapter(currentUserId, chatUser.avatarUrl)
         binding.recyclerViewMessages.adapter = adapter
         viewModel.messages.observe(viewLifecycleOwner) { messages ->
             adapter.submitList(messages)
