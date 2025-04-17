@@ -17,8 +17,8 @@
         android:title="Post" />
 
     <item
-        android:id="@+id/navigation_dashboard"
-        android:icon="@drawable/locket"
+        android:id="@+id/navigation_chat"
+        android:icon="@drawable/chatbutton"
         android:title="Heels" />
 
     <item
