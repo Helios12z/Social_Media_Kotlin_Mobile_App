@@ -43,6 +43,9 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         binding=FragmentMainPageBinding.inflate(inflater, container, false)
         viewModel=ViewModelProvider(requireActivity())[MainPageViewModel::class.java]
         wallUserId = arguments?.getString("wall_user_id") ?: ""
+        if (viewModel.wallUserId!=wallUserId) {
+            viewModel.resetState()
+        }
         viewModel.wallUserId=wallUserId
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
@@ -53,7 +56,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         observeViewModel()
         viewModel.userInfo.observe(viewLifecycleOwner) {
             user-> if (user.userId!=wallUserId || viewModel.postlist.value.isNullOrEmpty()) {
-               viewModel.loadPosts()
+                viewModel.loadPosts()
             }
         }
         return binding.root

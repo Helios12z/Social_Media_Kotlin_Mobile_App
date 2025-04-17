@@ -27,8 +27,6 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var feedAdapter: FeedAdapter
     private val postList = mutableListOf<PostViewModel>()
-    private lateinit var db: FirebaseFirestore
-    private lateinit var auth: FirebaseAuth
     private lateinit var homeviewmodel: HomeViewModel
 
     override fun onCreateView(

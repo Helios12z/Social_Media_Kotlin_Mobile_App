@@ -503,4 +503,15 @@ class MainPageViewModel : ViewModel() {
             }
         }
     }
+
+    fun resetState() {
+        userInfo.value = UserMainPageInfo("", "", "", "", "", "")
+        _postlist.value = emptyList()
+        isFriend.value = false
+        isCurrentUser.value = false
+        isSendingFriendRequest.value = false
+        isReceivingFriendRequest.value = false
+        followersCount.value = 0
+        postsCount.value = 0
+    }
 }
