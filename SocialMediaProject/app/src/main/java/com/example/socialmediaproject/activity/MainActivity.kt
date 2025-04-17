@@ -179,14 +179,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
+    override fun onDestroy() {
+        super.onDestroy()
         val sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
         if (!sharedPreferences.getBoolean("rememberMe", false)) {
-            auth=FirebaseAuth.getInstance()
+            val auth=FirebaseAuth.getInstance()
             OneSignal.logout()
             sharedPreferences.edit().clear().apply()
             auth.signOut()
         }
-        super.onBackPressed()
     }
 }

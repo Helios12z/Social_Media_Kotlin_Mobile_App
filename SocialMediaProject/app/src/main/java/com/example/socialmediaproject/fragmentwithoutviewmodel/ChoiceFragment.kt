@@ -44,6 +44,7 @@ class ChoiceFragment : Fragment() {
         binding.tvUserName.visibility=View.INVISIBLE
         binding.tvUserEmail.visibility=View.INVISIBLE
         db.collection("Users").document(userid).get().addOnSuccessListener { result->
+            if (!isAdded) return@addOnSuccessListener
             binding.choiceprogressbar.visibility=View.GONE
             binding.tvUserName.visibility=View.VISIBLE
             binding.tvUserEmail.visibility=View.VISIBLE

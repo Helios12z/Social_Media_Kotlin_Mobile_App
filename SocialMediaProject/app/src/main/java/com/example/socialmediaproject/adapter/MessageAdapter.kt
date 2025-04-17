@@ -51,7 +51,7 @@ class MessageAdapter(private val currentUserId: String, private val senderAvatar
             holder.layoutReceived.visibility = View.GONE
             holder.tvSentMessage.text = message.text
             holder.tvSentTime.text = timeText
-            val tickIcon = if (message.isRead)
+            val tickIcon = if (message.read)
                 R.drawable.tickicon_double
             else
                 R.drawable.tickicon

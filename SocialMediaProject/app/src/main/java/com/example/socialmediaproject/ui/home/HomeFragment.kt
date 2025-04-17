@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity.MODE_PRIVATE
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -21,6 +22,7 @@ import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.onesignal.OneSignal
 
 class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 

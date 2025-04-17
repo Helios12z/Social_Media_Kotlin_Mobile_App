@@ -23,8 +23,8 @@ class ChatDetailViewModel : ViewModel() {
             if (error != null || snapshot == null) return@addSnapshotListener
             val list = snapshot.documents.mapNotNull { doc ->
                 val message = doc.toObject(Message::class.java)?.copy(id = doc.id)
-                if (message != null && message.receiverId == currentUserId && !message.isRead) {
-                    doc.reference.update("isRead", true)
+                if (message != null && message.receiverId == currentUserId && !message.read) {
+                    doc.reference.update("read", true)
                 }
                 message
             }
@@ -47,19 +47,19 @@ class ChatDetailViewModel : ViewModel() {
 
     fun loadMessages(chatId: String, currentUserId: String) {
         db.collection("chats")
-            .document(chatId)
-            .collection("messages")
-            .orderBy("timestamp", Query.Direction.ASCENDING)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val messages = snapshot.documents.mapNotNull { doc ->
-                    val message = doc.toObject(Message::class.java)?.copy(id = doc.id)
-                    if (message != null && message.receiverId == currentUserId && !message.isRead) {
-                        doc.reference.update("isRead", true)
-                    }
-                    message
+        .document(chatId)
+        .collection("messages")
+        .orderBy("timestamp", Query.Direction.ASCENDING)
+        .get()
+        .addOnSuccessListener { snapshot ->
+            val messages = snapshot.documents.mapNotNull { doc ->
+                val message = doc.toObject(Message::class.java)?.copy(id = doc.id)
+                if (message != null && message.receiverId == currentUserId && !message.read) {
+                    doc.reference.update("read", true)
                 }
-                _messages.value = messages
+                message
             }
+            _messages.value = messages
+        }
     }
 }
