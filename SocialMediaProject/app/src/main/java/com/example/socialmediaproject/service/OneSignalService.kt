@@ -1,7 +1,7 @@
 package com.example.socialmediaproject.service
 
 import com.example.socialmediaproject.dataclass.NotificationPayload
-import okhttp3.ResponseBody
+import com.example.socialmediaproject.dataclass.NotificationResponse
 import retrofit2.http.Body
 import retrofit2.http.Headers
 import retrofit2.http.POST
@@ -12,5 +12,5 @@ interface OneSignalService {
         "Content-Type: application/json"
     )
     @POST("notifications")
-    suspend fun sendNotification(@Body payload: NotificationPayload): retrofit2.Response<ResponseBody>
+    suspend fun sendNotification(@Body payload: NotificationPayload): retrofit2.Response<NotificationResponse>
 }

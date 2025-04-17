@@ -35,8 +35,10 @@ object OneSignalHelper {
             try {
                 val response = service.sendNotification(payload)
                 if (response.isSuccessful) {
-                    val db = FirebaseFirestore.getInstance()
-                    db.collection("comments")
+                    val recipients = response.body()?.recipients ?: 0
+                    if (recipients>0) {
+                        val db = FirebaseFirestore.getInstance()
+                        db.collection("comments")
                         .document(commentId)
                         .update("notifiedUserIds", FieldValue.arrayUnion(userId))
                         .addOnSuccessListener {
@@ -45,6 +47,7 @@ object OneSignalHelper {
                         .addOnFailureListener {
 
                         }
+                    }
                 } else {
                     Log.e("OneSignal", "Mention failed: ${response.errorBody()?.string()}")
                 }
@@ -64,7 +67,8 @@ object OneSignalHelper {
             try {
                 val response = service.sendNotification(payload)
                 if (response.isSuccessful) {
-                    updateNotifiedStatusIfNeeded(userId)
+                    val recipients = response.body()?.recipients ?: 0
+                    if (recipients>0) updateNotifiedStatusIfNeeded(userId)
                 } else {
                     //Log error
                 }
