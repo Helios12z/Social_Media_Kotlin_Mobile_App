@@ -64,5 +64,14 @@
     <fragment android:id="@+id/navigation_chat"
         android:name="com.example.socialmediaproject.ui.chat.ChatFragment"
         android:label="Chat"
-        tools:layout="@layout/fragment_chat"/>
+        tools:layout="@layout/fragment_chat">
+        <action android:id="@+id/action_chatFragment_to_chatDetailFragment"
+                app:destination="@id/navigation_chatdetail"/>
+    </fragment>
+
+    <fragment android:id="@+id/navigation_chatdetail"
+        android:name="com.example.socialmediaproject.ui.chatdetail.ChatDetailFragment"
+        android:label="ChatDetail"
+        tools:layout="@layout/fragment_chat_detail">
+    </fragment>
 </navigation>

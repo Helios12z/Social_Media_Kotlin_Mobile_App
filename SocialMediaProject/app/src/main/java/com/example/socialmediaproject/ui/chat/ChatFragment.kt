@@ -7,11 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.ChatUserAdapter
 import com.example.socialmediaproject.databinding.FragmentChatBinding
+import com.example.socialmediaproject.ui.chatdetail.ChatDetailFragment
 import com.google.firebase.auth.FirebaseAuth
 
 class ChatFragment : Fragment() {
@@ -37,7 +39,11 @@ class ChatFragment : Fragment() {
         recyclerView.layoutManager= LinearLayoutManager(requireContext())
         viewModel.chatUsers.observe(viewLifecycleOwner) {
             users->adapter = ChatUserAdapter(users) { selectedUser ->
-            // TODO: mở màn hình chat detail
+            val bundle = Bundle()
+            bundle.putParcelable("chatUser", selectedUser)
+            val chatDetailFragment = ChatDetailFragment()
+            chatDetailFragment.arguments = bundle
+            findNavController().navigate(R.id.action_chatFragment_to_chatDetailFragment, bundle)
         }
             recyclerView.adapter = adapter
         }
