@@ -12,14 +12,7 @@
         tools:layout="@layout/fragment_home">
         <action android:id="@+id/action_homeFragment_to_mainPageFragment"
                 app:destination="@id/navigation_mainpage"/>
-        <action android:id="@+id/action_homeFragment_to_comment_Fragment"
-                app:destination="@id/navigation_comment"/>
     </fragment>
-
-    <fragment android:id="@+id/navigation_comment"
-        android:name="com.example.socialmediaproject.ui.comment.CommentFragment"
-        android:label="Comment"
-        tools:layout="@layout/fragment_comment"/>
 
     <fragment android:id="@+id/navigation_plus"
         android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.PlusFragment"
@@ -66,7 +59,5 @@
         android:name="com.example.socialmediaproject.ui.mainpage.MainPageFragment"
         android:label="MainPage"
         tools:layout="@layout/fragment_main_page">
-        <action android:id="@+id/action_main_Page_Fragment_to_comment_Fragment"
-            app:destination="@+id/navigation_comment"/>
     </fragment>
 </navigation>

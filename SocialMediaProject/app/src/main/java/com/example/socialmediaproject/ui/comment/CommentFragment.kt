@@ -1,12 +1,11 @@
 package com.example.socialmediaproject.ui.comment
 
-import androidx.fragment.app.viewModels
+import android.content.res.Resources
 import android.os.Bundle
 import android.text.Editable
 import android.text.Spannable
 import android.text.TextWatcher
 import android.text.style.ForegroundColorSpan
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,11 +18,13 @@ import com.example.socialmediaproject.adapter.CommentAdapter
 import com.example.socialmediaproject.databinding.FragmentCommentBinding
 import com.example.socialmediaproject.dataclass.Comment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.regex.Pattern
 
-class CommentFragment : Fragment() {
+class CommentFragment : BottomSheetDialogFragment() {
 
     private lateinit var viewModel: CommentViewModel
     private lateinit var binding: FragmentCommentBinding
@@ -170,5 +171,21 @@ class CommentFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.let { dialog ->
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.let { sheet ->
+                val behavior = BottomSheetBehavior.from(sheet)
+                val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+                val targetHeight = (screenHeight * 0.9).toInt()
+                sheet.layoutParams.height = targetHeight
+                sheet.requestLayout()
+                behavior.peekHeight = targetHeight
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
     }
 }

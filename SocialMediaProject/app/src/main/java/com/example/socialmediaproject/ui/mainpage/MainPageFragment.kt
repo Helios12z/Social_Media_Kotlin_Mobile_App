@@ -246,7 +246,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val bundle=Bundle()
         bundle.putString("post_id", post.id)
         goToFragment.arguments=bundle
-        findNavController().navigate(R.id.action_main_Page_Fragment_to_comment_Fragment, bundle)
+        goToFragment.show(parentFragmentManager, "CommentBottomSheet")
     }
 
     override fun onShareClicked(position: Int) {

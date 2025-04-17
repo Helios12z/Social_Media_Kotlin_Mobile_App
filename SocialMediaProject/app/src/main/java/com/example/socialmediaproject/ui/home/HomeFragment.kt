@@ -89,7 +89,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val bundle=Bundle()
         bundle.putString("post_id", post.id)
         goToFragment.arguments=bundle
-        findNavController().navigate(R.id.action_homeFragment_to_comment_Fragment, bundle)
+        goToFragment.show(parentFragmentManager, "CommentBottomSheet")
     }
 
     override fun onShareClicked(position: Int) {
