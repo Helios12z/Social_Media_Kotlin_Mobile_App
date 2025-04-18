@@ -16,6 +16,7 @@ import com.example.socialmediaproject.dataclass.Message
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class ChatDetailFragment : Fragment() {
     private lateinit var binding: FragmentChatDetailBinding
@@ -70,6 +71,7 @@ class ChatDetailFragment : Fragment() {
                 binding.etMessage.setText("")
             }
         }
+        checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
     }
 
     override fun onResume() {
@@ -85,5 +87,20 @@ class ChatDetailFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(0f).setDuration(200).start()
         bottomnavbar.visibility=View.VISIBLE
+    }
+
+    fun checkIfCanSendMessage(currentUserId: String, friendId: String) {
+        FirebaseFirestore.getInstance().collection("Users")
+            .document(currentUserId)
+            .get()
+            .addOnSuccessListener { doc ->
+                val friends = doc["friends"] as? List<String> ?: emptyList()
+                val canChat = friendId in friends
+                if (!canChat) {
+                    binding.etMessage.isEnabled = false
+                    binding.btnSend.visibility = View.GONE
+                    binding.etMessage.hint = "2 người không còn là bạn bè"
+                }
+            }
     }
 }
