@@ -27,7 +27,7 @@ class ChatUserAdapter(private val users: List<ChatUser>, private val onItemClick
     override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val user = users[position]
         holder.name.text = user.username
-        holder.message.text = user.lastMessage ?: ""
+        holder.message.text = user.lastMessage ?: "Chưa có tin nhắn"
         holder.time.text = user.timestamp ?: ""
         holder.unread.visibility = if (user.unreadCount > 0) View.VISIBLE else View.GONE
         holder.unread.text = user.unreadCount.toString()
