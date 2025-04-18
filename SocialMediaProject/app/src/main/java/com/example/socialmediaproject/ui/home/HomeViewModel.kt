@@ -10,6 +10,9 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
 import com.google.firebase.database.database
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -118,7 +121,7 @@ class HomeViewModel : ViewModel() {
             .addOnFailureListener { callback(emptyList()) }
     }
 
-    public fun toggleLike(post: PostViewModel, position: Int) {
+    fun toggleLike(post: PostViewModel, position: Int) {
         auth=FirebaseAuth.getInstance()
         db=FirebaseFirestore.getInstance()
         val userId = auth.currentUser?.uid ?: return
@@ -126,7 +129,7 @@ class HomeViewModel : ViewModel() {
             .whereEqualTo("userid", userId)
             .whereEqualTo("postid", post.id)
             .get().addOnSuccessListener {
-                    results ->
+                results ->
                 if (!results.isEmpty) {
                     for (result in results) {
                         post.isLiked = result.getBoolean("status") ?: false
@@ -137,46 +140,59 @@ class HomeViewModel : ViewModel() {
                 }
             }
             .addOnFailureListener { e->
-                Log.e("LOI LAY DATABASE: ", e.toString())
+                e.printStackTrace()
             }
     }
 
     private fun updateLikeStatus(post: PostViewModel, position: Int, userId: String, results: QuerySnapshot?) {
-        val ref=realtimedb.getReference("PostStats").child(post.id)
-        ref.get().addOnSuccessListener { result ->
-            val likeCount = result.child("likecount").getValue(Int::class.java) ?: 0
-            val updates = HashMap<String, Any>()
-            if (post.isLiked) {
-                updates["likecount"] = (likeCount - 1).coerceAtLeast(0)
-                post.likeCount -= 1
-                post.isLiked = false
-                results?.let {
-                    for (result in it) {
-                        db.collection("Likes").document(result.id).delete()
+        val ref = realtimedb.getReference("PostStats").child(post.id)
+        ref.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                var likeCount = currentData.child("likecount").getValue(Int::class.java) ?: 0
+                if (post.isLiked) {
+                    likeCount = (likeCount - 1).coerceAtLeast(0)
+                    currentData.child("likecount").value = likeCount
+                } else {
+                    likeCount += 1
+                    currentData.child("likecount").value = likeCount
+                }
+                return Transaction.success(currentData)
+            }
+            override fun onComplete(
+                error: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ) {
+                if (committed) {
+                    if (post.isLiked) {
+                        post.likeCount -= 1
+                        post.isLiked = false
+                        results?.let {
+                            for (result in it) {
+                                db.collection("Likes").document(result.id).delete()
+                            }
+                        }
+                    } else {
+                        post.likeCount += 1
+                        post.isLiked = true
+                        results?.let {
+                            for (document in it.documents) {
+                                db.collection("Likes").document(document.id).update("status", true)
+                            }
+                        } ?: run {
+                            val item = hashMapOf(
+                                "userid" to userId,
+                                "postid" to post.id,
+                                "status" to true
+                            )
+                            db.collection("Likes").add(item)
+                        }
                     }
+                    _postlist.value = _postlist.value
+                } else {
+                    //log error
                 }
             }
-            else {
-                updates["likecount"] = likeCount + 1
-                post.likeCount += 1
-                post.isLiked = true
-                results?.let {
-                    for (document in it.documents) {
-                        db.collection("Likes").document(document.id).update("status", true)
-                    }
-                } ?: run {
-                    val item = hashMapOf(
-                        "userid" to userId,
-                        "postid" to post.id,
-                        "status" to true
-                    )
-                    db.collection("Likes").add(item)
-                }
-            }
-
-            ref.updateChildren(updates).addOnCompleteListener {
-                _postlist.value = _postlist.value
-            }
-        }
+        })
     }
 }
