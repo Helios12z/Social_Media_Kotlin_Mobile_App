@@ -165,7 +165,8 @@ class ChatDetailFragment : Fragment() {
     private fun askVectorAI(chatId: String, userPrompt: String) {
         lifecycleScope.launch {
             try {
-                val truePrompt = "Bạn là một trợ lý thông minh tên VectorAI, bạn là AI thông minh được tích hợp trong một ứng dụng mạng xã hội tên Vector, được code ra bởi lập trình viên tên Nguyễn Minh Quang. Trả lời câu hỏi sau: $userPrompt"
+                val template = getVectorAIPromptTemplate(requireContext())
+                val truePrompt = template.replace("{{user_input}}", userPrompt)
                 val aiResponse = AIService.chatWithAI(truePrompt)
                 Log.d("VectorAI", "AI Response: $aiResponse")
                 val aiMessage = Message(
@@ -188,5 +189,11 @@ class ChatDetailFragment : Fragment() {
                 viewModel.sendMessage(chatId, errorMessage)
             }
         }
+    }
+
+    private fun getVectorAIPromptTemplate(context: Context): String {
+        return context.assets.open("VectorAI_Data.txt")
+            .bufferedReader()
+            .use { it.readText() }
     }
 }

@@ -77,9 +77,9 @@ class PostingFragment : Fragment() {
         privacyspinner = binding.postprivacy
         val listprivacy= mutableListOf<String>()
         db.collection("Privacies").get().addOnSuccessListener {
-                documents->if (documents!=null) {
-            for (document in documents) listprivacy.add(document.getString("name")?:"")
-        }
+            documents->if (documents!=null) {
+                for (document in documents) listprivacy.add(document.getString("name")?:"")
+            }
             val adapter=ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listprivacy)
             privacyspinner.adapter=adapter
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

@@ -79,12 +79,10 @@ class PostingService : Service() {
                     .add("key", API_KEY)
                     .add("image", base64Image)
                     .build()
-
                 val request = Request.Builder()
                     .url("https://api.imgbb.com/1/upload")
                     .post(requestBody)
                     .build()
-
                 client.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) {
                         callback(null)
@@ -103,72 +101,67 @@ class PostingService : Service() {
 
     private fun UploadPost(content: String, privacy: String) {
         getCategories { categories ->
-            if (categories.isNotEmpty()) {
-                serviceScope.launch {
-                    try {
-                        updateNotification("Đang phân tích nội dung...")
-                        val response = AIService.classifyPost(content, categories) ?: ""
-                        Log.d("AI_RESPONSE", response.ifEmpty { "Không có kết quả" })
-                        val userid = auth.currentUser?.uid
-                        val extractresponse=extractCategory(response)?:""
-                        val category: List<String> = extractresponse.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                        val post = hashMapOf(
-                            "userid" to userid,
-                            "imageurl" to uploadedImage,
-                            "content" to content,
-                            "timestamp" to System.currentTimeMillis(),
-                            "privacy" to privacy,
-                            "category" to category
-                        )
-                        val rawdata=extractCategory(response)?:""
-                        val categorynamelist=rawdata.split(",").map{it.trim()}
-                        for (categoryname in categorynamelist) {
-                            db.collection("Categories").whereEqualTo("name", categoryname).get().addOnSuccessListener {
-                                result->if (result.isEmpty) {
-                                    serviceScope.launch {
-                                        val listcategoryid= mutableListOf<String>()
-                                        db.collection("Categories").get().addOnSuccessListener {
-                                            documents->for (document in documents) {
-                                                document.getString("categoryid")?.let { listcategoryid.add(it) }
-                                        }
-                                        }
-                                        val categoryid=extractCategory(AIService.classifyItem(categoryname, listcategoryid))
-                                        val category= hashMapOf(
-                                            "name" to categoryname,
-                                            "categoryid" to categoryid
-                                        )
-                                        db.collection("Categories").add(category).addOnSuccessListener {
-                                            Log.d("UploadCategory", "Thêm danh mục thành công!")
-                                        }
-                                    }
+            if (categories.isEmpty()) {
+                updateNotification("Lỗi trong quá trình phân tích!")
+                isposting = false
+                stopSelf()
+                return@getCategories
+            }
+            serviceScope.launch {
+                try {
+                    updateNotification("Đang phân tích nội dung...")
+                    val response = AIService.classifyPost(content, categories) ?: ""
+                    Log.d("AI_RESPONSE", response.ifEmpty { "Không có kết quả" })
+                    val categoryList = response.split(",")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                    Log.d("ExtractedCategories", categoryList.joinToString())
+                    val userid = auth.currentUser?.uid
+                    val post = hashMapOf(
+                        "userid" to userid,
+                        "imageurl" to uploadedImage,
+                        "content" to content,
+                        "timestamp" to System.currentTimeMillis(),
+                        "privacy" to privacy,
+                        "category" to categoryList
+                    )
+                    categoryList.forEach { categoryName ->
+                        db.collection("Categories")
+                        .whereEqualTo("name", categoryName)
+                        .get()
+                        .addOnSuccessListener { result ->
+                            if (result.isEmpty) {
+                                val newCategory = hashMapOf(
+                                    "name" to categoryName
+                                )
+                                db.collection("Categories")
+                                .add(newCategory)
+                                .addOnSuccessListener {
+                                    Log.d("UploadCategory", "Đã thêm danh mục mới: $categoryName")
                                 }
                             }
                         }
-                        db.collection("Posts").add(post)
-                            .addOnSuccessListener { docref->
-                                val postid=docref.id
-                                savePostStatsToRealtimeDatabase(postid) {
-                                    updateNotification("Đăng bài thành công!")
-                                    isposting =false
-                                    stopSelf()
-                                }
-                            }
-                            .addOnFailureListener {
-                                updateNotification("Đăng bài thất bại!")
-                                isposting =false
+                    }
+                    db.collection("Posts").add(post)
+                        .addOnSuccessListener { docRef ->
+                            val postId = docRef.id
+                            savePostStatsToRealtimeDatabase(postId) {
+                                updateNotification("Đăng bài thành công!")
+                                isposting = false
                                 stopSelf()
                             }
-                    } catch (e: Exception) {
-                        Log.e("UploadPost", "Lỗi khi xử lý bài đăng", e)
-                        updateNotification("Lỗi khi xử lý bài đăng!")
-                        isposting =false
-                        stopSelf()
-                    }
+                        }
+                        .addOnFailureListener {
+                            updateNotification("Đăng bài thất bại!")
+                            isposting = false
+                            stopSelf()
+                        }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    updateNotification("Lỗi khi xử lý bài đăng!")
+                    isposting = false
+                    stopSelf()
                 }
-            } else {
-                updateNotification("Lỗi trong quá trình phân tích!")
-                isposting =false
-                stopSelf()
             }
         }
     }
@@ -224,23 +217,6 @@ class PostingService : Service() {
         }.addOnFailureListener {
             callback(emptyList())
         }
-    }
-
-    private fun extractCategory(jsonResponse: String): String? {
-        try {
-            val jsonObject = JSONObject(jsonResponse)
-            val candidates = jsonObject.getJSONArray("candidates")
-            if (candidates.length() > 0) {
-                val content = candidates.getJSONObject(0).getJSONObject("content")
-                val parts = content.getJSONArray("parts")
-                if (parts.length() > 0) {
-                    return parts.getJSONObject(0).getString("text").trim()
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return null
     }
 
     private fun savePostStatsToRealtimeDatabase(postId: String, callback: () -> Unit) {
