@@ -9,12 +9,13 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutReceivedMessage"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:maxWidth="300dp"
-        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_max="300dp"
+        app:layout_constraintWidth_percent="0.8"
+        android:visibility="gone"
         tools:visibility="visible">
 
         <com.google.android.material.imageview.ShapeableImageView
@@ -34,8 +35,10 @@
             app:cardBackgroundColor="#E0E0E0"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
+            app:cardPreventCornerOverlap="true"
             app:layout_constraintStart_toEndOf="@id/ivSenderAvatar"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_max="240dp">
 
             <TextView
                 android:id="@+id/tvReceivedMessage"
@@ -44,6 +47,9 @@
                 android:padding="12dp"
                 android:textColor="#333333"
                 android:textSize="16sp"
+                android:ellipsize="none"
+                android:maxLines="999"
+                android:breakStrategy="simple"
                 tools:text="Chào bạn, bạn khỏe không?" />
 
         </androidx.cardview.widget.CardView>
@@ -62,14 +68,14 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Tin nhắn của bản thân -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layoutSentMessage"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:maxWidth="300dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_max="300dp"
+        app:layout_constraintWidth_percent="0.8">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardSentMessage"
@@ -78,8 +84,10 @@
             app:cardBackgroundColor="@color/purple_500"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
+            app:cardPreventCornerOverlap="true"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_max="240dp">
 
             <TextView
                 android:id="@+id/tvSentMessage"
@@ -88,6 +96,9 @@
                 android:padding="12dp"
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
+                android:ellipsize="none"
+                android:maxLines="999"
+                android:breakStrategy="simple"
                 tools:text="Xin chào, tôi khỏe cảm ơn bạn!" />
         </androidx.cardview.widget.CardView>
 
