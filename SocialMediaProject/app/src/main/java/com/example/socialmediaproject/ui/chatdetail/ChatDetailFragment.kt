@@ -1,5 +1,8 @@
 package com.example.socialmediaproject.ui.chatdetail
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.view.Gravity
@@ -7,6 +10,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -16,6 +21,7 @@ import com.example.socialmediaproject.databinding.FragmentChatDetailBinding
 import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.dataclass.Message
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -54,7 +60,9 @@ class ChatDetailFragment : Fragment() {
         else "${chatUser.id}_${currentUserId}"
         val layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewMessages.layoutManager = layoutManager
-        val adapter = MessageAdapter(currentUserId, chatUser.avatarUrl)
+        val adapter = MessageAdapter(currentUserId, chatUser.avatarUrl) {
+            message->showMessageOptionBottomSheet(message, chatId)
+        }
         binding.recyclerViewMessages.adapter = adapter
         viewModel.messages.observe(viewLifecycleOwner) { messages ->
             adapter.submitList(messages)
@@ -122,5 +130,27 @@ class ChatDetailFragment : Fragment() {
                 binding.btnAttach.visibility=View.GONE
             }
         }
+    }
+
+    fun showMessageOptionBottomSheet(message: Message, chatId: String) {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_dialog, null)
+        bottomSheetDialog.setContentView(view)
+        val button1: Button=view.findViewById(R.id.button1)
+        val button2: Button=view.findViewById(R.id.button2)
+        button1.setText("Sao chép")
+        button2.setText("Thu hồi")
+        button1.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("Tin nhắn sao chép", message.text)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(requireContext(), "Đã sao chép tin nhắn", Toast.LENGTH_SHORT).show()
+        }
+        button2.setOnClickListener {
+            bottomSheetDialog.dismiss()
+            viewModel.removeMessage(chatId, message)
+        }
+        bottomSheetDialog.show()
     }
 }

@@ -1,5 +1,7 @@
 package com.example.socialmediaproject.adapter
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +16,7 @@ import com.example.socialmediaproject.dataclass.Message
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class MessageAdapter(private val currentUserId: String, private val senderAvatarUrl: String?): ListAdapter<Message, MessageAdapter.MessageViewHolder>(DIFF_CALLBACK) {
+class MessageAdapter(private val currentUserId: String, private val senderAvatarUrl: String?, private val onMessageLongClick: (Message) -> Unit): ListAdapter<Message, MessageAdapter.MessageViewHolder>(DIFF_CALLBACK) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Message>() {
             override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean =
@@ -65,6 +67,17 @@ class MessageAdapter(private val currentUserId: String, private val senderAvatar
                 .placeholder(R.drawable.avataricon)
                 .error(R.drawable.avataricon)
                 .into(holder.ivSenderAvatar)
+        }
+        holder.itemView.setOnLongClickListener {
+            if (message.senderId==currentUserId) onMessageLongClick.invoke(message)
+            true
+        }
+        if (message.removed) {
+            holder.tvSentMessage.text = "Tin nhắn đã được thu hồi"
+            holder.tvSentMessage.setTypeface(null, Typeface.ITALIC)
+            holder.tvSentMessage.setTextColor(Color.GRAY)
+            holder.itemView.isClickable = false
+            holder.itemView.isLongClickable = false
         }
     }
 }

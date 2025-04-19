@@ -8,5 +8,6 @@ data class Message(
     val receiverId: String = "",
     val text: String = "",
     val timestamp: Timestamp = Timestamp.now(),
-    val read: Boolean = false
+    val read: Boolean = false,
+    val removed: Boolean = false
 )

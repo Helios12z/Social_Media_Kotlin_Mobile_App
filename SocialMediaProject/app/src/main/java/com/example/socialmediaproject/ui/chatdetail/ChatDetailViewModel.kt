@@ -106,4 +106,16 @@ class ChatDetailViewModel : ViewModel() {
             }
         }
     }
+
+    fun removeMessage(chatId: String, message: Message) {
+        val updates = mapOf(
+            "text" to "Tin nhắn đã được thu hồi",
+            "removed" to true
+        )
+        db.collection("chats")
+            .document(chatId)
+            .collection("messages")
+            .document(message.id)
+            .update(updates)
+    }
 }
