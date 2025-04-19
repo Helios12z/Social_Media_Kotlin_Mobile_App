@@ -17,6 +17,7 @@ class ChatViewModel : ViewModel() {
     private var friendsListener: ListenerRegistration? = null
     private var isInitialized = false
     private var currentUserId = ""
+    private val userMap = mutableMapOf<String, ChatUser>()
 
     fun initializeFriends(userId: String) {
         if (isInitialized && userId == currentUserId) return
@@ -36,7 +37,7 @@ class ChatViewModel : ViewModel() {
     }
 
     private fun loadChatPartners(currentUserId: String, initialFriendSet: MutableSet<String>) {
-        val userMap = mutableMapOf<String, ChatUser>()
+        userMap.clear()
         db.collection("chats").get().addOnSuccessListener { chatDocs ->
             val friendSet = initialFriendSet.toMutableSet()
             for (chatDoc in chatDocs) {
@@ -61,17 +62,18 @@ class ChatViewModel : ViewModel() {
                         username = friendDoc.getString("name") ?: "",
                         avatarUrl = friendDoc.getString("avatarurl"),
                         lastMessage = "",
-                        unreadCount = 0
+                        unreadCount = 0,
+                        timestamp = 0
                     )
                     userMap[userId] = chatUser
-                    _chatUsers.value = userMap.values.toList()
-                    setupChatListeners(currentUserId, userId, userMap)
+                    sortAndUpdateChatUsers()
+                    setupChatListeners(currentUserId, userId)
                 }
             }
         }
     }
 
-    private fun setupChatListeners(currentUserId: String, partnerId: String, userMap: MutableMap<String, ChatUser>) {
+    private fun setupChatListeners(currentUserId: String, partnerId: String) {
         val chatId = if (currentUserId < partnerId) "${currentUserId}_$partnerId"
         else "${partnerId}_$currentUserId"
         val lastMsgListener = db.collection("chats")
@@ -80,10 +82,13 @@ class ChatViewModel : ViewModel() {
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .limit(1)
             .addSnapshotListener { snapshot, _ ->
-                val lastMsg = snapshot?.documents?.firstOrNull()?.getString("text") ?: ""
+                val lastMsgDoc = snapshot?.documents?.firstOrNull()
+                val lastMsg = lastMsgDoc?.getString("text") ?: ""
+                val timestamp = lastMsgDoc?.getTimestamp("timestamp")?.toDate()?.time ?: 0
                 userMap[partnerId]?.let {
                     it.lastMessage = lastMsg
-                    _chatUsers.postValue(userMap.values.toList())
+                    it.timestamp = timestamp
+                    sortAndUpdateChatUsers()
                 }
             }
         val unreadListener = db.collection("chats")
@@ -95,11 +100,19 @@ class ChatViewModel : ViewModel() {
                 val unread = snapshot?.size() ?: 0
                 userMap[partnerId]?.let {
                     it.unreadCount = unread
-                    _chatUsers.postValue(userMap.values.toList())
+                    sortAndUpdateChatUsers()
                 }
             }
         listenerRegistrations.add(lastMsgListener)
         listenerRegistrations.add(unreadListener)
+    }
+
+    private fun sortAndUpdateChatUsers() {
+        val sortedUsers = userMap.values.sortedWith(
+            compareByDescending<ChatUser> { it.unreadCount }
+                .thenByDescending { it.timestamp }
+        )
+        _chatUsers.postValue(sortedUsers)
     }
 
     private fun cleanupListeners() {
