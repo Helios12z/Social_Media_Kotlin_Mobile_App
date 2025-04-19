@@ -3,7 +3,6 @@ package com.example.socialmediaproject.ui.search
 import android.app.Application
 import android.content.Intent
 import android.util.Log
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -45,10 +44,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val _friendRequestCount = MutableLiveData<Int>()
     val friendRequestCount: LiveData<Int> = _friendRequestCount
     private var lastRequestCount=0
-
-    init {
-        listenForIncomingFriendRequests()
-    }
 
     fun fetchRecommendations() {
         viewModelScope.launch {
@@ -101,7 +96,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 }
             }
             catch(e: Exception) {
-                Log.e("ERROR FETCH RECOMMENDATION", e.toString())
+                e.printStackTrace()
             }
             finally {
                 _isLoading.value=false
@@ -174,30 +169,6 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         if (index != -1) {
             currentList[index] = currentList[index].copy(requestStatus = status)
             _recommendations.value = currentList
-        }
-    }
-
-    private fun listenForIncomingFriendRequests() {
-        val currentUserId = auth.currentUser?.uid ?: return
-        db.collection("friend_requests")
-        .whereEqualTo("receiverId", currentUserId)
-        .whereEqualTo("status", "pending")
-        .whereEqualTo("notified", false)
-        .addSnapshotListener { snapshots, e ->
-            if (e != null) {
-                return@addSnapshotListener
-            }
-            val count = snapshots?.size() ?: 0
-            if (count != lastRequestCount) {
-                _incomingRequestCount.postValue(count)
-                if (count > 0) sendNotificationService("Bạn có ${count} lời mời kết bạn mới!")
-                val batch = db.batch()
-                snapshots?.documents?.forEach { doc ->
-                    batch.update(doc.reference, "notified", true)
-                }
-                batch.commit()
-            }
-            lastRequestCount = count
         }
     }
 
