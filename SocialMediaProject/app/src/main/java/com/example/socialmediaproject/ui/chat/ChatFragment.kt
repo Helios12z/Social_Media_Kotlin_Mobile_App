@@ -53,7 +53,7 @@ class ChatFragment : Fragment() {
         }
             recyclerView.adapter = adapter
         }
-        viewModel.loadFriends(auth.currentUser?.uid ?: "")
+        viewModel.initializeFriends(auth.currentUser?.uid ?: "")
     }
 
     override fun onResume() {
