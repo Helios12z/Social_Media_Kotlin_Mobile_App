@@ -2,11 +2,13 @@ package com.example.socialmediaproject.adapter
 
 import android.graphics.Color
 import android.graphics.Typeface
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -85,11 +87,35 @@ class MessageAdapter(private val currentUserId: String, private val senderAvatar
             true
         }
         if (message.removed) {
-            holder.tvSentMessage.text = "Tin nhắn đã được thu hồi"
-            holder.tvSentMessage.setTypeface(null, Typeface.ITALIC)
-            holder.tvSentMessage.setTextColor(Color.GRAY)
+            if (isSentByCurrentUser) {
+                holder.tvSentMessage.text = "Tin nhắn đã được thu hồi"
+                holder.tvSentMessage.setTypeface(null, Typeface.ITALIC)
+                holder.tvSentMessage.setTextColor(Color.GRAY)
+            } else {
+                holder.tvReceivedMessage.text = "Tin nhắn đã được thu hồi"
+                holder.tvReceivedMessage.setTypeface(null, Typeface.ITALIC)
+                holder.tvReceivedMessage.setTextColor(Color.GRAY)
+            }
             holder.itemView.isClickable = false
             holder.itemView.isLongClickable = false
+        } else {
+            if (isSentByCurrentUser) {
+                holder.tvSentMessage.setTypeface(null, Typeface.NORMAL)
+                val typedValue = TypedValue()
+                val theme = holder.itemView.context.theme
+                theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+                val color = ContextCompat.getColor(holder.itemView.context, typedValue.resourceId)
+                holder.tvSentMessage.setTextColor(color)
+            } else {
+                holder.tvReceivedMessage.setTypeface(null, Typeface.NORMAL)
+                val typedValue = TypedValue()
+                val theme = holder.itemView.context.theme
+                theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+                val color = ContextCompat.getColor(holder.itemView.context, typedValue.resourceId)
+                holder.tvReceivedMessage.setTextColor(color)
+            }
+            holder.itemView.isClickable = true
+            holder.itemView.isLongClickable = true
         }
     }
 }
