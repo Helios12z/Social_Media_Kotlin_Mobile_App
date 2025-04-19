@@ -50,7 +50,7 @@
             android:textColor="#666666"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@id/ivUserAvatar"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvUnreadCount"
             app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
             app:layout_constraintTop_toBottomOf="@id/tvUsername"
             tools:text="helios12: chào bạn" />
