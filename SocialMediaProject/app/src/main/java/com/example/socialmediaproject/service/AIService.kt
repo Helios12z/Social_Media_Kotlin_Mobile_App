@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.service
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
