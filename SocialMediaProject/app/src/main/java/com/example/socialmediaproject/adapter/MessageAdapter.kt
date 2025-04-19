@@ -46,6 +46,7 @@ class MessageAdapter(private val currentUserId: String, private val senderAvatar
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val message = getItem(position)
         val isSentByCurrentUser = message.senderId == currentUserId
+        val isFromAI = message.senderId == "Ordinary_VectorAI"
         val timeFormat = SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault())
         val timeText = timeFormat.format(message.timestamp.toDate())
         if (isSentByCurrentUser) {
@@ -58,7 +59,18 @@ class MessageAdapter(private val currentUserId: String, private val senderAvatar
             else
                 R.drawable.tickicon
             holder.ivMessageStatus.setImageResource(tickIcon)
-        } else {
+        }
+        else if (isFromAI) {
+            holder.layoutSent.visibility = View.GONE
+            holder.layoutReceived.visibility = View.VISIBLE
+            holder.tvReceivedMessage.text = message.text
+            holder.tvReceivedTime.text = timeText
+            Glide.with(holder.itemView.context)
+                .load(R.drawable.vectorai)
+                .placeholder(R.drawable.vectorai)
+                .into(holder.ivSenderAvatar)
+        }
+        else {
             holder.layoutSent.visibility = View.GONE
             holder.layoutReceived.visibility = View.VISIBLE
             holder.tvReceivedMessage.text = message.text

@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.fragment.app.viewModels
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -12,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -20,11 +22,13 @@ import com.example.socialmediaproject.adapter.MessageAdapter
 import com.example.socialmediaproject.databinding.FragmentChatDetailBinding
 import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.dataclass.Message
+import com.example.socialmediaproject.service.AIService
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 
 class ChatDetailFragment : Fragment() {
     private lateinit var binding: FragmentChatDetailBinding
@@ -94,6 +98,10 @@ class ChatDetailFragment : Fragment() {
                 viewModel.sendMessage(chatId, message)
                 binding.etMessage.setText("")
             }
+            if (text.startsWith("@VectorAI", true)) {
+                val prompt = text.removePrefix("@VectorAI").trim()
+                askVectorAI(chatId, prompt)
+            }
         }
         checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
     }
@@ -152,5 +160,33 @@ class ChatDetailFragment : Fragment() {
             viewModel.removeMessage(chatId, message)
         }
         bottomSheetDialog.show()
+    }
+
+    private fun askVectorAI(chatId: String, userPrompt: String) {
+        lifecycleScope.launch {
+            try {
+                val truePrompt = "Bạn là một trợ lý thông minh tên VectorAI, bạn là AI thông minh được tích hợp trong một ứng dụng mạng xã hội tên Vector, được code ra bởi lập trình viên tên Nguyễn Minh Quang. Trả lời câu hỏi sau: $userPrompt"
+                val aiResponse = AIService.chatWithAI(truePrompt)
+                Log.d("VectorAI", "AI Response: $aiResponse")
+                val aiMessage = Message(
+                    senderId = "Ordinary_VectorAI",
+                    receiverId = auth.currentUser?.uid ?: "",
+                    text = aiResponse,
+                    timestamp = Timestamp.now(),
+                    read = false
+                )
+                viewModel.sendMessage(chatId, aiMessage)
+            } catch (e: Exception) {
+                Log.e("VectorAI", "Error asking AI", e)
+                val errorMessage = Message(
+                    senderId = "Ordinary_VectorAI",
+                    receiverId = auth.currentUser?.uid ?: "",
+                    text = "Xin lỗi, tôi gặp lỗi khi xử lý yêu cầu của bạn.",
+                    timestamp = Timestamp.now(),
+                    read = false
+                )
+                viewModel.sendMessage(chatId, errorMessage)
+            }
+        }
     }
 }

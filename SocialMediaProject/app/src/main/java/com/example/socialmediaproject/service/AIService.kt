@@ -6,6 +6,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.json.JSONObject
 
 object AIService {
     private const val API_KEY = "AIzaSyBf0xyHSQW2A4Y2Tf6d-0R0GD_8XRz0WcE"
@@ -65,6 +66,49 @@ object AIService {
             OkHttpClient().newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return@use "unknown"
                 response.body?.string() ?: "unknown"
+            }
+        }
+    }
+
+    suspend fun chatWithAI(prompt: String): String {
+        val json = """
+        {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{ "text": "$prompt" }]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.7,
+                "topK": 40,
+                "topP": 0.9,
+                "maxOutputTokens": 500,
+                "responseMimeType": "text/plain"
+            }
+        }
+    """.trimIndent()
+        val requestBody = RequestBody.create("application/json".toMediaType(), json)
+        val request = Request.Builder().url(API_URL).post(requestBody).build()
+        return withContext(Dispatchers.IO) {
+            OkHttpClient().newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext "Xin lỗi, tôi gặp lỗi!"
+                val body = response.body?.string() ?: return@withContext "Không nhận được phản hồi"
+                try {
+                    val jsonObject = JSONObject(body)
+                    val candidates = jsonObject.getJSONArray("candidates")
+                    if (candidates.length() > 0) {
+                        val content = candidates.getJSONObject(0).getJSONObject("content")
+                        val parts = content.getJSONArray("parts")
+                        if (parts.length() > 0) {
+                            return@withContext parts.getJSONObject(0).getString("text")
+                        }
+                    }
+                    return@withContext "Xin lỗi, tôi không hiểu câu hỏi."
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    return@withContext "Xin lỗi, tôi gặp lỗi khi xử lý phản hồi!"
+                }
             }
         }
     }
