@@ -27,7 +27,6 @@ class ChatViewModel : ViewModel() {
         friendsListener = db.collection("Users").document(userId)
             .addSnapshotListener { userDoc, error ->
                 if (error != null || userDoc == null) {
-                    Log.e("ChatViewModel", "Error listening to user doc", error)
                     return@addSnapshotListener
                 }
                 val friends = userDoc["friends"] as? List<String> ?: emptyList()
@@ -84,9 +83,15 @@ class ChatViewModel : ViewModel() {
             .addSnapshotListener { snapshot, _ ->
                 val lastMsgDoc = snapshot?.documents?.firstOrNull()
                 val lastMsg = lastMsgDoc?.getString("text") ?: ""
+                val senderId = lastMsgDoc?.getString("senderId") ?: ""
                 val timestamp = lastMsgDoc?.getTimestamp("timestamp")?.toDate()?.time ?: 0
+                val prefix = when (senderId) {
+                    currentUserId -> "bạn:"
+                    "Ordinary_VectorAI" -> "VectorAI:"
+                    else -> userMap[partnerId]?.username ?: ""
+                }
                 userMap[partnerId]?.let {
-                    it.lastMessage = lastMsg
+                    it.lastMessage = "$prefix $lastMsg"
                     it.timestamp = timestamp
                     sortAndUpdateChatUsers()
                 }
