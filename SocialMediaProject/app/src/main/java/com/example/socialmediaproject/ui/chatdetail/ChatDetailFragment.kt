@@ -100,6 +100,7 @@ class ChatDetailFragment : Fragment() {
                     binding.etMessage.isEnabled = false
                     binding.btnSend.visibility = View.GONE
                     binding.etMessage.hint = "2 người không còn là bạn bè"
+                    binding.btnAttach.visibility=View.GONE
                 }
             }
     }

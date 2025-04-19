@@ -7,6 +7,7 @@ import com.example.socialmediaproject.dataclass.Message
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 
 class ChatDetailViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -37,6 +38,8 @@ class ChatDetailViewModel : ViewModel() {
     }
 
     fun sendMessage(chatId: String, message: Message) {
+        val chatRef = db.collection("chats").document(chatId)
+        chatRef.set(mapOf("exists" to true), SetOptions.merge())
         val docRef=db.collection("chats")
             .document(chatId)
             .collection("messages")

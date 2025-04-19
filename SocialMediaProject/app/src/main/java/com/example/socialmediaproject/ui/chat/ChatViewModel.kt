@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.chat
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,59 +18,81 @@ class ChatViewModel : ViewModel() {
     fun loadFriends(currentUserId: String) {
         listenerRegistrations.forEach { it.remove() }
         listenerRegistrations.clear()
-        db.collection("Users")
-        .document(currentUserId)
-        .get()
-        .addOnSuccessListener { doc ->
-            val friends = doc["friends"] as? List<String> ?: emptyList()
-            if (friends.isEmpty()) {
-                _chatUsers.value = emptyList()
-                return@addOnSuccessListener
-            }
-            val usersList = mutableListOf<ChatUser>()
-            val userMap = mutableMapOf<String, ChatUser>()
-            _chatUsers.value = usersList
-            for (friendId in friends) {
-                db.collection("Users").document(friendId).get()
-                .addOnSuccessListener { friendDoc ->
-                    val chatUser = ChatUser(
-                        id = friendId,
-                        username = friendDoc.getString("name") ?: "",
-                        avatarUrl = friendDoc.getString("avatarurl"),
-                        lastMessage = "",
-                        unreadCount = 0
-                    )
-                    userMap[friendId] = chatUser
-                    _chatUsers.value = userMap.values.toList()
-                    val chatId = if (currentUserId < friendId)
-                        currentUserId + "_" + friendId
-                    else
-                        friendId + "_" + currentUserId
-                    val lastMsgListener = db.collection("chats")
-                        .document(chatId)
-                        .collection("messages")
-                        .orderBy("timestamp", Query.Direction.DESCENDING)
-                        .limit(1)
-                        .addSnapshotListener { snapshot, _ ->
-                            snapshot?.documents?.firstOrNull()?.let { doc ->
-                                chatUser.lastMessage = doc.getString("text") ?: ""
-                                _chatUsers.postValue(userMap.values.toList())
+
+        val userMap = mutableMapOf<String, ChatUser>()
+        _chatUsers.value = emptyList()
+        db.collection("Users").document(currentUserId).get()
+            .addOnSuccessListener { userDoc ->
+                val friends = userDoc["friends"] as? List<String> ?: emptyList()
+                val friendSet = friends.toMutableSet()
+                db.collection("chats").get().addOnSuccessListener { chatDocs ->
+                    for (chatDoc in chatDocs) {
+                        val chatId = chatDoc.id
+                        Log.d("CHAT ID: ", chatId.toString())
+                        if (chatId.contains(currentUserId)) {
+                            val parts = chatId.split("_")
+                            if (parts.size == 2) {
+                                val otherId = parts.first { it != currentUserId }
+                                Log.d("OTHER USER ID: ", otherId.toString())
+                                friendSet.add(otherId)
                             }
                         }
-                    val unreadListener = db.collection("chats")
-                        .document(chatId)
-                        .collection("messages")
-                        .whereEqualTo("receiverId", currentUserId)
-                        .whereEqualTo("read", false)
-                        .addSnapshotListener { snapshot, _ ->
-                            chatUser.unreadCount = snapshot?.size() ?: 0
-                            _chatUsers.postValue(userMap.values.toList())
-                        }
-                    listenerRegistrations.add(lastMsgListener)
-                    listenerRegistrations.add(unreadListener)
+                    }
+
+                    if (friendSet.isEmpty()) {
+                        _chatUsers.value = emptyList()
+                        return@addOnSuccessListener
+                    }
+
+                    for (userId in friendSet) {
+                        db.collection("Users").document(userId).get()
+                            .addOnSuccessListener { friendDoc ->
+                                val chatUser = ChatUser(
+                                    id = userId,
+                                    username = friendDoc.getString("name") ?: "",
+                                    avatarUrl = friendDoc.getString("avatarurl"),
+                                    lastMessage = "",
+                                    unreadCount = 0
+                                )
+
+                                userMap[userId] = chatUser
+                                _chatUsers.value = userMap.values.toList()
+
+                                val chatId = if (currentUserId < userId)
+                                    "${currentUserId}_$userId"
+                                else
+                                    "${userId}_$currentUserId"
+
+                                val lastMsgListener = db.collection("chats")
+                                    .document(chatId)
+                                    .collection("messages")
+                                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                                    .limit(1)
+                                    .addSnapshotListener { snapshot, _ ->
+                                        val lastMsg = snapshot?.documents?.firstOrNull()?.getString("text") ?: ""
+                                        userMap[userId]?.let {
+                                            it.lastMessage = lastMsg
+                                            _chatUsers.postValue(userMap.values.toList())
+                                        }
+                                    }
+                                val unreadListener = db.collection("chats")
+                                    .document(chatId)
+                                    .collection("messages")
+                                    .whereEqualTo("receiverId", currentUserId)
+                                    .whereEqualTo("read", false)
+                                    .addSnapshotListener { snapshot, _ ->
+                                        val unread = snapshot?.size() ?: 0
+                                        userMap[userId]?.let {
+                                            it.unreadCount = unread
+                                            _chatUsers.postValue(userMap.values.toList())
+                                        }
+                                    }
+                                listenerRegistrations.add(lastMsgListener)
+                                listenerRegistrations.add(unreadListener)
+                            }
+                    }
                 }
             }
-        }
     }
 
     override fun onCleared() {
