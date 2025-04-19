@@ -2,11 +2,13 @@ package com.example.socialmediaproject.ui.chatdetail
 
 import androidx.fragment.app.viewModels
 import android.os.Bundle
+import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.MessageAdapter
@@ -23,6 +25,7 @@ class ChatDetailFragment : Fragment() {
     private val viewModel: ChatDetailViewModel by viewModels()
     private lateinit var chatUser: ChatUser
     private val auth=FirebaseAuth.getInstance()
+    private var hasInitialLoaded = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,15 +52,28 @@ class ChatDetailFragment : Fragment() {
         val currentUserId = auth.currentUser?.uid ?: return
         val chatId = if (currentUserId < chatUser.id) "${currentUserId}_${chatUser.id}"
         else "${chatUser.id}_${currentUserId}"
-        binding.recyclerViewMessages.layoutManager = LinearLayoutManager(requireContext())
+        val layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerViewMessages.layoutManager = layoutManager
         val adapter = MessageAdapter(currentUserId, chatUser.avatarUrl)
         binding.recyclerViewMessages.adapter = adapter
         viewModel.messages.observe(viewLifecycleOwner) { messages ->
             adapter.submitList(messages)
-            binding.recyclerViewMessages.scrollToPosition(messages.size - 1)
+            if (!hasInitialLoaded) {
+                binding.recyclerViewMessages.scrollToPosition(messages.size - 1)
+                hasInitialLoaded=true
+            }
         }
         viewModel.loadMessages(chatId, currentUserId)
         viewModel.startListeningMessages(chatId, currentUserId)
+        binding.recyclerViewMessages.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val firstVisible = layoutManager.findFirstVisibleItemPosition()
+                if (firstVisible == 0) {
+                    viewModel.loadOlderMessages(chatId, currentUserId, requireContext())
+                }
+            }
+        })
         binding.btnSend.setOnClickListener {
             val text = binding.etMessage.text.toString().trim()
             if (text.isNotEmpty()) {
@@ -91,17 +107,20 @@ class ChatDetailFragment : Fragment() {
 
     fun checkIfCanSendMessage(currentUserId: String, friendId: String) {
         FirebaseFirestore.getInstance().collection("Users")
-            .document(currentUserId)
-            .get()
-            .addOnSuccessListener { doc ->
-                val friends = doc["friends"] as? List<String> ?: emptyList()
-                val canChat = friendId in friends
-                if (!canChat) {
-                    binding.etMessage.isEnabled = false
-                    binding.btnSend.visibility = View.GONE
-                    binding.etMessage.hint = "2 người không còn là bạn bè"
-                    binding.btnAttach.visibility=View.GONE
+        .document(currentUserId)
+        .get()
+        .addOnSuccessListener { doc ->
+            val friends = doc["friends"] as? List<String> ?: emptyList()
+            val canChat = friendId in friends
+            if (!canChat) {
+                binding.btnSend.visibility = View.GONE
+                binding.etMessage.apply {
+                    isEnabled = false
+                    hint = "2 người không còn là bạn bè"
+                    gravity = Gravity.CENTER
                 }
+                binding.btnAttach.visibility=View.GONE
             }
+        }
     }
 }
