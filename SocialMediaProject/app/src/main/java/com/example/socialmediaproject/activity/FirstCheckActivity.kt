@@ -5,12 +5,16 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivityFirstCheckBinding
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.color.MaterialColors
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -33,6 +37,8 @@ class FirstCheckActivity : AppCompatActivity() {
         GetListOfInterests {
             setupChips()
         }
+        binding.btnContinue.isEnabled=false
+        binding.btnContinue.setBackgroundColor(ContextCompat.getColor(this, android.R.color.darker_gray))
         chipGroup = binding.chipGroup
         btnContinue = binding.btnContinue
         auth= FirebaseAuth.getInstance()
@@ -40,12 +46,25 @@ class FirstCheckActivity : AppCompatActivity() {
             val userid=auth.currentUser?.uid
             if (userid != null)
             {
+                val loading=LoadingDialogFragment()
+                loading.show(supportFragmentManager, "loading")
                 val userref=db.collection("Users").document(userid)
-                userref.update("isfirsttime", false)
-                userref.update("interests", selectedInterests.toList())
-                val intent=Intent(this, AfterFirstCheckActivity::class.java)
-                startActivity(intent)
-                finish()
+                userref.update("interests", selectedInterests.toList()).addOnSuccessListener {
+                    userref.update("isfirsttime", false).addOnSuccessListener {
+                        loading.dismiss()
+                        val intent=Intent(this, AfterFirstCheckActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                    .addOnFailureListener {
+                        loading.dismiss()
+                        Toast.makeText(this, "Lỗi kết nối", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    loading.dismiss()
+                    Toast.makeText(this, "Lỗi kết nối", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -57,14 +76,21 @@ class FirstCheckActivity : AppCompatActivity() {
 
     private fun GetListOfInterests(callback: ()->Unit)
     {
+        val loading=LoadingDialogFragment()
+        loading.show(supportFragmentManager, "loading")
         db.collection("Categories").get().addOnSuccessListener {
             documents->interests.clear()
+            loading.dismiss()
             for (document in documents)
             {
                 val name=document.getString("name")
                 if (name!=null) interests.add(name)
             }
             callback()
+        }
+        .addOnFailureListener {
+            loading.dismiss()
+            Toast.makeText(this, "Lỗi kết nối", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -86,9 +112,13 @@ class FirstCheckActivity : AppCompatActivity() {
     }
 
     private fun updateContinueButton() {
-        btnContinue.isEnabled = selectedInterests.size >= 2
-        btnContinue.setBackgroundColor(
-            if (selectedInterests.size >= 2) Color.parseColor("#4F46E5") else Color.GRAY
-        )
+        val isEnabled = selectedInterests.size >= 2
+        btnContinue.isEnabled = isEnabled
+        val color = if (isEnabled) {
+            MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimary, Color.GRAY)
+        } else {
+            ContextCompat.getColor(this, android.R.color.darker_gray)
+        }
+        btnContinue.setBackgroundColor(color)
     }
 }

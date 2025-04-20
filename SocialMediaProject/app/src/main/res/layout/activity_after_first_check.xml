@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@drawable/gradientbackground">
+    android:background="?android:colorBackground">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -27,50 +27,50 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:src="@drawable/successicon"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                android:contentDescription="Success!"
                 app:layout_constraintTop_toTopOf="parent"
-                android:contentDescription="Success!" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:gravity="center"
                 android:text="Đã hoàn thành lựa chọn sở thích!"
-                android:textColor="@android:color/black"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center"
+                android:textColor="?android:textColorPrimary"
+                app:layout_constraintTop_toBottomOf="@+id/ivSuccess"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/ivSuccess" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/tvSlogan"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:gravity="center"
                 android:text="Thế giới ngay trong lòng bàn tay bạn"
-                android:textColor="@android:color/darker_gray"
                 android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center"
+                android:textColor="?android:textColorSecondary"
+                app:layout_constraintTop_toBottomOf="@+id/tvTitle"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/tvQuestion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:gravity="center"
                 android:text="Bạn có muốn tiếp tục hoàn thành việc thiết lập tài khoản không?"
-                android:textColor="@android:color/black"
                 android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:gravity="center"
+                android:textColor="?android:textColorPrimary"
+                app:layout_constraintTop_toBottomOf="@+id/tvSlogan"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvSlogan" />
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <Button
                 android:id="@+id/btnYes"
@@ -78,13 +78,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="8dp"
-                android:backgroundTint="@color/black"
                 android:text="Có"
-                android:textColor="@android:color/white"
-                app:layout_constraintEnd_toStartOf="@+id/btnNo"
-                app:layout_constraintHorizontal_chainStyle="spread"
+                android:textColor="?attr/colorOnPrimary"
+                android:backgroundTint="?attr/colorPrimary"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvQuestion" />
+                app:layout_constraintEnd_toStartOf="@+id/btnNo"
+                app:layout_constraintTop_toBottomOf="@+id/tvQuestion"
+                app:layout_constraintHorizontal_chainStyle="spread" />
 
             <Button
                 android:id="@+id/btnNo"
@@ -92,11 +92,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="24dp"
-                android:backgroundTint="@android:color/darker_gray"
                 android:text="Không"
-                android:textColor="@android:color/white"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:textColor="?attr/colorOnPrimary"
+                android:backgroundTint="?attr/colorSecondary"
                 app:layout_constraintStart_toEndOf="@+id/btnYes"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvQuestion" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>

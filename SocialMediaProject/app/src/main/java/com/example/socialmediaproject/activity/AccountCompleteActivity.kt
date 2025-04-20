@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.databinding.ActivityAccountCompleteBinding
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.imageview.ShapeableImageView
@@ -43,7 +44,6 @@ class AccountCompleteActivity : AppCompatActivity() {
     private lateinit var tilbio: TextInputLayout
     private lateinit var imgavatar: ShapeableImageView
     private lateinit var imgcoverphoto: ShapeableImageView
-    private lateinit var genderspinner: AutoCompleteTextView
     private lateinit var avataruri: Uri
     private lateinit var walluri: Uri
     private lateinit var savebtn: Button
@@ -110,17 +110,20 @@ class AccountCompleteActivity : AppCompatActivity() {
             val userid=auth.currentUser?.uid
             if (userid!=null) {
                 savebtn.isEnabled=false
+                val loading=LoadingDialogFragment()
+                loading.show(supportFragmentManager, "loading")
                 val userupdate= hashMapOf(
                     "address" to address,
                     "phonenumber" to phone,
                     "bio" to bio,
                     "birthday" to birthday,
-                    "gender" to gender,
+                    "gender" to binding.spinnerGender.text.toString(),
                     "avatarurl" to avataruri.toString(),
                     "wallurl" to walluri.toString(),
                     "fullname" to fullname
                 )
                 db.collection("Users").document(userid).set(userupdate, SetOptions.merge()).addOnSuccessListener {
+                    loading.dismiss()
                     Toast.makeText(this, "Cập nhật tài khoản hoàn tất!", Toast.LENGTH_SHORT).show()
                     val intent=Intent(this, MainActivity::class.java)
                     startActivity(intent)

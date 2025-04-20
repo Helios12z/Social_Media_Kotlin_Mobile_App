@@ -1,6 +1,5 @@
 <!-- res/values/colors.xml -->
 <resources>
-    <!-- Brand colors (giữ nguyên) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -8,14 +7,12 @@
     <color name="teal_700">#FF018786</color>
     <color name="neon_green">#39FF14</color>
 
-    <!-- Neutral -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
     <color name="gray">#FF808080</color>
     <color name="light_gray">#FFF2F2F2</color>
     <color name="dark_gray">#FF444444</color>
 
-    <!-- Themable colors -->
     <color name="background_color">@color/white</color>
     <color name="dark_background">#1A1A1A</color>
     <color name="surface_color">@color/light_gray</color>
