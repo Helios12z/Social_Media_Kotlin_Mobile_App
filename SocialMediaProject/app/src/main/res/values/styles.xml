@@ -22,4 +22,9 @@
     <style name="ShapeAppearance.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
         <item name="cornerSize">24dp</item>
     </style>
+
+    <style name="RoundedImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item>
+    </style>
 </resources>

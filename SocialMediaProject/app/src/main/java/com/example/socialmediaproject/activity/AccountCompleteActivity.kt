@@ -10,8 +10,8 @@ import android.util.Base64
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -45,8 +45,8 @@ class AccountCompleteActivity : AppCompatActivity() {
     private lateinit var tilphone: TextInputLayout
     private lateinit var tilbio: TextInputLayout
     private lateinit var imgavatar: ShapeableImageView
-    private lateinit var imgcoverphoto: ImageView
-    private lateinit var genderspinner: Spinner
+    private lateinit var imgcoverphoto: ShapeableImageView
+    private lateinit var genderspinner: AutoCompleteTextView
     private lateinit var avataruri: Uri
     private lateinit var walluri: Uri
     private lateinit var savebtn: Button
@@ -81,19 +81,9 @@ class AccountCompleteActivity : AppCompatActivity() {
                 }
                 val adapter=ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, genderlist)
                 genderspinner=binding.spinnerGender
-                genderspinner.adapter=adapter
-                genderspinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        gender=genderlist[position]
-                    }
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-
-                    }
+                genderspinner.setAdapter(adapter)
+                genderspinner.setOnItemClickListener { _, _, position, _ ->
+                    gender = genderlist[position]
                 }
             }
         }

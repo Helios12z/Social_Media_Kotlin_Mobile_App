@@ -24,13 +24,17 @@
             android:layout_height="wrap_content"
             android:text="Ảnh bìa"/>
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgCoverPhoto"
             android:layout_width="match_parent"
             android:layout_height="200dp"
+            android:layout_marginBottom="16dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/loginbackground"
-            android:layout_marginBottom="16dp"/>
+            android:src="@color/background_color"
+            app:strokeColor="@color/text_color"
+            app:strokeWidth="2dp"
+            app:shapeAppearanceOverlay="@style/RoundedImageView" />
+
         <Button
             android:id="@+id/deletewallbutton"
             android:layout_width="wrap_content"
