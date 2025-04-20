@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivitySignUpBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -63,22 +64,27 @@ class SignUpActivity : AppCompatActivity() {
                     }
                     else
                     {
+                        val loading= LoadingDialogFragment()
+                        loading.show(supportFragmentManager, "loading")
                         signupbutton.isEnabled=false
                         val usersRef = db.collection("Users")
                         usersRef.whereEqualTo("email", email).get()
                             .addOnSuccessListener { emailResult ->
                                 if (!emailResult.isEmpty) {
+                                    loading.dismiss()
                                     Toast.makeText(this, "Email đã tồn tại!", Toast.LENGTH_SHORT).show()
                                     signupbutton.isEnabled=true
                                 }
                                 else {
                                     firebaseauth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(this) {
-                                            task -> if (task.isSuccessful)
+                                    task -> if (task.isSuccessful)
                                     {
+                                        loading.dismiss()
                                         val userid=task.result.user?.uid
                                         if (userid!=null) AddNewUserToDb(binding.name.text.toString(), userid, binding.email.text.toString())
                                     }
                                     else  {
+                                        loading.dismiss()
                                         Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
                                         signupbutton.isEnabled=true
                                     }
@@ -119,6 +125,8 @@ class SignUpActivity : AppCompatActivity() {
 
     private fun AddNewUserToDb(name: String, userid: String, email: String)
     {
+        val loading=LoadingDialogFragment()
+        loading.show(supportFragmentManager, "loading")
         val user= hashMapOf(
             "userid" to userid,
             "name" to name,
@@ -127,9 +135,11 @@ class SignUpActivity : AppCompatActivity() {
             "isfirsttime" to true
         )
         db.collection("Users").document(userid).set(user).addOnSuccessListener {
+            loading.dismiss()
             Toast.makeText(this, "Đăng kí tài khoản thành công!", Toast.LENGTH_SHORT).show()
             finish()
         }.addOnFailureListener {
+            loading.dismiss()
             Toast.makeText(this, "Đăng kí tài khoản thất bại!", Toast.LENGTH_SHORT).show()
             binding.signUpButton.isEnabled=true
         }

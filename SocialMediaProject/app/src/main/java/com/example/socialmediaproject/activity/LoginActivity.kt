@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
@@ -54,10 +55,13 @@ class LoginActivity : AppCompatActivity() {
             if (email.text.toString().isNotEmpty() && password.text.toString().isNotEmpty())
             {
                 loginbutton.isEnabled=false
+                val loading=LoadingDialogFragment()
+                loading.show(supportFragmentManager, "loading")
                 db=FirebaseFirestore.getInstance()
                 firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
                 .addOnCompleteListener {
                     task-> if (task.isSuccessful) {
+                        loading.dismiss()
                         Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
                         if (rememberme.isChecked) {
                             sharedPreferences.edit()
@@ -75,6 +79,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                     else
                     {
+                        loading.dismiss()
                         Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
                         loginbutton.isEnabled=true
                     }
@@ -107,15 +112,20 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun autoLogin(email: String, password: String) {
+        val loading=LoadingDialogFragment()
+        loading.show(supportFragmentManager, "loading")
         firebaseauth=FirebaseAuth.getInstance()
         firebaseauth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                loading.dismiss()
                 OneSignal.login(firebaseauth.currentUser?.uid?:"")
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             } else {
                 sharedPreferences.edit().clear().apply()
+                loading.dismiss()
+                Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
             }
         }
     }
