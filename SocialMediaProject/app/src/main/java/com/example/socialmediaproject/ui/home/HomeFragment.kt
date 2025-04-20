@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
+import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity.MODE_PRIVATE
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -20,9 +20,6 @@ import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.onesignal.OneSignal
 
 class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
@@ -49,6 +46,13 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         setupSwipeRefresh()
         observeViewModel()
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val glow=android.view.animation.AnimationUtils.loadAnimation(requireContext(), R.anim.vector_tittle_animation)
+        view.findViewById<TextView>(R.id.textVector).startAnimation(glow)
+
     }
 
     private fun initViews(view: View) {

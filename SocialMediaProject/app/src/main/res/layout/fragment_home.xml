@@ -4,51 +4,89 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@color/background_color">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="#FFFFFF"
-        android:elevation="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/headerCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Bảng tin"
-            android:textColor="#000000"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:padding="12dp">
 
-        <ImageView
-            android:id="@+id/button_chat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/chatbutton"
-            android:layout_gravity="end"/>
+            <ImageView
+                android:id="@+id/logoApp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/appicon"
+                android:contentDescription="Logo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
 
-    </androidx.appcompat.widget.Toolbar>
+            <TextView
+                android:id="@+id/textVector"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vector"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="?android:textColorPrimary"
+                app:layout_constraintStart_toEndOf="@id/logoApp"
+                app:layout_constraintTop_toTopOf="@id/logoApp"
+                app:layout_constraintBottom_toBottomOf="@id/logoApp"
+                android:layout_marginStart="8dp" />
+
+            <ImageView
+                android:id="@+id/button_search"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/searchicon"
+                android:contentDescription="Search"
+                app:layout_constraintEnd_toStartOf="@id/button_chat"
+                app:layout_constraintTop_toTopOf="@id/logoApp"
+                app:layout_constraintBottom_toBottomOf="@id/logoApp"
+                android:layout_marginEnd="12dp" />
+
+            <ImageView
+                android:id="@+id/button_chat"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/chatbutton"
+                android:contentDescription="Chat"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/logoApp"
+                app:layout_constraintBottom_toBottomOf="@id/logoApp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/headerCard"
+        app:layout_constraintVertical_bias="1.0">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewFeed"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false" />
-
+            android:clipToPadding="false"
+            android:padding="8dp" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
