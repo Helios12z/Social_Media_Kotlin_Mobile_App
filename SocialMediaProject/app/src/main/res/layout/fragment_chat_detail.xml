@@ -4,47 +4,65 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@color/background_color">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/purple_500"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="85dp"
+        android:layout_margin="8dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        android:id="@+id/toolbar"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivChatAvatar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="8dp"
-                android:src="@drawable/avataricon"
-                app:shapeAppearanceOverlay="@style/CircleImageView"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="12dp">
 
-            <TextView
-                android:id="@+id/tvChatUsername"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="@android:color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/ivChatAvatar"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="helios12" />
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivChatAvatar"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:src="@drawable/avataricon"
+                    app:shapeAppearanceOverlay="@style/CircleImageView"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.appcompat.widget.Toolbar>
+                <TextView
+                    android:id="@+id/tvChatUsername"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="helios12"
+                    android:textColor="@color/text_color"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintStart_toEndOf="@id/ivChatAvatar"
+                    app:layout_constraintTop_toTopOf="@id/ivChatAvatar"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Online"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_color"
+                    app:layout_constraintStart_toStartOf="@id/tvChatUsername"
+                    app:layout_constraintTop_toBottomOf="@id/tvChatUsername"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </androidx.cardview.widget.CardView>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewMessages"
@@ -53,58 +71,70 @@
         android:clipToPadding="false"
         android:paddingTop="16dp"
         android:paddingBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@id/layoutSendMessage"
+        app:layout_constraintBottom_toTopOf="@id/sendMessageCard"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:listitem="@layout/item_message" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layoutSendMessage"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/sendMessageCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:padding="8dp"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_margin="8dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageButton
-            android:id="@+id/btnAttach"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Đính kèm file"
-            android:padding="8dp"
-            android:src="@drawable/attachicon"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#555555" />
-
-        <EditText
-            android:id="@+id/etMessage"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutSendMessage"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:background="@color/white"
-            android:hint="Nhập tin nhắn..."
-            android:inputType="textMultiLine"
-            android:maxLines="4"
-            android:minHeight="40dp"
-            android:padding="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnSend"
-            app:layout_constraintStart_toEndOf="@id/btnAttach"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:padding="8dp">
+            <ImageButton
+                android:id="@+id/btnAttach"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Đính kèm"
+                android:padding="8dp"
+                android:src="@drawable/attachicon"
+                app:tint="?attr/colorControlNormal"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
 
-        <ImageButton
-            android:id="@+id/btnSend"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Gửi tin nhắn"
-            android:padding="8dp"
-            android:src="@drawable/sendicon"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/purple_500" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <EditText
+                android:id="@+id/etMessage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:background="@drawable/rounded_edittext"
+                android:hint="Nhập tin nhắn..."
+                android:inputType="textMultiLine"
+                android:maxLines="4"
+                android:minHeight="40dp"
+                android:padding="8dp"
+                android:textColor="?android:textColorPrimary"
+                android:textColorHint="?android:textColorHint"
+                app:layout_constraintStart_toEndOf="@id/btnAttach"
+                app:layout_constraintEnd_toStartOf="@id/btnSend"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <ImageButton
+                android:id="@+id/btnSend"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Gửi"
+                android:padding="8dp"
+                android:src="@drawable/sendicon"
+                app:tint="@color/purple_500"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,7 +5,7 @@
     android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="?attr/colorSurface">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -26,7 +26,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="250dp"
                 android:scaleType="centerCrop"
-                android:background="@color/white" />
+                android:background="@color/background_color" />
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -38,7 +38,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="190dp"
-                    android:background="#F5F5F5" />
+                    android:background="@color/background_color" />
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/profile_avatar"
@@ -69,16 +69,16 @@
                         android:text="Username"
                         android:textSize="24sp"
                         android:textStyle="bold"
-                        android:textColor="#000000"/>
+                        android:textColor="@color/text_color"/>
 
                     <TextView
                         android:id="@+id/profile_fullName"
                         android:textStyle="bold"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ff"
+                        android:text="user"
                         android:textSize="16sp"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_color"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="16dp" />
 
@@ -88,7 +88,7 @@
                         android:layout_height="wrap_content"
                         android:text="Bio"
                         android:textSize="16sp"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_color"
                         android:layout_gravity="center_horizontal"
                         android:layout_marginBottom="20dp" />
 
@@ -113,13 +113,13 @@
                                 android:text="0"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="#000000" />
+                                android:textColor="@color/text_color" />
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Bài Đăng"
                                 android:textSize="14sp"
-                                android:textColor="#666666" />
+                                android:textColor="@color/text_color" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -135,13 +135,13 @@
                                 android:text="0"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="#000000" />
+                                android:textColor="@color/text_color" />
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Bạn Bè"
                                 android:textSize="14sp"
-                                android:textColor="#666666" />
+                                android:textColor="@color/text_color" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -157,7 +157,7 @@
                                 android:text="Chi tiết"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="#000000" />
+                                android:textColor="@color/text_color" />
                         </LinearLayout>
                     </LinearLayout>
 
@@ -169,7 +169,7 @@
                         android:textAllCaps="false"
                         android:textSize="16sp"
                         android:background="@drawable/button_background"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/text_color"
                         android:padding="12dp"
                         android:elevation="2dp" />
 
@@ -189,7 +189,7 @@
                             android:textAllCaps="false"
                             android:textSize="16sp"
                             android:background="@drawable/button_background"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/text_color"
                             android:padding="12dp"
                             android:elevation="2dp"
                             android:visibility="gone" />
@@ -203,7 +203,7 @@
                             android:textAllCaps="false"
                             android:textSize="16sp"
                             android:background="@drawable/button_background"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/text_color"
                             android:padding="12dp"
                             android:elevation="2dp"
                             android:visibility="gone" />

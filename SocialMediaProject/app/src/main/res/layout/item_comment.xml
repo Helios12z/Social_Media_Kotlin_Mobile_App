@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="Username"
-        android:textColor="@android:color/black"
+        android:textColor="@color/text_color"
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="2 giờ trước"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="@color/text_color"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/tvUsername"
         app:layout_constraintStart_toEndOf="@id/tvUsername"
@@ -57,6 +57,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?attr/colorSurface"
             android:padding="12dp">
 
             <TextView
@@ -64,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Trả lời @OtherUsername"
-                android:textColor="@color/black"
+                android:textColor="@color/text_color"
                 android:textSize="12sp"
                 android:visibility="gone"
                 app:layout_constraintStart_toStartOf="parent"
@@ -77,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Đây là nội dung bình luận. Nội dung này có thể dài và sẽ tự động wrap để hiển thị đầy đủ."
-                android:textColor="@android:color/black"
+                android:textColor="@color/text_color"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -104,7 +105,7 @@
             android:drawablePadding="4dp"
             android:padding="8dp"
             android:text="Thích"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/text_color"
             android:textSize="12sp" />
 
         <TextView
@@ -114,7 +115,7 @@
             android:layout_marginStart="4dp"
             android:padding="8dp"
             android:text="12"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/text_color"
             android:textSize="12sp" />
 
         <TextView
@@ -127,7 +128,7 @@
             android:drawablePadding="4dp"
             android:padding="8dp"
             android:text="Trả lời"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/text_color"
             android:textSize="12sp" />
     </LinearLayout>
 

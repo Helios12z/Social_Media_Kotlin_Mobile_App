@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.activity.LoginActivity
 import com.example.socialmediaproject.databinding.FragmentChoiceBinding
@@ -40,12 +41,13 @@ class ChoiceFragment : Fragment() {
         db=FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
         val userid=auth.currentUser?.uid ?: ""
-        binding.choiceprogressbar.visibility=View.VISIBLE
+        val loading=LoadingDialogFragment()
+        loading.show(parentFragmentManager, "loading")
         binding.tvUserName.visibility=View.INVISIBLE
         binding.tvUserEmail.visibility=View.INVISIBLE
         db.collection("Users").document(userid).get().addOnSuccessListener { result->
             if (!isAdded) return@addOnSuccessListener
-            binding.choiceprogressbar.visibility=View.GONE
+            loading.dismiss()
             binding.tvUserName.visibility=View.VISIBLE
             binding.tvUserEmail.visibility=View.VISIBLE
             binding.tvUserName.text=result.getString("name")
@@ -80,6 +82,7 @@ class ChoiceFragment : Fragment() {
             }
         }
         .addOnFailureListener {
+            loading.dismiss()
             Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show()
         }
     }

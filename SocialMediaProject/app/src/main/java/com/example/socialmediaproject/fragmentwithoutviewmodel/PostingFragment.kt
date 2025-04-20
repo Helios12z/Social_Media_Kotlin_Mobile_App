@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.MediaAdapter
 import com.example.socialmediaproject.service.NotificationService
@@ -58,8 +59,11 @@ class PostingFragment : Fragment() {
         db = FirebaseFirestore.getInstance()
         val userid = auth.currentUser?.uid
         if (userid != null) {
+            val loading=LoadingDialogFragment()
+            loading.show(parentFragmentManager, "loading")
             db.collection("Users").document(userid).get().addOnSuccessListener { document ->
                 if (document.exists()) {
+                    loading.dismiss()
                     val username = document.getString("name")
                     val userimageuri=document.getString("avatarurl")
                     if (userimageuri!=null) {
@@ -72,12 +76,25 @@ class PostingFragment : Fragment() {
                     else binding.imgProfile.setImageResource(R.drawable.avataricon)
                     binding.tvUsername.text = username
                 }
+                else {
+                    loading.dismiss()
+                    Toast.makeText(requireContext(), "Không tìm thấy tài khoản", Toast.LENGTH_SHORT).show()
+                    requireActivity().finish()
+                }
+            }
+            .addOnFailureListener {
+                loading.dismiss()
+                Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show()
             }
         }
         privacyspinner = binding.postprivacy
         val listprivacy= mutableListOf<String>()
+        val loading=LoadingDialogFragment()
+        loading.show(parentFragmentManager, "loading")
         db.collection("Privacies").get().addOnSuccessListener {
-            documents->if (documents!=null) {
+            documents->
+            loading.dismiss()
+            if (documents!=null) {
                 for (document in documents) listprivacy.add(document.getString("name")?:"")
             }
             val adapter=ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listprivacy)
@@ -97,6 +114,10 @@ class PostingFragment : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
         }
+        .addOnFailureListener {
+            loading.dismiss()
+            Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show()
+        }
         mediaadapter= MediaAdapter(imagelist, ::removeImage)
         rv_selected_media = binding.rvSelectedMedia
         rv_selected_media.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -106,13 +127,12 @@ class PostingFragment : Fragment() {
         }
         binding.btnPost.setOnClickListener {
             binding.btnPost.isEnabled = false
-            binding.btnPost.setBackgroundColor(Color.BLACK)
-            binding.progressBar.visibility = View.VISIBLE
+            val loading=LoadingDialogFragment()
+            loading.show(parentFragmentManager, "loading")
             if (imagelist.isEmpty() && binding.etPostContent.text.isEmpty()) {
                 Toast.makeText(requireContext(), "Không thể đăng một bài trống không!", Toast.LENGTH_SHORT).show()
                 binding.btnPost.isEnabled = true
-                binding.btnPost.setBackgroundColor(Color.parseColor("#FF6200EE"))
-                binding.progressBar.visibility = View.GONE
+                loading.dismiss()
                 return@setOnClickListener
             }
             else
@@ -132,6 +152,7 @@ class PostingFragment : Fragment() {
                     putParcelableArrayListExtra("image_list", ArrayList(imagelist))
                 }
                 requireContext().startService(postIntent)
+                loading.dismiss()
                 parentFragmentManager.popBackStack()
             }
         }

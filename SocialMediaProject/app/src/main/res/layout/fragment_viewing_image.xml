@@ -8,13 +8,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitCenter"/>
-
-    <ImageView
-        android:id="@+id/btnClose"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@drawable/removebutton"
-        android:layout_gravity="top|end"
-        android:padding="10dp"
-        android:background="?attr/selectableItemBackground" />
 </FrameLayout>
