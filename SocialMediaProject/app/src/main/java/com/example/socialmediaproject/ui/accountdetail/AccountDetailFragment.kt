@@ -55,7 +55,6 @@ class AccountDetailFragment : Fragment() {
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
     private var gender: String=""
-    private lateinit var genderspinner: Spinner
     private var tmp1: Uri=Uri.EMPTY
     private var tmp2: Uri=Uri.EMPTY
 
@@ -73,29 +72,6 @@ class AccountDetailFragment : Fragment() {
         db=FirebaseFirestore.getInstance()
         auth=FirebaseAuth.getInstance()
         val genderlist= mutableListOf<String>()
-        db.collection("Genders").get().addOnSuccessListener {
-                documents->if (documents!=null) {
-                for (document in documents) {
-                    genderlist.add(document.getString("name")?:"")
-                }
-                val adapter=ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, genderlist)
-                genderspinner=binding.spinnerGender
-                genderspinner.adapter=adapter
-                genderspinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        gender=genderlist[position]
-                    }
-                    override fun onNothingSelected(parent: AdapterView<*>?) {
-
-                    }
-                }
-            }
-        }
         val userid=auth.currentUser?.uid ?: ""
         db.collection("Users").document(userid).get().addOnSuccessListener {
             result->if (result!=null) {
@@ -106,8 +82,23 @@ class AccountDetailFragment : Fragment() {
                 binding.tilPhone.editText?.setText(result.getString("phonenumber"))
                 binding.tilAddress.editText?.setText(result.getString("address"))
                 gender=result.getString("gender")?:""
-                val selectedindex=genderlist.indexOfFirst { it.equals(gender) }
-                if (selectedindex>=0) genderspinner.setSelection(selectedindex)
+                db.collection("Genders").get().addOnSuccessListener {
+                    documents->if (documents!=null) {
+                        for (document in documents) {
+                            genderlist.add(document.getString("name")?:"")
+                        }
+                        val adapter=ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, genderlist)
+                        val genderAutoComplete = binding.spinnerGender
+                        genderAutoComplete.setAdapter(adapter)
+                        genderAutoComplete.setOnItemClickListener { _, _, position, _ ->
+                            gender = genderlist[position]
+                        }
+                        val index = genderlist.indexOf(gender)
+                        if (index != -1) {
+                            binding.spinnerGender.setText(genderlist[index], false)
+                        }
+                    }
+                }
                 val avatarurl = result.getString("avatarurl")
                 if (avatarurl != null) {
                     if (avatarurl=="") binding.imgAvatar.setImageResource(R.drawable.avataricon)
@@ -143,7 +134,7 @@ class AccountDetailFragment : Fragment() {
             tmp1="NO".toUri()
         }
         binding.deletewallbutton.setOnClickListener {
-            binding.imgCoverPhoto.setImageResource(R.drawable.loginbackground)
+            binding.imgCoverPhoto.setImageResource(R.color.background_color)
             tmp2="NO".toUri()
         }
         binding.btnSaveProfile.setOnClickListener {

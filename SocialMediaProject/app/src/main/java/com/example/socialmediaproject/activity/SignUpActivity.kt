@@ -14,7 +14,6 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivitySignUpBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlin.math.sign
 
 class SignUpActivity : AppCompatActivity() {
     private lateinit var logintext: TextView

@@ -7,12 +7,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
-import android.view.View
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -79,10 +76,10 @@ class AccountCompleteActivity : AppCompatActivity() {
                 for (document in documents) {
                     genderlist.add(document.getString("name")?:"")
                 }
-                val adapter=ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, genderlist)
-                genderspinner=binding.spinnerGender
-                genderspinner.setAdapter(adapter)
-                genderspinner.setOnItemClickListener { _, _, position, _ ->
+                val adapter=ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, genderlist)
+                val genderAutoComplete = binding.spinnerGender
+                genderAutoComplete.setAdapter(adapter)
+                genderAutoComplete.setOnItemClickListener { _, _, position, _ ->
                     gender = genderlist[position]
                 }
             }

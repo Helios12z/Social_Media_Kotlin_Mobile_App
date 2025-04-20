@@ -113,6 +113,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Giới tính"
+                    android:layout_marginLeft="15dp"
                     android:inputType="none"
                     android:background="@android:color/transparent" />
             </com.google.android.material.textfield.TextInputLayout>
