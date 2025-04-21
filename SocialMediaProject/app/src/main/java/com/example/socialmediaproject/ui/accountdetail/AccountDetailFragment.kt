@@ -7,42 +7,22 @@ import android.net.Uri
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.FragmentAccountDetailBinding
-import com.example.socialmediaproject.service.UpdateAccountWorker
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import com.yalantis.ucrop.UCrop
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-import okhttp3.FormBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okio.blackholeSink
-import org.json.JSONObject
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.IOException
 import java.util.Date
 import java.util.Locale
 
@@ -112,12 +92,12 @@ class AccountDetailFragment : Fragment() {
                 }
                 val wallurl = result.getString("wallurl")
                 if (wallurl != null) {
-                    if (wallurl=="") binding.imgCoverPhoto.setImageResource(R.drawable.loginbackground)
+                    if (wallurl=="") binding.imgCoverPhoto.setImageResource(R.color.background_color)
                     else {
                         Glide.with(requireContext())
                             .load(wallurl)
-                            .placeholder(R.drawable.loginbackground)
-                            .error(R.drawable.loginbackground)
+                            .placeholder(R.color.background_color)
+                            .error(R.color.background_color)
                             .into(binding.imgCoverPhoto)
                     }
                 }

@@ -10,7 +10,6 @@ import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +19,7 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
 import com.example.socialmediaproject.dataclass.PostViewModel
+import com.example.socialmediaproject.fragmentwithoutviewmodel.LikeDetailFragment
 import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -239,6 +239,15 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     override fun onLikeClicked(position: Int) {
         val post=viewModel.postlist.value?.get(position)?:return
         viewModel.toggleLike(post, position)
+    }
+
+    override fun onLikeCountClicked(postPosition: Int) {
+        val post=viewModel.postlist.value?.get(postPosition)?:return
+        val gotoFragment=LikeDetailFragment()
+        val bundle=Bundle()
+        bundle.putString("post_id", post.id)
+        gotoFragment.arguments=bundle
+        gotoFragment.show(parentFragmentManager, "LikeBottomSheet")
     }
 
     override fun onCommentClicked(position: Int) {

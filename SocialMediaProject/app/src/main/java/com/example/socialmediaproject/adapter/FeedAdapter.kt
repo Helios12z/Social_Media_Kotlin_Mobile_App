@@ -31,6 +31,7 @@ class FeedAdapter(
         fun onUserClicked(position: Int)
         fun onMoreOptionsClicked(position: Int, anchorView: View)
         fun onImageClicked(postPosition: Int, imagePosition: Int)
+        fun onLikeCountClicked(postPosition: Int)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -111,6 +112,10 @@ class FeedAdapter(
 
         holder.buttonMore.setOnClickListener {
             listener.onMoreOptionsClicked(position, it)
+        }
+
+        holder.textViewLikeCount.setOnClickListener {
+            listener.onLikeCountClicked(position)
         }
     }
 

@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -23,6 +24,7 @@ import com.example.socialmediaproject.databinding.FragmentChatDetailBinding
 import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.service.AIService
+import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
@@ -54,6 +56,11 @@ class ChatDetailFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+        binding.ivChatAvatar.setOnClickListener {
+            val bundle = Bundle()
+            bundle.putString("wall_user_id", chatUser.id)
+            findNavController().navigate(R.id.navigation_mainpage, bundle)
+        }
         binding.tvChatUsername.text = chatUser.username
         Glide.with(requireContext())
             .load(chatUser.avatarUrl)

@@ -18,6 +18,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
+import com.example.socialmediaproject.fragmentwithoutviewmodel.LikeDetailFragment
 import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 
@@ -102,6 +103,15 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         bundle.putString("post_id", post.id)
         goToFragment.arguments=bundle
         goToFragment.show(parentFragmentManager, "CommentBottomSheet")
+    }
+
+    override fun onLikeCountClicked(postPosition: Int) {
+        val post=homeviewmodel.postlist.value?.get(postPosition)?:return
+        val gotoFragment= LikeDetailFragment()
+        val bundle=Bundle()
+        bundle.putString("post_id", post.id)
+        gotoFragment.arguments=bundle
+        gotoFragment.show(parentFragmentManager, "LikeBottomSheet")
     }
 
     override fun onShareClicked(position: Int) {
