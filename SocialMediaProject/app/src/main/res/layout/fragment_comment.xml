@@ -98,11 +98,11 @@
 
         <ImageButton
             android:id="@+id/btnCancelReply"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Hủy trả lời"
-            android:src="@drawable/removebutton"
+            android:src="@drawable/comment_reply_negate_button"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/tvReplyingTo"
             app:layout_constraintEnd_toEndOf="@id/etCommentInput"
