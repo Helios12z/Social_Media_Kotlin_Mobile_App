@@ -10,6 +10,7 @@ import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -258,12 +259,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onUserClicked(position: Int) {
-        val post=viewModel.postlist.value?.get(position)?:return
-        val goToFragment=MainPageFragment()
-        val bundle=Bundle()
-        bundle.putString("wall_user_id", post.userId)
-        goToFragment.arguments=bundle
-        findNavController().navigate(R.id.action_homeFragment_to_mainPageFragment, bundle)
+        //do nothing
     }
 
     override fun onMoreOptionsClicked(position: Int, anchorView: View) {
