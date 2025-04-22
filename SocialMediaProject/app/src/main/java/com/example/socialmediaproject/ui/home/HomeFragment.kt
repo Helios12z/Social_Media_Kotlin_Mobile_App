@@ -19,7 +19,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
-import com.example.socialmediaproject.fragmentwithoutviewmodel.LikeDetailFragment
 import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 

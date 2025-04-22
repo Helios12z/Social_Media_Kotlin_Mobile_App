@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
 import com.example.socialmediaproject.service.OneSignalHelper
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.launch
@@ -14,6 +14,7 @@ import java.util.regex.Pattern
 class CommentViewModel : ViewModel() {
     private val auth: FirebaseAuth=FirebaseAuth.getInstance()
     private val db: FirebaseFirestore =FirebaseFirestore.getInstance()
+    var postId: String = ""
 
     fun postComment(content: String, parentId: String? = null, postId: String) {
         viewModelScope.launch {
@@ -123,6 +124,17 @@ class CommentViewModel : ViewModel() {
                             message = "$sendername đã nhắc đến bạn trong một bình luận",
                             commentId=commentId
                         )
+                        val notification = hashMapOf(
+                            "receiverId" to userId,
+                            "senderId" to auth.currentUser?.uid,
+                            "type" to "mention",
+                            "message" to "$sendername đã nhắc đến bạn trong một bình luận",
+                            "timestamp" to Timestamp.now(),
+                            "relatedPostId" to postId,
+                            "relatedCommentId" to commentId,
+                            "isRead" to false
+                        )
+                        db.collection("notifications").add(notification)
                     }
                     if (mentionedUserIds.isNotEmpty()) {
                         db.collection("comments")
@@ -134,7 +146,16 @@ class CommentViewModel : ViewModel() {
                         )
                     }
                 }
+                .addOnFailureListener {
+
+                }
             }
+            else {
+
+            }
+        }
+        .addOnFailureListener {
+
         }
     }
 }

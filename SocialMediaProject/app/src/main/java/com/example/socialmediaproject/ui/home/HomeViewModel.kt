@@ -70,7 +70,6 @@ class HomeViewModel : ViewModel() {
                             val userDoc = (results[0] as Task<DocumentSnapshot>).result
                             val ref = (results[1] as Task<DataSnapshot>).result
                             val likeResults = (results[2] as Task<QuerySnapshot>).result
-
                             val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
                             Log.d("LIKE COUNT", likecount.toString())
                             val sharecount = ref.child("sharecount").getValue(Int::class.java) ?: 0

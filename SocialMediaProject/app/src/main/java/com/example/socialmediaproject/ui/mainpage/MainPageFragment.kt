@@ -1,8 +1,6 @@
 package com.example.socialmediaproject.ui.mainpage
 
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -21,7 +19,6 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
 import com.example.socialmediaproject.dataclass.PostViewModel
-import com.example.socialmediaproject.fragmentwithoutviewmodel.LikeDetailFragment
 import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog

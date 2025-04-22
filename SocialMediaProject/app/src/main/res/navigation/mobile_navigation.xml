@@ -82,4 +82,10 @@
         android:label="LikeDetail"
         tools:layout="@layout/fragment_like_detail">
     </fragment>
+
+    <fragment android:id="@+id/navigation_postWithComment"
+        android:name="com.example.socialmediaproject.ui.postwithcomment.PostWithCommentFragment"
+        android:label="PostWithComment"
+        tools:layout="@layout/fragment_post_with_comment">
+    </fragment>
 </navigation>

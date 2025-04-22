@@ -45,6 +45,7 @@ class CommentFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         postId=arguments?.getString("post_id") ?: return
+        viewModel.postId=postId
         setupUI()
         observeComments(postId)
         binding.etCommentInput.addTextChangedListener(object : TextWatcher {

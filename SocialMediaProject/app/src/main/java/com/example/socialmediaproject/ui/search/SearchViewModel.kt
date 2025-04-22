@@ -14,6 +14,7 @@ import com.example.socialmediaproject.dataclass.RequestStatus
 import com.example.socialmediaproject.dataclass.User
 import com.example.socialmediaproject.service.NotificationService
 import com.example.socialmediaproject.service.OneSignalHelper
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -152,6 +153,16 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                             receiverId,
                             "${result.getString("name")} đã gửi cho bạn lời mời kết bạn"
                         )
+                        val notification = hashMapOf(
+                            "receiverId" to receiverId,
+                            "senderId" to senderId,
+                            "type" to "friend_request",
+                            "message" to "${result.getString("name")} đã gửi cho bạn lời mời kết bạn",
+                            "timestamp" to Timestamp.now(),
+                            "relatedUserId" to senderId,
+                            "isRead" to false
+                        )
+                        db.collection("notifications").add(notification)
                     }
                 }
             }

@@ -14,6 +14,7 @@ import com.example.socialmediaproject.service.OneSignalHelper
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -509,6 +510,16 @@ class MainPageViewModel : ViewModel() {
                                 receiverId,
                                 "${result.getString("name")} đã gửi cho bạn lời mời kết bạn"
                             )
+                            val notification = hashMapOf(
+                                "receiverId" to receiverId,
+                                "senderId" to senderId,
+                                "type" to "friend_request",
+                                "message" to "${result.getString("name")} đã gửi cho bạn lời mời kết bạn",
+                                "timestamp" to Timestamp.now(),
+                                "relatedUserId" to senderId,
+                                "isRead" to false
+                            )
+                            db.collection("notifications").add(notification)
                         }
                     }
                 }
