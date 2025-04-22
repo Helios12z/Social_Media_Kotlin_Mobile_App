@@ -90,8 +90,9 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_home -> {
-                    navController.popBackStack(navController.graph.startDestinationId, false)
-                    navController.navigate(R.id.navigation_home)
+                    if (!navController.popBackStack(R.id.navigation_home, false)) {
+                        navController.navigate(R.id.navigation_home)
+                    }
                     true
                 }
                 R.id.navigation_account -> {

@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.work.workDataOf
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.FragmentAccountDetailBinding
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -53,6 +54,8 @@ class AccountDetailFragment : Fragment() {
         auth=FirebaseAuth.getInstance()
         val genderlist= mutableListOf<String>()
         val userid=auth.currentUser?.uid ?: ""
+        val loading=LoadingDialogFragment()
+        loading.show(parentFragmentManager, "loading")
         db.collection("Users").document(userid).get().addOnSuccessListener {
             result->if (result!=null) {
                 binding.tilNickname.editText?.setText(result.getString("name"))
@@ -64,6 +67,7 @@ class AccountDetailFragment : Fragment() {
                 gender=result.getString("gender")?:""
                 db.collection("Genders").get().addOnSuccessListener {
                     documents->if (documents!=null) {
+                        loading.dismiss()
                         for (document in documents) {
                             genderlist.add(document.getString("name")?:"")
                         }
@@ -78,6 +82,10 @@ class AccountDetailFragment : Fragment() {
                             binding.spinnerGender.setText(genderlist[index], false)
                         }
                     }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show()
+                    loading.dismiss()
                 }
                 val avatarurl = result.getString("avatarurl")
                 if (avatarurl != null) {
@@ -102,6 +110,14 @@ class AccountDetailFragment : Fragment() {
                     }
                 }
             }
+            else {
+                Toast.makeText(requireContext(), "Tài khoản không còn tồn tại", Toast.LENGTH_SHORT).show()
+                loading.dismiss()
+            }
+        }
+        .addOnFailureListener {
+            Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show()
+            loading.dismiss()
         }
         binding.imgAvatar.setOnClickListener {
             openGalleryForAvatar()
@@ -118,34 +134,40 @@ class AccountDetailFragment : Fragment() {
             tmp2="NO".toUri()
         }
         binding.btnSaveProfile.setOnClickListener {
-            if (tmp1== Uri.EMPTY && tmp2== Uri.EMPTY
-                && binding.tilNickname.editText?.text.isNullOrEmpty()
-                && binding.tilBirthday.editText?.text.isNullOrEmpty()
-                && binding.tilBio.editText?.text.isNullOrEmpty()
-                && binding.tilPhone.editText?.text.isNullOrEmpty()
-                && binding.tilAddress.editText?.text.isNullOrEmpty()
-                && gender.isEmpty()) {
-                    Toast.makeText(requireContext(), "Không đủ điều kiện cập nhật!", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
+            if (binding.tilNickname.editText?.text.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Nickname không được bỏ trống!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
             else {
-                binding.btnSaveProfile.isEnabled = false
-                binding.progressBar.visibility=View.VISIBLE
-                val data= workDataOf(
-                    "name" to binding.tilNickname.editText?.text.toString(),
-                    "fullname" to binding.tilFullName.editText?.text.toString(),
-                    "avatarUri" to (if (tmp1 == Uri.EMPTY) null else tmp1.toString()),
-                    "wallUri" to (if (tmp2 == Uri.EMPTY) null else tmp2.toString()),
-                    "birthday" to binding.tilBirthday.editText?.text.toString(),
-                    "address" to binding.tilAddress.editText?.text.toString(),
-                    "phone" to binding.tilPhone.editText?.text.toString(),
-                    "bio" to binding.tilBio.editText?.text.toString(),
-                    "gender" to gender
-                )
-                viewModel.startUploadWorker(data, requireContext())
-                viewModel.workStatus.observe(viewLifecycleOwner) {
-                    isUploading->binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
-                    binding.btnSaveProfile.isEnabled = !isUploading
+                if (tmp1== Uri.EMPTY && tmp2== Uri.EMPTY
+                    && binding.tilNickname.editText?.text.isNullOrEmpty()
+                    && binding.tilBirthday.editText?.text.isNullOrEmpty()
+                    && binding.tilBio.editText?.text.isNullOrEmpty()
+                    && binding.tilPhone.editText?.text.isNullOrEmpty()
+                    && binding.tilAddress.editText?.text.isNullOrEmpty()
+                    && gender.isEmpty()) {
+                    Toast.makeText(requireContext(), "Không đủ điều kiện cập nhật!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                else {
+                    binding.btnSaveProfile.isEnabled = false
+                    binding.progressBar.visibility=View.VISIBLE
+                    val data= workDataOf(
+                        "name" to binding.tilNickname.editText?.text.toString(),
+                        "fullname" to binding.tilFullName.editText?.text.toString(),
+                        "avatarUri" to (if (tmp1 == Uri.EMPTY) null else tmp1.toString()),
+                        "wallUri" to (if (tmp2 == Uri.EMPTY) null else tmp2.toString()),
+                        "birthday" to binding.tilBirthday.editText?.text.toString(),
+                        "address" to binding.tilAddress.editText?.text.toString(),
+                        "phone" to binding.tilPhone.editText?.text.toString(),
+                        "bio" to binding.tilBio.editText?.text.toString(),
+                        "gender" to gender
+                    )
+                    viewModel.startUploadWorker(data, requireContext())
+                    viewModel.workStatus.observe(viewLifecycleOwner) {
+                            isUploading->binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
+                        binding.btnSaveProfile.isEnabled = !isUploading
+                    }
                 }
             }
         }
