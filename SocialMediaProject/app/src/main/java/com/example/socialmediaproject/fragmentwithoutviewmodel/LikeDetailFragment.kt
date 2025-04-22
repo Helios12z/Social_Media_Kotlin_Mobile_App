@@ -1,12 +1,12 @@
 package com.example.socialmediaproject.fragmentwithoutviewmodel
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.navigation.findNavController
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -15,14 +15,12 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.LikesAdapter
 import com.example.socialmediaproject.databinding.FragmentLikeDetailBinding
 import com.example.socialmediaproject.dataclass.User
-import com.example.socialmediaproject.ui.mainpage.MainPageFragment
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 
-class LikeDetailFragment : BottomSheetDialogFragment() {
+class LikeDetailFragment : Fragment() {
     private lateinit var binding: FragmentLikeDetailBinding
     private lateinit var likesAdapter: LikesAdapter
     private val likedUsers = mutableListOf<User>()
@@ -38,6 +36,9 @@ class LikeDetailFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding=FragmentLikeDetailBinding.inflate(inflater, container, false)
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
         return binding.root
     }
 
@@ -49,29 +50,25 @@ class LikeDetailFragment : BottomSheetDialogFragment() {
         loadLikedUsers()
     }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.let {
-            val bottomSheet = it.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            bottomSheet?.let { sheet ->
-                val behavior = BottomSheetBehavior.from(sheet)
-                sheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            }
-        }
+    override fun onResume() {
+        super.onResume()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(0f).setDuration(200).start()
+        bottomnavbar.visibility=View.VISIBLE
     }
 
     private fun setupRecyclerView() {
-        likesAdapter = LikesAdapter(likedUsers) {userId->
-            val bundle = Bundle().apply {
-                putString("wall_user_id", userId)
-            }
-            val sharedPrefs = requireActivity().getSharedPreferences("dialog_state", Context.MODE_PRIVATE)
-            sharedPrefs.edit().putBoolean("should_show_likes_dialog", true)
-                .putString("likes_dialog_tag", tag)
-                .putBoolean("from_like_detail", true).apply()
-            dialog?.window?.decorView?.visibility = View.INVISIBLE
-            requireActivity().findNavController(R.id.nav_host_fragment_activity_main).navigate(R.id.navigation_mainpage, bundle)
+        likesAdapter = LikesAdapter(likedUsers) { userid->
+            val bundle=Bundle()
+            bundle.putString("wall_user_id", userid)
+            findNavController().navigate(R.id.navigation_mainpage, bundle)
         }
         binding.rvLikes.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -181,7 +178,11 @@ class LikeDetailFragment : BottomSheetDialogFragment() {
                 val name = doc.getString("name") ?: ""
                 val avatar = doc.getString("avatarurl") ?: ""
                 val isFriend = friendList.contains(id)
-                val email = if (isFriend) "Bạn bè" else "Người lạ"
+                val isSelf=id==FirebaseAuth.getInstance().currentUser?.uid
+                var email=""
+                if (isSelf) email="Bạn"
+                else if (isFriend) email="Bạn bè"
+                else email="Người lạ"
                 likedUsers.add(User(id, name, avatar, email))
             }
             likesAdapter.notifyDataSetChanged()
