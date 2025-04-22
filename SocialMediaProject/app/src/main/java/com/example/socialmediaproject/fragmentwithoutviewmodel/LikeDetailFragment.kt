@@ -1,16 +1,21 @@
 package com.example.socialmediaproject.fragmentwithoutviewmodel
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.LikesAdapter
 import com.example.socialmediaproject.databinding.FragmentLikeDetailBinding
 import com.example.socialmediaproject.dataclass.User
+import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
@@ -57,7 +62,17 @@ class LikeDetailFragment : BottomSheetDialogFragment() {
     }
 
     private fun setupRecyclerView() {
-        likesAdapter = LikesAdapter(likedUsers)
+        likesAdapter = LikesAdapter(likedUsers) {userId->
+            val bundle = Bundle().apply {
+                putString("wall_user_id", userId)
+            }
+            val sharedPrefs = requireActivity().getSharedPreferences("dialog_state", Context.MODE_PRIVATE)
+            sharedPrefs.edit().putBoolean("should_show_likes_dialog", true)
+                .putString("likes_dialog_tag", tag)
+                .putBoolean("from_like_detail", true).apply()
+            dialog?.window?.decorView?.visibility = View.INVISIBLE
+            requireActivity().findNavController(R.id.nav_host_fragment_activity_main).navigate(R.id.navigation_mainpage, bundle)
+        }
         binding.rvLikes.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = likesAdapter
@@ -81,6 +96,8 @@ class LikeDetailFragment : BottomSheetDialogFragment() {
     }
 
     private fun loadPostSummary() {
+        val loading=LoadingDialogFragment()
+        loading.show(childFragmentManager, "loading")
         db.collection("Posts").document(postId).get()
         .addOnSuccessListener { doc ->
             if (doc.exists()) {
@@ -99,10 +116,31 @@ class LikeDetailFragment : BottomSheetDialogFragment() {
                         .get()
                         .addOnSuccessListener {
                             binding.tvLikeCount.text = "${it.size()} lượt thích"
+                            loading.dismiss()
+                        }
+                        .addOnFailureListener {
+                            loading.dismiss()
+                            Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
                         }
                     }
+                    else {
+                        loading.dismiss()
+                        Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    loading.dismiss()
+                    Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
                 }
             }
+            else {
+                loading.dismiss()
+                Toast.makeText(requireContext(), "Bài viết không tồn tại", Toast.LENGTH_SHORT).show()
+            }
+        }
+        .addOnFailureListener {
+            loading.dismiss()
+            Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -76,4 +76,10 @@
         android:label="ChatDetail"
         tools:layout="@layout/fragment_chat_detail">
     </fragment>
+
+    <fragment android:id="@+id/navigation_likedetail"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.LikeDetailFragment"
+        android:label="LikeDetail"
+        tools:layout="@layout/fragment_like_detail">
+    </fragment>
 </navigation>

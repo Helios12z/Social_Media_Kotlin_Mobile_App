@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.mainpage
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -313,6 +314,21 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+        val sharedPrefs = requireActivity().getSharedPreferences("dialog_state", Context.MODE_PRIVATE)
+        val fromLikeDetail = sharedPrefs.getBoolean("from_like_detail", false)
+        val shouldShowDialog = sharedPrefs.getBoolean("should_show_likes_dialog", false)
+        if (!fromLikeDetail && shouldShowDialog) {
+            sharedPrefs.edit()
+                .putBoolean("should_show_likes_dialog", false)
+                .putBoolean("from_like_detail", false)
+                .apply()
+            val dialogTag = sharedPrefs.getString("likes_dialog_tag", "LikeBottomSheet")
+            val existingDialog = parentFragmentManager.findFragmentByTag(dialogTag) as? LikeDetailFragment
+            if (existingDialog != null) {
+                existingDialog.dialog?.window?.decorView?.visibility = View.VISIBLE
+            }
+        }
+        else if (fromLikeDetail) sharedPrefs.edit().putBoolean("from_like_detail", false).apply()
     }
 
     private fun updateFriendshipUI() {

@@ -5,16 +5,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.User
 
-class LikesAdapter(private val users: List<User>) :
+class LikesAdapter(private val users: List<User>, private val onUserClick: (String)->Unit) :
     RecyclerView.Adapter<LikesAdapter.LikeViewHolder>() {
 
     inner class LikeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val ivAvatar: ImageView = itemView.findViewById(R.id.ivUserAvatar)
+        val ivUser: ConstraintLayout=itemView.findViewById(R.id.like_user_card)
         val tvName: TextView = itemView.findViewById(R.id.tvUserName)
         val tvBio: TextView = itemView.findViewById(R.id.tvUserBio)
     }
@@ -35,6 +37,9 @@ class LikesAdapter(private val users: List<User>) :
                 .into(holder.ivAvatar)
         } else {
             holder.ivAvatar.setImageResource(R.drawable.avataricon)
+        }
+        holder.ivUser.setOnClickListener {
+            onUserClick(user.userid)
         }
     }
 

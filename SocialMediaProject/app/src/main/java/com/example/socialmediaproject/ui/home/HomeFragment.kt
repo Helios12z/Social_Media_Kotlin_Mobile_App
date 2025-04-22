@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.home
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -165,6 +166,24 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         if (imageurl!=null) {
             val bundle = bundleOf("IMAGE_URL" to imageurl)
             findNavController().navigate(R.id.viewingimagefragment, bundle)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val sharedPrefs = requireActivity().getSharedPreferences("dialog_state", Context.MODE_PRIVATE)
+        val fromLikeDetail = sharedPrefs.getBoolean("from_like_detail", false)
+        val shouldShowDialog = sharedPrefs.getBoolean("should_show_likes_dialog", false)
+        if (!fromLikeDetail && shouldShowDialog) {
+            sharedPrefs.edit()
+                .putBoolean("should_show_likes_dialog", false)
+                .putBoolean("from_like_detail", false)
+                .apply()
+            val dialogTag = sharedPrefs.getString("likes_dialog_tag", "LikeBottomSheet")
+            val existingDialog = parentFragmentManager.findFragmentByTag(dialogTag) as? LikeDetailFragment
+            if (existingDialog != null) {
+                existingDialog.dialog?.window?.decorView?.visibility = View.VISIBLE
+            }
         }
     }
 }
