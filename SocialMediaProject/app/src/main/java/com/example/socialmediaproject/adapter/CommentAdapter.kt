@@ -44,6 +44,8 @@ class CommentAdapter(
 
     override fun getItemCount(): Int = comments.size
 
+    private val expandedCommentIds = mutableSetOf<String>()
+
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
         if (comment.id == highlightCommentId) {
@@ -68,8 +70,13 @@ class CommentAdapter(
         holder.btnLike.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0)
         holder.btnLike.setOnClickListener { onLikeClicked(comment) }
         holder.btnReply.setOnClickListener { onReplyClicked(comment) }
+        val repliesToShow = if (comment.replies.size > 2 && !expandedCommentIds.contains(comment.id)) {
+            comment.replies.take(2)
+        } else {
+            comment.replies
+        }
         val replyAdapter = ReplyAdapter(
-            replies = comment.replies,
+            replies = repliesToShow,
             currentUserId = currentUserId,
             onReplyClicked = onReplyClicked,
             onLikeClicked = onReplyLikeClicked,
@@ -77,6 +84,17 @@ class CommentAdapter(
         )
         holder.rvReplies.adapter = replyAdapter
         holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)
+        if (comment.replies.size > 2 && !expandedCommentIds.contains(comment.id)) {
+            holder.itemView.findViewById<TextView>(R.id.tvShowMoreReplies).apply {
+                visibility = View.VISIBLE
+                setOnClickListener {
+                    expandedCommentIds.add(comment.id)
+                    notifyItemChanged(position)
+                }
+            }
+        } else {
+            holder.itemView.findViewById<TextView>(R.id.tvShowMoreReplies).visibility = View.GONE
+        }
     }
 
     private fun getTimeAgo(timestamp: Long): String {

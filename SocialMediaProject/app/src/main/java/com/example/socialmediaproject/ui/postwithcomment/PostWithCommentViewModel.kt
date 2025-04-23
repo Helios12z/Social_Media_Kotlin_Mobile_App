@@ -14,7 +14,6 @@ import com.google.firebase.database.database
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
-import okhttp3.internal.notify
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,6 +27,7 @@ class PostWithCommentViewModel: ViewModel() {
     val statsLiveData = MutableLiveData<Triple<Int, Int, Int>>()
     val userAvatarUrl = MutableLiveData<String>()
     val errorMessage = MutableLiveData<String>()
+    val isPostLiked = MutableLiveData<Boolean>()
     private var postId: String = ""
 
     fun init(postId: String) {
@@ -158,7 +158,8 @@ class PostWithCommentViewModel: ViewModel() {
                             db.collection("Likes").add(item)
                         }
                     }
-                    postData.notify()
+                    postData.postValue(postData.value)
+                    isPostLiked.postValue(post.isLiked)
                 } else {
                     //log error
                 }

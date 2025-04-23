@@ -4,8 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
 import com.example.socialmediaproject.service.OneSignalHelper
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
+import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.launch
@@ -15,6 +21,7 @@ class CommentViewModel : ViewModel() {
     private val auth: FirebaseAuth=FirebaseAuth.getInstance()
     private val db: FirebaseFirestore =FirebaseFirestore.getInstance()
     var postId: String = ""
+    private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
 
     fun postComment(content: String, parentId: String? = null, postId: String) {
         viewModelScope.launch {
@@ -94,7 +101,7 @@ class CommentViewModel : ViewModel() {
             }
             transaction.update(commentRef, "likes", updatedLikes)
         }.addOnSuccessListener {
-            // Success
+            updateCommentCount(postId)
         }.addOnFailureListener {
             //Failure
         }
@@ -157,5 +164,24 @@ class CommentViewModel : ViewModel() {
         .addOnFailureListener {
 
         }
+    }
+
+    private fun updateCommentCount(postId: String) {
+        realtimedb.getReference("PostStats").child(postId).runTransaction(object: Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                var commentCount = currentData.child("commentcount").getValue(Int::class.java) ?: 0
+                commentCount += 1
+                currentData.child("commentcount").value = commentCount
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(
+                error: DatabaseError?,
+                committed: Boolean,
+                currentData: DataSnapshot?
+            ) {
+                //handle error
+            }
+        })
     }
 }

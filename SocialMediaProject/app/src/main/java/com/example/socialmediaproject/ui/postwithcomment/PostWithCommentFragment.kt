@@ -1,11 +1,16 @@
 package com.example.socialmediaproject.ui.postwithcomment
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.Spannable
+import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,10 +21,12 @@ import com.example.socialmediaproject.databinding.FragmentPostWithCommentBinding
 import com.example.socialmediaproject.dataclass.Comment
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.ui.comment.CommentViewModel
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.regex.Pattern
 
 class PostWithCommentFragment : Fragment() {
     private lateinit var binding: FragmentPostWithCommentBinding
@@ -38,11 +45,29 @@ class PostWithCommentFragment : Fragment() {
         binding=FragmentPostWithCommentBinding.inflate(inflater, container, false)
         postId=arguments?.getString("post_id")?:""
         viewModel=ViewModelProvider(requireActivity())[PostWithCommentViewModel::class.java]
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(0f).setDuration(200).start()
+        bottomnavbar.visibility=View.VISIBLE
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        checkIfUserHasLikedPost()
         postId = arguments?.getString("post_id") ?: return
         commentId=arguments?.getString("comment_id")?:return
         var currentPost=PostViewModel()
@@ -117,6 +142,10 @@ class PostWithCommentFragment : Fragment() {
         binding.imageViewLike.setOnClickListener {
             viewModel.toggleLike(currentPost)
         }
+        viewModel.isPostLiked.observe(viewLifecycleOwner) { isLiked ->
+            val icon = if (isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
+            binding.imageViewLike.setImageResource(icon)
+        }
     }
 
     private fun setupCommentSection() {
@@ -148,6 +177,34 @@ class PostWithCommentFragment : Fragment() {
                         binding.rvComments.scrollToPosition(parentIndex)
                     }
                 }
+            }
+            binding.etCommentInput.addTextChangedListener(object: TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    s ?: return
+                    val pattern = Pattern.compile("@\\w+")
+                    val matcher = pattern.matcher(s)
+                    val spans = s.getSpans(0, s.length, ForegroundColorSpan::class.java)
+                    spans.forEach { s.removeSpan(it) }
+                    while (matcher.find()) {
+                        val start = matcher.start()
+                        val end = matcher.end()
+                        s.setSpan(
+                            ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.teal_700)),
+                            start, end,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            })
+            viewModel.statsLiveData.observe(viewLifecycleOwner) {stats->
+                val likecount=stats.first
+                val commentcount=stats.second
+                val sharecount=stats.third
+                binding.textViewLikeCount.text=likecount.toString()
+                binding.textViewCommentCount.text=commentcount.toString()
+                binding.textViewShareCount.text=sharecount.toString()
             }
         }
         binding.btnSendComment.setOnClickListener {
@@ -195,5 +252,16 @@ class PostWithCommentFragment : Fragment() {
             allReplies.addAll(collectAllRepliesFlat(reply.id, allComments))
         }
         return allReplies
+    }
+
+    private fun checkIfUserHasLikedPost() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        db.collection("Likes").whereEqualTo("postid", postId)
+        .whereEqualTo("userid", userId).get().addOnSuccessListener {
+            results->if (!results.isEmpty) {
+                binding.imageViewLike.setImageResource(R.drawable.smallheartedicon)
+            }
+            else binding.imageViewLike.setImageResource(R.drawable.smallhearticon)
+        }
     }
 }
