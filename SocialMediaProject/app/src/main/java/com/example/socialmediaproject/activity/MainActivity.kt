@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
                     batch.commit().await()
                 }
             } catch (e: Exception) {
-
+                e.printStackTrace()
             }
         }
     }
@@ -169,11 +169,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 val count = unnotified.size
                 if (count > 0) {
-                    OneSignalHelper.sendMentionNotification(
-                        userId = currentUserId,
-                        commentId = "",
-                        message = "Bạn đã được nhắc đến trong $count bình luận"
-                    )
+                    OneSignalHelper.sendPushNotification(currentUserId, "Bạn có $count lượt nhắc trong bình luận mới!")
                     val batch = db.batch()
                     for (doc in unnotified) {
                         batch.update(doc.reference, "notifiedUserIds", FieldValue.arrayUnion(currentUserId))

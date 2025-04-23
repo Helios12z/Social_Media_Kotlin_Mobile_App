@@ -62,9 +62,10 @@
             android:minHeight="40dp"
             android:textSize="12sp"
             app:cornerRadius="20dp"
+            android:textColor="@color/text_color"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Xem" />
+            android:text="Xem" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/notification_delete"
@@ -75,8 +76,9 @@
             android:minHeight="40dp"
             android:textSize="12sp"
             app:cornerRadius="20dp"
+            android:textColor="@color/text_color"
             app:layout_constraintTop_toBottomOf="@+id/notification_action"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="Xóa" />
+            android:text="Xóa" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

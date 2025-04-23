@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.service
 
-import android.util.Log
 import com.example.socialmediaproject.dataclass.NotificationPayload
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,14 +41,14 @@ object OneSignalHelper {
                         .document(commentId)
                         .update("notifiedUserIds", FieldValue.arrayUnion(userId))
                         .addOnSuccessListener {
-
+                            //success
                         }
-                        .addOnFailureListener {
-
+                        .addOnFailureListener {e->
+                            e.printStackTrace()
                         }
                     }
                 } else {
-                    Log.e("OneSignal", "Mention failed: ${response.errorBody()?.string()}")
+                    //error
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

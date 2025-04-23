@@ -17,15 +17,15 @@ class NotificationViewModel : ViewModel() {
     fun fetchNotifications() {
         val currentUserId = auth.currentUser?.uid ?: return
         db.collection("notifications")
-            .whereEqualTo("receiverId", currentUserId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) return@addSnapshotListener
-                val notifications = snapshot.documents.mapNotNull {
-                    it.toObject(Notification::class.java)?.copy(id = it.id)
-                }
-                _notificationsLiveData.postValue(notifications)
+        .whereEqualTo("receiverId", currentUserId)
+        .orderBy("timestamp", Query.Direction.DESCENDING)
+        .addSnapshotListener { snapshot, error ->
+            if (error != null || snapshot == null) return@addSnapshotListener
+            val notifications = snapshot.documents.mapNotNull {
+                it.toObject(Notification::class.java)?.copy(id = it.id)
             }
+            _notificationsLiveData.postValue(notifications)
+        }
     }
 
     fun markAsRead(notificationId: String) {
