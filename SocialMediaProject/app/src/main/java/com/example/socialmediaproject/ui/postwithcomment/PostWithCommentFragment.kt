@@ -24,6 +24,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class PostWithCommentFragment : Fragment() {
     private lateinit var binding: FragmentPostWithCommentBinding
     private lateinit var postId: String
+    private lateinit var commentId: String
     private lateinit var viewModel: PostWithCommentViewModel
     private val commentViewModel: CommentViewModel by viewModels()
     private var replyingTo: Comment? = null
@@ -43,6 +44,7 @@ class PostWithCommentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         postId = arguments?.getString("post_id") ?: return
+        commentId=arguments?.getString("comment_id")?:return
         var currentPost=PostViewModel()
         db.collection("Posts").document(postId).get().addOnSuccessListener {
             result->if (result.exists()) {
@@ -131,10 +133,22 @@ class PostWithCommentFragment : Fragment() {
                 },
                 onReplyLikeClicked = { reply ->
                     commentViewModel.toggleLikeComment(reply.id, FirebaseAuth.getInstance().currentUser?.uid ?: "")
-                }
+                },
+                highlightCommentId = commentId
             )
             binding.rvComments.adapter = adapter
-            binding.rvComments.layoutManager = LinearLayoutManager(requireContext())
+            binding.rvComments.layoutManager = LinearLayoutManager(context?:return@getComments)
+            commentId.let { targetId ->
+                val index = commentTree.indexOfFirst { it.id == targetId }
+                if (index != -1) {
+                    binding.rvComments.scrollToPosition(index)
+                } else {
+                    val parentIndex = commentTree.indexOfFirst { it.replies.any { reply -> reply.id == targetId } }
+                    if (parentIndex != -1) {
+                        binding.rvComments.scrollToPosition(parentIndex)
+                    }
+                }
+            }
         }
         binding.btnSendComment.setOnClickListener {
             val text = binding.etCommentInput.text.toString().trim()

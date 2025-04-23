@@ -1,16 +1,20 @@
 package com.example.socialmediaproject.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.Comment
 import com.google.android.material.imageview.ShapeableImageView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class CommentAdapter(
     private val comments: List<Comment>,
@@ -18,6 +22,7 @@ class CommentAdapter(
     private val onReplyClicked: (Comment) -> Unit,
     private val onLikeClicked: (Comment) -> Unit,
     private val onReplyLikeClicked: (Comment) -> Unit,
+    private val highlightCommentId: String? = null
 ) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
     inner class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -29,6 +34,7 @@ class CommentAdapter(
         val btnLike = itemView.findViewById<TextView>(R.id.btnLike)
         val btnReply = itemView.findViewById<TextView>(R.id.btnReply)
         val rvReplies = itemView.findViewById<RecyclerView>(R.id.rvReplies)
+        val cardComment = itemView.findViewById<androidx.cardview.widget.CardView>(R.id.cardComment)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
@@ -40,6 +46,12 @@ class CommentAdapter(
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
+        if (comment.id == highlightCommentId) {
+            holder.cardComment.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.highlight_color))
+            holder.cardComment.startAnimation(AnimationUtils.loadAnimation(holder.itemView.context, R.anim.pulse))
+        } else {
+            holder.cardComment.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.normal_comment_background))
+        }
         holder.username.text = comment.username
         holder.content.text = comment.content
         holder.likeCount.text = comment.likes.size.toString()
@@ -71,6 +83,15 @@ class CommentAdapter(
         val diff = System.currentTimeMillis() - timestamp
         val minutes = diff / (60 * 1000)
         val hours = minutes / 60
-        return if (hours > 0) "$hours giờ trước" else "$minutes phút trước"
+        val days = hours / 24
+        return when {
+            minutes < 60 -> "$minutes phút trước"
+            hours < 24 -> "$hours giờ trước"
+            days < 7 -> "$days ngày trước"
+            else -> {
+                val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                sdf.format(Date(timestamp))
+            }
+        }
     }
 }

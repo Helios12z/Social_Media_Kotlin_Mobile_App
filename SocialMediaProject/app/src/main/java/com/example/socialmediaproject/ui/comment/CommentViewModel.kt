@@ -132,7 +132,7 @@ class CommentViewModel : ViewModel() {
                             "timestamp" to Timestamp.now(),
                             "relatedPostId" to postId,
                             "relatedCommentId" to commentId,
-                            "isRead" to false
+                            "read" to false
                         )
                         db.collection("notifications").add(notification)
                     }

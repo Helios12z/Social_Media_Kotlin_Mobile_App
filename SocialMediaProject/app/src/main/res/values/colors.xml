@@ -17,4 +17,6 @@
     <color name="dark_background">#1A1A1A</color>
     <color name="surface_color">@color/light_gray</color>
     <color name="text_color">@color/black</color>
+    <color name="highlight_color">#FFF9C4</color>
+    <color name="normal_comment_background">#F5F5F5</color>
 </resources>

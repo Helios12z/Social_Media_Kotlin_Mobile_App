@@ -64,6 +64,7 @@ class NotificationFragment : Fragment() {
             "mention" -> {
                 val bundle=Bundle()
                 bundle.putString("post_id", notification.relatedPostId)
+                bundle.putString("comment_id", notification.relatedCommentId)
                 findNavController().navigate(R.id.navigation_postWithComment, bundle)
             }
         }
