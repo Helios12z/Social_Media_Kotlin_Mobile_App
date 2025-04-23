@@ -88,4 +88,10 @@
         android:label="PostWithComment"
         tools:layout="@layout/fragment_post_with_comment">
     </fragment>
+
+    <fragment android:id="@+id/navigation_notification"
+        android:name="com.example.socialmediaproject.ui.notification.NotificationFragment"
+        android:label="Notification"
+        tools:layout="@layout/fragment_notification">
+    </fragment>
 </navigation>

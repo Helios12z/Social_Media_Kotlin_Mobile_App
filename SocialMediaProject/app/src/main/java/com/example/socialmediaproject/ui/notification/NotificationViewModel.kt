@@ -29,7 +29,6 @@ class NotificationViewModel : ViewModel() {
     }
 
     fun markAsRead(notificationId: String) {
-        db.collection("notifications").document(notificationId)
-            .update("read", true)
+        db.collection("notifications").document(notificationId).update("read", true)
     }
 }

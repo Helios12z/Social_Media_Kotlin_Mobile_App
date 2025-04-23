@@ -9,20 +9,21 @@
     tools:context=".ui.notification.NotificationFragment">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/appbar"
         android:background="?attr/colorSurface"
         android:elevation="0dp">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+        <TextView
+            android:id="@+id/notification_text"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="Thông báo"
-            app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
-            app:titleTextColor="@color/text_color"/>
-
+            android:layout_height="wrap_content"
+            android:text="Thông báo"
+            android:gravity="center"
+            android:padding="8dp"
+            android:textSize="20dp"
+            android:textStyle="bold" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -37,37 +38,41 @@
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/filter_chips"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
-                android:layout_marginEnd="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:singleSelection="true">
+                app:singleSelection="true"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacing="8dp">
 
+                <!-- Chips không thay đổi -->
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_all"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:text="Tất cả" />
+                    android:text="Tất cả"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_mentions"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Nhắc đến" />
+                    android:text="Nhắc đến"
+                    app:chipCornerRadius="16dp" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip_friend_requests"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Lời mời kết bạn" />
+                    android:text="Lời mời kết bạn"
+                    app:chipCornerRadius="16dp" />
             </com.google.android.material.chip.ChipGroup>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -78,9 +83,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 tools:listitem="@layout/item_notification"
-                app:layout_constraintTop_toBottomOf="@+id/filter_chips">
-
-            </androidx.recyclerview.widget.RecyclerView>
+                app:layout_constraintTop_toBottomOf="@+id/filter_chips" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
@@ -98,7 +101,7 @@
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:contentDescription="Không có thông báo"
-            android:src="@drawable/notificationicon"
+            android:src="@drawable/no_notification"
             app:tint="@color/text_color" />
 
         <TextView
