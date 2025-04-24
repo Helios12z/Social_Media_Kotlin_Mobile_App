@@ -53,6 +53,16 @@
             app:layout_constraintTop_toBottomOf="@+id/notification_text"
             tools:text="2 giờ trước" />
 
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/chaticon"
+            android:visibility="gone"
+            android:id="@+id/unread_notification"
+            app:layout_constraintTop_toBottomOf="@+id/notification_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="10dp"/>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/notification_action"
             style="@style/Widget.Material3.Button.OutlinedButton"

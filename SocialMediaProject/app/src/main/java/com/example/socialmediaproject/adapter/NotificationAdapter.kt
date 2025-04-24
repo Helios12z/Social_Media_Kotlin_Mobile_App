@@ -2,6 +2,7 @@ package com.example.socialmediaproject.adapter
 
 import android.text.format.DateUtils
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -28,6 +29,8 @@ class NotificationAdapter(private val onClick: (Notification) -> Unit, private v
                     .load(R.drawable.avataricon)
                     .into(binding.notificationIcon)
             }
+            if (notification.read) binding.unreadNotification.visibility= View.GONE
+            else binding.unreadNotification.visibility= View.VISIBLE
             binding.notificationText.text = notification.message
             binding.notificationTime.text = DateUtils.getRelativeTimeSpanString(notification.timestamp.toDate().time)
             binding.notificationCard.strokeWidth = if (!notification.read) 4 else 0
