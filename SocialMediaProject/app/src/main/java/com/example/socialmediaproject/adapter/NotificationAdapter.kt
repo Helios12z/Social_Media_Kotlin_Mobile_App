@@ -17,18 +17,11 @@ class NotificationAdapter(private val onClick: (Notification) -> Unit, private v
     inner class NotificationViewHolder(val binding: ItemNotificationBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(notification: Notification) {
-            FirebaseFirestore.getInstance().collection("Users").document(notification.senderId).get().addOnSuccessListener {result->
-                Glide.with(binding.root.context)
-                    .load(result.getString("avatarurl"))
-                    .placeholder(R.drawable.avataricon)
-                    .error(R.drawable.avataricon)
-                    .into(binding.notificationIcon)
-            }
-            .addOnFailureListener {
-                Glide.with(binding.root.context)
-                    .load(R.drawable.avataricon)
-                    .into(binding.notificationIcon)
-            }
+            Glide.with(binding.root.context)
+                .load(notification.senderAvatarUrl)
+                .placeholder(R.drawable.avataricon)
+                .error(R.drawable.avataricon)
+                .into(binding.notificationIcon)
             if (notification.read) binding.unreadNotification.visibility= View.GONE
             else binding.unreadNotification.visibility= View.VISIBLE
             binding.notificationText.text = notification.message

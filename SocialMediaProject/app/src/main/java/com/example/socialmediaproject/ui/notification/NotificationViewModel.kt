@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.socialmediaproject.dataclass.Notification
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -24,7 +25,18 @@ class NotificationViewModel : ViewModel() {
             val notifications = snapshot.documents.mapNotNull {
                 it.toObject(Notification::class.java)?.copy(id = it.id)
             }
-            _notificationsLiveData.postValue(notifications)
+            val tasks = notifications.map { notification ->
+                db.collection("Users").document(notification.senderId)
+                    .get()
+                    .continueWith { task ->
+                        val avatarUrl = task.result?.getString("avatarurl")?:""
+                        notification.copy(senderAvatarUrl = avatarUrl)
+                    }
+            }
+            Tasks.whenAllSuccess<Notification>(tasks)
+            .addOnSuccessListener { completedNotifications ->
+                _notificationsLiveData.postValue(completedNotifications)
+            }
         }
     }
 

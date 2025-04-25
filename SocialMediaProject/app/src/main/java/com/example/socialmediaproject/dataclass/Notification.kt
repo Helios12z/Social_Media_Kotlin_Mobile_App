@@ -12,5 +12,6 @@ data class Notification(
     val relatedPostId: String? = null,
     val relatedCommentId: String? = null,
     val relatedUserId: String? = null,
-    val read: Boolean = false
+    val read: Boolean = false,
+    var senderAvatarUrl: String=""
 )
