@@ -11,7 +11,6 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ItemNotificationBinding
 import com.example.socialmediaproject.dataclass.Notification
-import com.google.firebase.firestore.FirebaseFirestore
 
 class NotificationAdapter(private val onClick: (Notification) -> Unit, private val onDeleteClick: (Notification) -> Unit): ListAdapter<Notification, NotificationAdapter.NotificationViewHolder>(NotificationDiffCallback()) {
     inner class NotificationViewHolder(val binding: ItemNotificationBinding) :

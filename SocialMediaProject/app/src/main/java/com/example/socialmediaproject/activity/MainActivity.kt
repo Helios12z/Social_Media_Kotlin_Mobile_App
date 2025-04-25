@@ -12,6 +12,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
@@ -19,10 +20,10 @@ import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivityMainBinding
 import com.example.socialmediaproject.service.OneSignalHelper
+import com.example.socialmediaproject.ui.notification.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.messaging.FirebaseMessaging
 import com.onesignal.OneSignal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,20 +35,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val db= FirebaseFirestore.getInstance()
     private lateinit var auth: FirebaseAuth
+    private lateinit var notificationViewModel: NotificationViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         askForPermissions()
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val token = task.result
-                val userId = FirebaseAuth.getInstance().currentUser?.uid
-                FirebaseFirestore.getInstance()
-                    .collection("Users")
-                    .document(userId!!)
-                    .update("fcmToken", token)
-            }
-        }
         auth= FirebaseAuth.getInstance()
         checkFriendRequestsOnLogin(this)
         checkMentionsOnLogin()
@@ -66,8 +58,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
         binding = ActivityMainBinding.inflate(layoutInflater)
+        notificationViewModel=ViewModelProvider(this)[NotificationViewModel::class.java]
+        notificationViewModel.fetchNotifications()
         setContentView(binding.root)
         val navView: BottomNavigationView = binding.navView
+        notificationViewModel.notificationsLiveData.observe(this) { notifications ->
+            val unreadCount = notifications.count { !it.read }
+            val badge = navView.getOrCreateBadge(R.id.navigation_notification)
+            if (unreadCount > 0) {
+                badge.isVisible = true
+                badge.number = unreadCount
+            } else {
+                badge.clearNumber()
+                badge.isVisible = false
+            }
+        }
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         val appBarConfiguration = AppBarConfiguration(
             setOf(

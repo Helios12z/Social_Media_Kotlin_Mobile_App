@@ -12,6 +12,7 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.NotificationAdapter
 import com.example.socialmediaproject.databinding.FragmentNotificationBinding
 import com.example.socialmediaproject.dataclass.Notification
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 
 class NotificationFragment : Fragment() {
