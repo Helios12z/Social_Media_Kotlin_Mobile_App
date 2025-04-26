@@ -1,5 +1,7 @@
 package com.example.socialmediaproject.ui.comment
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
@@ -22,7 +24,11 @@ class CommentViewModel : ViewModel() {
     private val db: FirebaseFirestore =FirebaseFirestore.getInstance()
     var postId: String = ""
     private var cachedComments: List<Comment>? = null
+    var onCommentLikedSuccessfully: ((commentId: String) -> Unit)? = null
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
+    private var isProcessingLike = false
+    private val _comments = MutableLiveData<List<Comment>>()
+    val comments: LiveData<List<Comment>> = _comments
 
     fun postComment(content: String, parentId: String? = null, postId: String) {
         viewModelScope.launch {
@@ -40,8 +46,8 @@ class CommentViewModel : ViewModel() {
             .document(commentId)
             .set(comment)
             .addOnSuccessListener {
-                cachedComments = null
                 handleMentions(content, commentId)
+                updateCommentCount(postId)
             }
             .addOnFailureListener {
                 e->e.printStackTrace()
@@ -58,6 +64,10 @@ class CommentViewModel : ViewModel() {
         .orderBy("timestamp", Query.Direction.ASCENDING)
         .addSnapshotListener { snapshots, error ->
             if (error != null || snapshots == null) return@addSnapshotListener
+            if (isProcessingLike) {
+                isProcessingLike = false
+                return@addSnapshotListener
+            }
             val comments = snapshots.toObjects(Comment::class.java)
             val userIds = comments.map { it.userId }.toSet().filter { it.isNotBlank() }
             val batches = userIds.chunked(10)
@@ -98,7 +108,13 @@ class CommentViewModel : ViewModel() {
     }
 
     fun toggleLikeComment(commentId: String, userId: String) {
+        isProcessingLike = true
         val commentRef = db.collection("comments").document(commentId)
+        var willBeLiked = true
+        cachedComments?.find { it.id == commentId }?.let { comment ->
+            val currentLikes = comment.likes ?: listOf()
+            willBeLiked = !currentLikes.contains(userId)
+        }
         db.runTransaction { transaction ->
             val snapshot = transaction.get(commentRef)
             val currentLikes = snapshot.get("likes") as? List<String> ?: listOf()
@@ -109,10 +125,33 @@ class CommentViewModel : ViewModel() {
             }
             transaction.update(commentRef, "likes", updatedLikes)
         }.addOnSuccessListener {
-            cachedComments = null
-            updateCommentCount(postId)
-        }.addOnFailureListener {
-            e->e.printStackTrace()
+            cachedComments?.let { comments ->
+                val updatedComment = comments.find { it.id == commentId }
+                updatedComment?.let { comment ->
+                    comment.likes = if (willBeLiked) {
+                        (comment.likes ?: listOf()).filter { it != userId } + userId
+                    } else {
+                        (comment.likes ?: listOf()).filter { it != userId }
+                    }
+                    onCommentLikedSuccessfully?.invoke(commentId)
+                }
+                if (updatedComment == null) {
+                    comments.forEach { parentComment ->
+                        parentComment.replies?.find { it.id == commentId }?.let { reply ->
+                            reply.likes = if (willBeLiked) {
+                                (reply.likes ?: listOf()).filter { it != userId } + userId
+                            } else {
+                                (reply.likes ?: listOf()).filter { it != userId }
+                            }
+                            onCommentLikedSuccessfully?.invoke(commentId)
+                        }
+                    }
+                }
+            }
+            isProcessingLike = false
+        }.addOnFailureListener { e->
+            e.printStackTrace()
+            isProcessingLike = false
         }
     }
 

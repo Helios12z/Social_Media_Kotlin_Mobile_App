@@ -19,7 +19,7 @@ import java.util.Date
 import java.util.Locale
 
 class CommentAdapter(
-    private val comments: List<Comment>,
+    val comments: List<Comment>,
     private val currentUserId: String,
     private val onReplyClicked: (Comment) -> Unit,
     private val onLikeClicked: (Comment) -> Unit,

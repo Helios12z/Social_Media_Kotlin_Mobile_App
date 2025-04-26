@@ -156,6 +156,32 @@ class CommentFragment : Fragment() {
                 layoutManager = LinearLayoutManager(context)
             }
         }
+        viewModel.onCommentLikedSuccessfully = { likedCommentId ->
+            saveRecyclerViewState()
+            var position = -1
+            for (i in adapter.comments.indices) {
+                val comment = adapter.comments[i]
+                if (comment.id == likedCommentId) {
+                    position = i
+                    break
+                }
+            }
+            if (position != -1) {
+                adapter.notifyItemChanged(position)
+            } else {
+                for (i in adapter.comments.indices) {
+                    val comment = adapter.comments[i]
+                    val replyPosition = comment.replies.indexOfFirst { it.id == likedCommentId }
+                    if (replyPosition != -1) {
+                        adapter.notifyItemChanged(i)
+                        break
+                    }
+                }
+            }
+            binding.rvComments.post {
+                restoreRecyclerViewState()
+            }
+        }
     }
 
     private fun buildCommentTree(comments: List<Comment>): List<Comment> {
@@ -179,5 +205,15 @@ class CommentFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         recyclerViewState = binding.rvComments.layoutManager?.onSaveInstanceState()
+    }
+
+    private fun saveRecyclerViewState() {
+        recyclerViewState = binding.rvComments.layoutManager?.onSaveInstanceState()
+    }
+
+    private fun restoreRecyclerViewState() {
+        recyclerViewState?.let {
+            binding.rvComments.layoutManager?.onRestoreInstanceState(it)
+        }
     }
 }
