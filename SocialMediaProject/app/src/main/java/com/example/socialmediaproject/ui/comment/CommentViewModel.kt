@@ -27,8 +27,6 @@ class CommentViewModel : ViewModel() {
     var onCommentLikedSuccessfully: ((commentId: String) -> Unit)? = null
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
     private var isProcessingLike = false
-    private val _comments = MutableLiveData<List<Comment>>()
-    val comments: LiveData<List<Comment>> = _comments
 
     fun postComment(content: String, parentId: String? = null, postId: String) {
         viewModelScope.launch {
