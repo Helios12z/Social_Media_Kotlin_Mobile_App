@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.ui.comment
 
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
@@ -164,15 +163,15 @@ class CommentViewModel : ViewModel() {
                     }
                 }
                 .addOnFailureListener {
-
+                    return@addOnFailureListener
                 }
             }
             else {
-
+                return@addOnSuccessListener
             }
         }
         .addOnFailureListener {
-
+            return@addOnFailureListener
         }
     }
 
