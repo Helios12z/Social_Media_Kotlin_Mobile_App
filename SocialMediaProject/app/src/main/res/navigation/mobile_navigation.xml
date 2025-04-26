@@ -94,4 +94,10 @@
         android:label="Notification"
         tools:layout="@layout/fragment_notification">
     </fragment>
+
+    <fragment android:id="@+id/navigation_comment_detail"
+        android:name="com.example.socialmediaproject.ui.comment.CommentFragment"
+        android:label="Comment"
+        tools:layout="@layout/fragment_comment">
+    </fragment>
 </navigation>

@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
@@ -163,7 +164,12 @@ class PostWithCommentFragment : Fragment() {
                 onReplyLikeClicked = { reply ->
                     commentViewModel.toggleLikeComment(reply.id, FirebaseAuth.getInstance().currentUser?.uid ?: "")
                 },
-                highlightCommentId = commentId
+                highlightCommentId = commentId,
+                onCommentClicked = {userid->
+                    val bundle=Bundle()
+                    bundle.putString("wall_user_id", userid)
+                    findNavController().navigate(R.id.navigation_mainpage, bundle)
+                }
             )
             binding.rvComments.adapter = adapter
             binding.rvComments.layoutManager = LinearLayoutManager(context?:return@getComments)

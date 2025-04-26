@@ -1,11 +1,13 @@
 package com.example.socialmediaproject.adapter
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -22,7 +24,8 @@ class CommentAdapter(
     private val onReplyClicked: (Comment) -> Unit,
     private val onLikeClicked: (Comment) -> Unit,
     private val onReplyLikeClicked: (Comment) -> Unit,
-    private val highlightCommentId: String? = null
+    private val highlightCommentId: String? = null,
+    private val onCommentClicked: (String) -> Unit
 ) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
     inner class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -65,6 +68,9 @@ class CommentAdapter(
                 .error(R.drawable.avataricon)
                 .into(holder.avatar)
         }
+        holder.avatar.setOnClickListener {
+            onCommentClicked(comment.userId)
+        }
         val isLiked = comment.likes.contains(currentUserId)
         val iconRes = if (isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
         holder.btnLike.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0)
@@ -80,7 +86,11 @@ class CommentAdapter(
             currentUserId = currentUserId,
             onReplyClicked = onReplyClicked,
             onLikeClicked = onReplyLikeClicked,
-            depth = 2
+            onCommentClicked={userId->
+                val bundle=Bundle()
+                bundle.putString("wall_user_id", userId)
+                findNavController(holder.itemView).navigate(R.id.navigation_mainpage, bundle)
+            }
         )
         holder.rvReplies.adapter = replyAdapter
         holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)

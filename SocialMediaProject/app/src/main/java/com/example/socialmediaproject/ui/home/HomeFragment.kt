@@ -98,11 +98,9 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     override fun onCommentClicked(position: Int) {
         val post=homeviewmodel.postlist.value?.get(position)?:return
-        val goToFragment=CommentFragment()
         val bundle=Bundle()
         bundle.putString("post_id", post.id)
-        goToFragment.arguments=bundle
-        goToFragment.show(parentFragmentManager, "CommentBottomSheet")
+        findNavController().navigate(R.id.navigation_comment_detail, bundle)
     }
 
     override fun onLikeCountClicked(postPosition: Int) {

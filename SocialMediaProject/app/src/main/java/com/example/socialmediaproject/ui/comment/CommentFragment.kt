@@ -1,7 +1,7 @@
 package com.example.socialmediaproject.ui.comment
 
-import android.content.res.Resources
 import android.os.Bundle
+import android.os.Parcelable
 import android.text.Editable
 import android.text.Spannable
 import android.text.TextWatcher
@@ -10,21 +10,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
 import com.example.socialmediaproject.databinding.FragmentCommentBinding
 import com.example.socialmediaproject.dataclass.Comment
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.regex.Pattern
 
-class CommentFragment : BottomSheetDialogFragment() {
-
+class CommentFragment : Fragment() {
     private lateinit var viewModel: CommentViewModel
     private lateinit var binding: FragmentCommentBinding
     private var replyingTo: Comment? = null
@@ -32,6 +32,7 @@ class CommentFragment : BottomSheetDialogFragment() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private lateinit var postId: String
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private var recyclerViewState: Parcelable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,7 +40,27 @@ class CommentFragment : BottomSheetDialogFragment() {
     ): View {
         binding=FragmentCommentBinding.inflate(inflater, container, false)
         viewModel=ViewModelProvider(requireActivity())[CommentViewModel::class.java]
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
+        recyclerViewState?.let {
+            binding.rvComments.layoutManager?.onRestoreInstanceState(it)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(0f).setDuration(200).start()
+        bottomnavbar.visibility=View.VISIBLE
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -84,13 +105,11 @@ class CommentFragment : BottomSheetDialogFragment() {
                 binding.etCommentInput.error = "Không nhập gì mà đòi comment à!"
             }
         }
-
         binding.btnCancelReply.setOnClickListener {
             replyingTo = null
             binding.tvReplyingTo.visibility = View.GONE
             binding.btnCancelReply.visibility = View.GONE
         }
-
         db.collection("Users").document(auth.currentUser?.uid?:"").get().addOnSuccessListener {
             result->if (result.exists()) {
                 if (result.getString("avatarurl")!="") {
@@ -108,7 +127,6 @@ class CommentFragment : BottomSheetDialogFragment() {
         viewModel.getComments { allComments ->
             val filteredComments = allComments.filter { it.postId == postId }
             val commentTree = buildCommentTree(filteredComments)
-
             adapter = CommentAdapter(
                 comments = commentTree,
                 currentUserId = auth.currentUser?.uid ?: "",
@@ -126,6 +144,11 @@ class CommentFragment : BottomSheetDialogFragment() {
                 },
                 onReplyLikeClicked = { reply ->
                     viewModel.toggleLikeComment(reply.id, auth.currentUser?.uid ?: "")
+                },
+                onCommentClicked = { userId->
+                    val bundle=Bundle()
+                    bundle.putString("wall_user_id", userId)
+                    findNavController().navigate(R.id.navigation_mainpage, bundle)
                 }
             )
             binding.rvComments.apply {
@@ -153,19 +176,8 @@ class CommentFragment : BottomSheetDialogFragment() {
         return allReplies
     }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.let { dialog ->
-            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            bottomSheet?.let { sheet ->
-                val behavior = BottomSheetBehavior.from(sheet)
-                val screenHeight = Resources.getSystem().displayMetrics.heightPixels
-                val targetHeight = (screenHeight * 0.9).toInt()
-                sheet.layoutParams.height = targetHeight
-                sheet.requestLayout()
-                behavior.peekHeight = targetHeight
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            }
-        }
+    override fun onPause() {
+        super.onPause()
+        recyclerViewState = binding.rvComments.layoutManager?.onSaveInstanceState()
     }
 }

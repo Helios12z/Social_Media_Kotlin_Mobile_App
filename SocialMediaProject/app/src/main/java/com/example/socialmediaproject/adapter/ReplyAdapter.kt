@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
@@ -16,7 +15,7 @@ class ReplyAdapter(
     private val currentUserId: String,
     private val onReplyClicked: (Comment) -> Unit,
     private val onLikeClicked: (Comment) -> Unit,
-    private val depth: Int
+    private val onCommentClicked: (String) -> Unit
 ) : RecyclerView.Adapter<ReplyAdapter.ReplyViewHolder>() {
 
     inner class ReplyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -52,6 +51,9 @@ class ReplyAdapter(
                 .placeholder(R.drawable.avataricon)
                 .error(R.drawable.avataricon)
                 .into(holder.avatar)
+        }
+        holder.avatar.setOnClickListener {
+            onCommentClicked(reply.userId)
         }
     }
 

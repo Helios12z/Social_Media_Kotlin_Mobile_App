@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.comment
 
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
@@ -21,6 +22,7 @@ class CommentViewModel : ViewModel() {
     private val auth: FirebaseAuth=FirebaseAuth.getInstance()
     private val db: FirebaseFirestore =FirebaseFirestore.getInstance()
     var postId: String = ""
+    private var cachedComments: List<Comment>? = null
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
 
     fun postComment(content: String, parentId: String? = null, postId: String) {
@@ -39,15 +41,20 @@ class CommentViewModel : ViewModel() {
             .document(commentId)
             .set(comment)
             .addOnSuccessListener {
+                cachedComments = null
                 handleMentions(content, commentId)
             }
             .addOnFailureListener {
-
+                e->e.printStackTrace()
             }
         }
     }
 
     fun getComments(onResult: (List<Comment>) -> Unit) {
+        cachedComments?.let {
+            onResult(it)
+            return
+        }
         db.collection("comments")
         .orderBy("timestamp", Query.Direction.ASCENDING)
         .addSnapshotListener { snapshots, error ->
@@ -76,12 +83,14 @@ class CommentViewModel : ViewModel() {
                                 comment.avatarurl = avatar
                             }
                         }
+                        cachedComments = comments
                         onResult(comments)
                     }
                 }
                 .addOnFailureListener {
                     completedBatches++
                     if (completedBatches == batches.size) {
+                        cachedComments = comments
                         onResult(comments)
                     }
                 }
@@ -101,9 +110,10 @@ class CommentViewModel : ViewModel() {
             }
             transaction.update(commentRef, "likes", updatedLikes)
         }.addOnSuccessListener {
+            cachedComments = null
             updateCommentCount(postId)
         }.addOnFailureListener {
-            //Failure
+            e->e.printStackTrace()
         }
     }
 

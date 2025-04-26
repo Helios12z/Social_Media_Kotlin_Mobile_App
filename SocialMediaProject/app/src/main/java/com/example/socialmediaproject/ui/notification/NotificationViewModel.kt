@@ -15,29 +15,33 @@ class NotificationViewModel : ViewModel() {
     private val _notificationsLiveData = MutableLiveData<List<Notification>>()
     val notificationsLiveData: LiveData<List<Notification>> = _notificationsLiveData
 
+    init {
+        fetchNotifications()
+    }
+
     fun fetchNotifications() {
         val currentUserId = auth.currentUser?.uid ?: return
         db.collection("notifications")
-        .whereEqualTo("receiverId", currentUserId)
-        .orderBy("timestamp", Query.Direction.DESCENDING)
-        .addSnapshotListener { snapshot, error ->
-            if (error != null || snapshot == null) return@addSnapshotListener
-            val notifications = snapshot.documents.mapNotNull {
-                it.toObject(Notification::class.java)?.copy(id = it.id)
-            }
-            val tasks = notifications.map { notification ->
-                db.collection("Users").document(notification.senderId)
-                    .get()
-                    .continueWith { task ->
-                        val avatarUrl = task.result?.getString("avatarurl")?:""
-                        notification.copy(senderAvatarUrl = avatarUrl)
+            .whereEqualTo("receiverId", currentUserId)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) return@addSnapshotListener
+                val notifications = snapshot.documents.mapNotNull {
+                    it.toObject(Notification::class.java)?.copy(id = it.id)
+                }
+                val tasks = notifications.map { notification ->
+                    db.collection("Users").document(notification.senderId)
+                        .get()
+                        .continueWith { task ->
+                            val avatarUrl = task.result?.getString("avatarurl")?:""
+                            notification.copy(senderAvatarUrl = avatarUrl)
+                        }
+                }
+                Tasks.whenAllSuccess<Notification>(tasks)
+                    .addOnSuccessListener { completedNotifications ->
+                        _notificationsLiveData.postValue(completedNotifications)
                     }
             }
-            Tasks.whenAllSuccess<Notification>(tasks)
-            .addOnSuccessListener { completedNotifications ->
-                _notificationsLiveData.postValue(completedNotifications)
-            }
-        }
     }
 
     fun markAsRead(notificationId: String) {
