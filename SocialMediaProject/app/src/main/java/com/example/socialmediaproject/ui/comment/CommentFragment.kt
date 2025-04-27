@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
@@ -33,6 +34,7 @@ class CommentFragment : Fragment() {
     private lateinit var postId: String
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private var recyclerViewState: Parcelable? = null
+    private val expandedCommentIds = mutableSetOf<String>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -65,34 +67,13 @@ class CommentFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        postId=arguments?.getString("post_id") ?: return
-        viewModel.postId=postId
+        postId = arguments?.getString("post_id") ?: return
+        viewModel.postId = postId
         setupAdapter()
         setupUI()
-        observeComments(postId)
-        val sortedComments = viewModel.getSortedCommentsForDisplay(postId)
-        val commentTree = buildCommentTree(sortedComments)
-        adapter.updateComments(commentTree)
-        binding.etCommentInput.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                s ?: return
-                val pattern = Pattern.compile("@\\w+")
-                val matcher = pattern.matcher(s)
-                val spans = s.getSpans(0, s.length, ForegroundColorSpan::class.java)
-                spans.forEach { s.removeSpan(it) }
-                while (matcher.find()) {
-                    val start = matcher.start()
-                    val end = matcher.end()
-                    s.setSpan(
-                        ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.teal_700)),
-                        start, end,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                }
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
+        observeComments()
+        viewModel.loadInitialComments()
+        setupLoadMore()
     }
 
     private fun setupAdapter() {
@@ -104,37 +85,25 @@ class CommentFragment : Fragment() {
                 binding.tvReplyingTo.visibility = View.VISIBLE
                 binding.btnCancelReply.visibility = View.VISIBLE
                 binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
-                if (binding.etCommentInput.text.toString().trim().isEmpty()) {
+                if (binding.etCommentInput.text.toString().isBlank()) {
                     binding.etCommentInput.setText("@${comment.username} ")
                 }
             },
             onLikeClicked = { comment ->
-                viewModel.toggleLikeComment(comment.id, auth.currentUser?.uid ?: "") {
-                    val position = adapter.comments.indexOfFirst { it.id == comment.id }
-                    if (position != -1) {
-                        adapter.notifyItemChanged(position)
-                    } else {
-                        for (i in adapter.comments.indices) {
-                            val parentComment = adapter.comments[i]
-                            val replyPosition = parentComment.replies.indexOfFirst { it.id == comment.id }
-                            if (replyPosition != -1) {
-                                adapter.notifyItemChanged(i)
-                                break
-                            }
-                        }
-                    }
+                viewModel.toggleLikeComment(comment.id) {
+                    val index = adapter.comments.indexOfFirst { it.id == comment.id }
+                    if (index != -1) adapter.notifyItemChanged(index)
                 }
             },
             onReplyLikeClicked = { reply ->
-                viewModel.toggleLikeComment(reply.id, auth.currentUser?.uid ?: "") {
-                    val position = adapter.comments.indexOfFirst { it.id == reply.id }
-                    if (position != -1) {
-                        adapter.notifyItemChanged(position)
-                    } else {
+                viewModel.toggleLikeComment(reply.id) {
+                    val index = adapter.comments.indexOfFirst { it.id == reply.id }
+                    if (index != -1) adapter.notifyItemChanged(index)
+                    else {
                         for (i in adapter.comments.indices) {
-                            val comment = adapter.comments[i]
-                            val replyPosition = comment.replies.indexOfFirst { it.id == reply.id }
-                            if (replyPosition != -1) {
+                            val parent = adapter.comments[i]
+                            val replyIndex = parent.replies.indexOfFirst { it.id == reply.id }
+                            if (replyIndex != -1) {
                                 adapter.notifyItemChanged(i)
                                 break
                             }
@@ -142,18 +111,30 @@ class CommentFragment : Fragment() {
                     }
                 }
             },
-            onCommentClicked = { userId->
-                val bundle=Bundle()
+            highlightCommentId = null,
+            onCommentClicked = { userId ->
+                val bundle = Bundle()
                 bundle.putString("wall_user_id", userId)
                 findNavController().navigate(R.id.navigation_mainpage, bundle)
             },
-            expandedCommentIds = viewModel.expandedCommentIds
+            expandedCommentIds = expandedCommentIds
         )
-        binding.rvComments.apply {
-            adapter = this@CommentFragment.adapter
-            layoutManager = LinearLayoutManager(context)
-            setHasFixedSize(true)
-        }
+        binding.rvComments.adapter = adapter
+        binding.rvComments.layoutManager = LinearLayoutManager(requireContext())
+    }
+
+    private fun setupLoadMore() {
+        binding.rvComments.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+
+                if (lastVisibleItemPosition == adapter.itemCount - 1) {
+                    viewModel.loadMoreComments()
+                }
+            }
+        })
     }
 
     private fun setupUI() {
@@ -188,45 +169,10 @@ class CommentFragment : Fragment() {
         }
     }
 
-    private fun observeComments(postId: String) {
-        viewModel.getComments { allComments ->
-            val filteredComments = allComments.filter { it.postId == postId }
-            val commentTree = buildCommentTree(filteredComments)
-            adapter.updateComments(commentTree)
+    private fun observeComments() {
+        viewModel.comments.observe(viewLifecycleOwner) { newComments ->
+            adapter.updateFullComments(newComments)
         }
-        viewModel.onCommentLikedSuccessfully = { likedCommentId ->
-            val position = adapter.comments.indexOfFirst { it.id == likedCommentId }
-            if (position != -1) {
-                adapter.notifyItemChanged(position)
-            } else {
-                for (i in adapter.comments.indices) {
-                    val comment = adapter.comments[i]
-                    val replyPosition = comment.replies.indexOfFirst { it.id == likedCommentId }
-                    if (replyPosition != -1) {
-                        adapter.notifyItemChanged(i)
-                        break
-                    }
-                }
-            }
-        }
-    }
-
-    private fun buildCommentTree(comments: List<Comment>): List<Comment> {
-        val rootComments = comments.filter { it.parentId == null }
-        rootComments.forEach { parent ->
-            parent.replies = collectAllRepliesFlat(parent.id, comments).toMutableList()
-        }
-        return rootComments
-    }
-
-    private fun collectAllRepliesFlat(rootId: String, allComments: List<Comment>): List<Comment> {
-        val directReplies = allComments.filter { it.parentId == rootId }
-        val allReplies = mutableListOf<Comment>()
-        allReplies.addAll(directReplies)
-        directReplies.forEach { reply ->
-            allReplies.addAll(collectAllRepliesFlat(reply.id, allComments))
-        }
-        return allReplies
     }
 
     override fun onPause() {

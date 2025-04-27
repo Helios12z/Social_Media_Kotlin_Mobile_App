@@ -1,5 +1,7 @@
 package com.example.socialmediaproject.ui.comment
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
@@ -12,20 +14,179 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.MutableData
 import com.google.firebase.database.Transaction
 import com.google.firebase.database.database
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
 class CommentViewModel : ViewModel() {
-    private val auth: FirebaseAuth=FirebaseAuth.getInstance()
-    private val db: FirebaseFirestore =FirebaseFirestore.getInstance()
-    var postId: String = ""
-    private var cachedComments: List<Comment>? = null
-    var onCommentLikedSuccessfully: ((commentId: String) -> Unit)? = null
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
-    private var isProcessingLike = false
-    val expandedCommentIds = mutableSetOf<String>()
+    private val _comments = MutableLiveData<MutableList<Comment>>(mutableListOf())
+    val comments: LiveData<MutableList<Comment>> = _comments
+    private var lastVisibleComment: DocumentSnapshot? = null
+    private var isLoading = false
+    private val pageSize = 6
+    var postId: String = ""
+
+    fun loadInitialComments() {
+        if (isLoading) return
+        isLoading = true
+        db.collection("comments")
+        .whereEqualTo("postId", postId)
+        .whereEqualTo("parentId", null)
+        .orderBy("timestamp", Query.Direction.ASCENDING)
+        .limit(pageSize.toLong())
+        .get()
+        .addOnSuccessListener { snapshot ->
+            lastVisibleComment = snapshot.documents.lastOrNull()
+            val parents = snapshot.documents.mapNotNull { it.toComment() }
+            fetchRepliesForParents(parents)
+        }
+        .addOnFailureListener {
+            e->e.printStackTrace()
+            return@addOnFailureListener
+        }
+        .addOnCompleteListener { isLoading = false }
+    }
+
+    fun loadMoreComments() {
+        if (isLoading || lastVisibleComment == null) return
+        isLoading = true
+        db.collection("comments")
+        .whereEqualTo("postId", postId)
+        .whereEqualTo("parentId", null)
+        .orderBy("timestamp", Query.Direction.ASCENDING)
+        .startAfter(lastVisibleComment!!)
+        .limit(pageSize.toLong())
+        .get()
+        .addOnSuccessListener { snapshot ->
+            lastVisibleComment = snapshot.documents.lastOrNull()
+            val parents = snapshot.documents.mapNotNull { it.toComment() }
+            fetchRepliesForParents(parents)
+        }
+        .addOnCompleteListener { isLoading = false }
+    }
+
+    private fun fetchRepliesForParents(parents: List<Comment>) {
+        if (parents.isEmpty()) return
+
+        val parentIds = parents.map { it.id }
+        val allUserIds = parents.map { it.userId }.toMutableSet()
+
+        db.collection("comments")
+        .whereIn("parentId", parentIds)
+        .orderBy("timestamp", Query.Direction.ASCENDING)
+        .get()
+        .addOnSuccessListener { replySnapshot ->
+            val replies = replySnapshot.documents.mapNotNull { it.toComment() }
+            allUserIds.addAll(replies.map { it.userId })
+            if (allUserIds.isEmpty()) {
+                addParentsToComments(parents)
+                return@addOnSuccessListener
+            }
+            val userIdList = allUserIds.toList()
+            val batches = userIdList.chunked(10)
+            val userMap = mutableMapOf<String, Pair<String, String>>()
+            var completedBatches = 0
+            batches.forEach { batch ->
+                db.collection("Users")
+                .whereIn("userid", batch)
+                .get()
+                .addOnSuccessListener { userSnapshot ->
+                    userSnapshot.documents.forEach { doc ->
+                        val id = doc.getString("userid") ?: return@forEach
+                        val name = doc.getString("name") ?: "Unknown"
+                        val avatar = doc.getString("avatarurl") ?: ""
+                        userMap[id] = Pair(name, avatar)
+                    }
+                    completedBatches++
+                    if (completedBatches == batches.size) {
+                        val parentsWithReplies = parents.map { parent ->
+                            parent.copy(
+                                username = userMap[parent.userId]?.first ?: "Unknown",
+                                avatarurl = userMap[parent.userId]?.second ?: "",
+                                replies = replies.filter { it.parentId == parent.id }
+                                    .map { reply ->
+                                        reply.copy(
+                                            username = userMap[reply.userId]?.first ?: "Unknown",
+                                            avatarurl = userMap[reply.userId]?.second ?: ""
+                                        )
+                                    }.toMutableList()
+                            )
+                        }
+                        addParentsToComments(parentsWithReplies)
+                    }
+                }
+                .addOnFailureListener {
+                    completedBatches++
+                    if (completedBatches == batches.size) {
+                        addParentsToComments(parents)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun addParentsToComments(parents: List<Comment>) {
+        val currentList = _comments.value ?: mutableListOf()
+        currentList.addAll(parents)
+        _comments.postValue(currentList)
+    }
+
+    fun toggleLikeComment(commentId: String, onFinish: () -> Unit) {
+        val userId = auth.currentUser?.uid ?: return
+        val commentRef = db.collection("comments").document(commentId)
+        db.runTransaction { transaction ->
+            val snapshot = transaction.get(commentRef)
+            val likes = snapshot.get("likes") as? List<String> ?: listOf()
+            val updatedLikes = if (likes.contains(userId)) {
+                likes - userId
+            } else {
+                likes + userId
+            }
+            transaction.update(commentRef, "likes", updatedLikes)
+        }.addOnSuccessListener {
+            updateLocalCommentLikes(commentId, userId)
+            onFinish()
+        }.addOnFailureListener {
+            onFinish()
+        }
+    }
+
+    private fun updateLocalCommentLikes(commentId: String, userId: String) {
+        val updatedList = _comments.value?.map { comment ->
+            if (comment.id == commentId) {
+                val isLiked = comment.likes.contains(userId)
+                val newLikes = if (isLiked) {
+                    comment.likes - userId
+                } else {
+                    comment.likes + userId
+                }
+                comment.copy(likes = newLikes)
+            } else {
+                val updatedReplies = comment.replies.map { reply ->
+                    if (reply.id == commentId) {
+                        val isLiked = reply.likes.contains(userId)
+                        val newLikes = if (isLiked) {
+                            reply.likes - userId
+                        } else {
+                            reply.likes + userId
+                        }
+                        reply.copy(likes = newLikes)
+                    } else reply
+                }
+                comment.copy(replies = updatedReplies.toMutableList())
+            }
+        }?.toMutableList()
+        updatedList?.let { _comments.postValue(it) }
+    }
+
+    private fun DocumentSnapshot.toComment(): Comment? {
+        return this.toObject(Comment::class.java)?.copy(id = id)
+    }
 
     fun postComment(content: String, parentId: String? = null, postId: String) {
         viewModelScope.launch {
@@ -46,111 +207,9 @@ class CommentViewModel : ViewModel() {
                 handleMentions(content, commentId)
                 updateCommentCount(postId)
             }
-            .addOnFailureListener {
-                e->e.printStackTrace()
+            .addOnFailureListener { e ->
+                e.printStackTrace()
             }
-        }
-    }
-
-    fun getComments(onResult: (List<Comment>) -> Unit) {
-        cachedComments?.let {
-            onResult(it)
-            return
-        }
-        db.collection("comments")
-        .orderBy("timestamp", Query.Direction.ASCENDING)
-        .addSnapshotListener { snapshots, error ->
-            if (error != null || snapshots == null) return@addSnapshotListener
-            if (isProcessingLike) {
-                isProcessingLike = false
-                return@addSnapshotListener
-            }
-            val comments = snapshots.toObjects(Comment::class.java)
-            val userIds = comments.map { it.userId }.toSet().filter { it.isNotBlank() }
-            val batches = userIds.chunked(10)
-            val userMap = mutableMapOf<String, Pair<String, String>>()
-            var completedBatches = 0
-            batches.forEach { batch ->
-                db.collection("Users")
-                .whereIn("userid", batch)
-                .get()
-                .addOnSuccessListener { snapshot ->
-                    snapshot.documents.forEach { doc ->
-                        val id = doc.getString("userid") ?: return@forEach
-                        val username = doc.getString("name") ?: "Unknown"
-                        val avatarurl = doc.getString("avatarurl") ?: ""
-                        userMap[id] = Pair(username, avatarurl)
-                    }
-                    completedBatches++
-                    if (completedBatches == batches.size) {
-                        comments.forEach { comment ->
-                            userMap[comment.userId]?.let { (username, avatar) ->
-                                comment.username = username
-                                comment.avatarurl = avatar
-                            }
-                        }
-                        cachedComments = comments
-                        onResult(cachedComments!!)
-                    }
-                }
-                .addOnFailureListener {
-                    completedBatches++
-                    if (completedBatches == batches.size) {
-                        cachedComments = comments
-                        onResult(cachedComments!!)
-                    }
-                }
-            }
-        }
-    }
-
-    fun toggleLikeComment(commentId: String, userId: String, onFinish: ()->Unit) {
-        isProcessingLike = true
-        val commentRef = db.collection("comments").document(commentId)
-        var willBeLiked = true
-        cachedComments?.find { it.id == commentId }?.let { comment ->
-            val currentLikes = comment.likes ?: listOf()
-            willBeLiked = !currentLikes.contains(userId)
-        }
-        db.runTransaction { transaction ->
-            val snapshot = transaction.get(commentRef)
-            val currentLikes = snapshot.get("likes") as? List<String> ?: listOf()
-            val updatedLikes = if (currentLikes.contains(userId)) {
-                currentLikes - userId
-            } else {
-                currentLikes + userId
-            }
-            transaction.update(commentRef, "likes", updatedLikes)
-        }.addOnSuccessListener {
-            cachedComments?.let { comments ->
-                val updatedComment = comments.find { it.id == commentId }
-                updatedComment?.let { comment ->
-                    comment.likes = if (willBeLiked) {
-                        (comment.likes ?: listOf()).filter { it != userId } + userId
-                    } else {
-                        (comment.likes ?: listOf()).filter { it != userId }
-                    }
-                    onCommentLikedSuccessfully?.invoke(commentId)
-                }
-                if (updatedComment == null) {
-                    comments.forEach { parentComment ->
-                        parentComment.replies?.find { it.id == commentId }?.let { reply ->
-                            reply.likes = if (willBeLiked) {
-                                (reply.likes ?: listOf()).filter { it != userId } + userId
-                            } else {
-                                (reply.likes ?: listOf()).filter { it != userId }
-                            }
-                            onCommentLikedSuccessfully?.invoke(commentId)
-                        }
-                    }
-                }
-            }
-            isProcessingLike = false
-            onFinish()
-        }.addOnFailureListener { e->
-            e.printStackTrace()
-            isProcessingLike = false
-            onFinish()
         }
     }
 
@@ -162,9 +221,10 @@ class CommentViewModel : ViewModel() {
             mentionedUsernames.add(matcher.group(1))
         }
         if (mentionedUsernames.isEmpty()) return
-        db.collection("Users").document(auth.currentUser?.uid?:"").get().addOnSuccessListener {
-            result->if(result.exists()) {
-               val sendername=result.getString("name") ?: "Ai đó"
+        db.collection("Users").document(auth.currentUser?.uid ?: "").get()
+        .addOnSuccessListener { result ->
+            if (result.exists()) {
+                val sendername = result.getString("name") ?: "Ai đó"
                 db.collection("Users")
                 .whereIn("name", mentionedUsernames.toList())
                 .get()
@@ -176,7 +236,7 @@ class CommentViewModel : ViewModel() {
                         OneSignalHelper.sendMentionNotification(
                             userId = userId,
                             message = "$sendername đã nhắc đến bạn trong một bình luận",
-                            commentId=commentId
+                            commentId = commentId
                         )
                         val notification = hashMapOf(
                             "receiverId" to userId,
@@ -200,16 +260,7 @@ class CommentViewModel : ViewModel() {
                         )
                     }
                 }
-                .addOnFailureListener {
-                    return@addOnFailureListener
-                }
             }
-            else {
-                return@addOnSuccessListener
-            }
-        }
-        .addOnFailureListener {
-            return@addOnFailureListener
         }
     }
 
@@ -230,13 +281,5 @@ class CommentViewModel : ViewModel() {
                 //handle error
             }
         })
-    }
-
-    fun getSortedCommentsForDisplay(postId: String): List<Comment> {
-        val filteredComments = cachedComments?.filter { it.postId == postId } ?: listOf()
-        return filteredComments.sortedWith(
-            compareByDescending<Comment> { it.likes?.size ?: 0 }
-                .thenByDescending { it.timestamp }
-        )
     }
 }
