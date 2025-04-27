@@ -32,7 +32,7 @@ class CommentViewModel : ViewModel() {
     var postId: String = ""
 
     fun loadInitialComments() {
-        if (isLoading) return
+        if (isLoading || (_comments.value?.isNotEmpty() == true)) return
         isLoading = true
         db.collection("comments")
         .whereEqualTo("postId", postId)
@@ -45,9 +45,8 @@ class CommentViewModel : ViewModel() {
             val parents = snapshot.documents.mapNotNull { it.toComment() }
             fetchRepliesForParents(parents)
         }
-        .addOnFailureListener {
-            e->e.printStackTrace()
-            return@addOnFailureListener
+        .addOnFailureListener { e ->
+            e.printStackTrace()
         }
         .addOnCompleteListener { isLoading = false }
     }
