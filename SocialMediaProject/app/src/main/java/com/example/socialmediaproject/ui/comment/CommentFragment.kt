@@ -67,6 +67,7 @@ class CommentFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         postId=arguments?.getString("post_id") ?: return
         viewModel.postId=postId
+        setupAdapter()
         setupUI()
         observeComments(postId)
         binding.etCommentInput.addTextChangedListener(object : TextWatcher {
@@ -89,6 +90,66 @@ class CommentFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
+    }
+
+    private fun setupAdapter() {
+        adapter = CommentAdapter(
+            comments = mutableListOf(),
+            currentUserId = auth.currentUser?.uid ?: "",
+            onReplyClicked = { comment ->
+                replyingTo = comment
+                binding.tvReplyingTo.visibility = View.VISIBLE
+                binding.btnCancelReply.visibility = View.VISIBLE
+                binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
+                if (binding.etCommentInput.text.toString().trim().isEmpty()) {
+                    binding.etCommentInput.setText("@${comment.username} ")
+                }
+            },
+            onLikeClicked = { comment ->
+                viewModel.toggleLikeComment(comment.id, auth.currentUser?.uid ?: "") {
+                    val position = adapter.comments.indexOfFirst { it.id == comment.id }
+                    if (position != -1) {
+                        adapter.notifyItemChanged(position)
+                    } else {
+                        for (i in adapter.comments.indices) {
+                            val comment = adapter.comments[i]
+                            val replyPosition = comment.replies.indexOfFirst { it.id == comment.id }
+                            if (replyPosition != -1) {
+                                adapter.notifyItemChanged(i)
+                                break
+                            }
+                        }
+                    }
+                }
+            },
+            onReplyLikeClicked = { reply ->
+                viewModel.toggleLikeComment(reply.id, auth.currentUser?.uid ?: "") {
+                    val position = adapter.comments.indexOfFirst { it.id == reply.id }
+                    if (position != -1) {
+                        adapter.notifyItemChanged(position)
+                    } else {
+                        for (i in adapter.comments.indices) {
+                            val comment = adapter.comments[i]
+                            val replyPosition = comment.replies.indexOfFirst { it.id == reply.id }
+                            if (replyPosition != -1) {
+                                adapter.notifyItemChanged(i)
+                                break
+                            }
+                        }
+                    }
+                }
+            },
+            onCommentClicked = { userId->
+                val bundle=Bundle()
+                bundle.putString("wall_user_id", userId)
+                findNavController().navigate(R.id.navigation_mainpage, bundle)
+            }
+        )
+        binding.rvComments.apply {
+            adapter = this@CommentFragment.adapter
+            layoutManager = LinearLayoutManager(context)
+            setHasFixedSize(true)
+        }
     }
 
     private fun setupUI() {
@@ -127,45 +188,10 @@ class CommentFragment : Fragment() {
         viewModel.getComments { allComments ->
             val filteredComments = allComments.filter { it.postId == postId }
             val commentTree = buildCommentTree(filteredComments)
-            adapter = CommentAdapter(
-                comments = commentTree,
-                currentUserId = auth.currentUser?.uid ?: "",
-                onReplyClicked = { comment ->
-                    replyingTo = comment
-                    binding.tvReplyingTo.visibility = View.VISIBLE
-                    binding.btnCancelReply.visibility = View.VISIBLE
-                    binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
-                    if (binding.etCommentInput.text.toString().trim().isEmpty()) {
-                        binding.etCommentInput.setText("@${comment.username} ")
-                    }
-                },
-                onLikeClicked = { comment ->
-                    viewModel.toggleLikeComment(comment.id, auth.currentUser?.uid ?: "")
-                },
-                onReplyLikeClicked = { reply ->
-                    viewModel.toggleLikeComment(reply.id, auth.currentUser?.uid ?: "")
-                },
-                onCommentClicked = { userId->
-                    val bundle=Bundle()
-                    bundle.putString("wall_user_id", userId)
-                    findNavController().navigate(R.id.navigation_mainpage, bundle)
-                }
-            )
-            binding.rvComments.apply {
-                adapter = this@CommentFragment.adapter
-                layoutManager = LinearLayoutManager(context)
-            }
+            adapter.updateComments(commentTree)
         }
         viewModel.onCommentLikedSuccessfully = { likedCommentId ->
-            saveRecyclerViewState()
-            var position = -1
-            for (i in adapter.comments.indices) {
-                val comment = adapter.comments[i]
-                if (comment.id == likedCommentId) {
-                    position = i
-                    break
-                }
-            }
+            val position = adapter.comments.indexOfFirst { it.id == likedCommentId }
             if (position != -1) {
                 adapter.notifyItemChanged(position)
             } else {
@@ -177,9 +203,6 @@ class CommentFragment : Fragment() {
                         break
                     }
                 }
-            }
-            binding.rvComments.post {
-                restoreRecyclerViewState()
             }
         }
     }
@@ -205,15 +228,5 @@ class CommentFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         recyclerViewState = binding.rvComments.layoutManager?.onSaveInstanceState()
-    }
-
-    private fun saveRecyclerViewState() {
-        recyclerViewState = binding.rvComments.layoutManager?.onSaveInstanceState()
-    }
-
-    private fun restoreRecyclerViewState() {
-        recyclerViewState?.let {
-            binding.rvComments.layoutManager?.onRestoreInstanceState(it)
-        }
     }
 }

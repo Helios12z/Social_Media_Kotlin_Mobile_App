@@ -1,7 +1,5 @@
 package com.example.socialmediaproject.ui.comment
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.socialmediaproject.dataclass.Comment
@@ -105,7 +103,7 @@ class CommentViewModel : ViewModel() {
         }
     }
 
-    fun toggleLikeComment(commentId: String, userId: String) {
+    fun toggleLikeComment(commentId: String, userId: String, onFinish: ()->Unit) {
         isProcessingLike = true
         val commentRef = db.collection("comments").document(commentId)
         var willBeLiked = true
@@ -147,9 +145,11 @@ class CommentViewModel : ViewModel() {
                 }
             }
             isProcessingLike = false
+            onFinish()
         }.addOnFailureListener { e->
             e.printStackTrace()
             isProcessingLike = false
+            onFinish()
         }
     }
 

@@ -19,7 +19,7 @@ import java.util.Date
 import java.util.Locale
 
 class CommentAdapter(
-    val comments: List<Comment>,
+    var comments: MutableList<Comment>,
     private val currentUserId: String,
     private val onReplyClicked: (Comment) -> Unit,
     private val onLikeClicked: (Comment) -> Unit,
@@ -48,6 +48,12 @@ class CommentAdapter(
     override fun getItemCount(): Int = comments.size
 
     private val expandedCommentIds = mutableSetOf<String>()
+
+    fun updateComments(newComments: List<Comment>) {
+        comments.clear()
+        comments.addAll(newComments)
+        notifyDataSetChanged()
+    }
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]

@@ -155,14 +155,18 @@ class PostWithCommentFragment : Fragment() {
             val filtered = allComments.filter { it.postId == postId }
             val commentTree = buildCommentTree(filtered)
             val adapter = CommentAdapter(
-                comments = commentTree,
+                comments = commentTree as MutableList<Comment>,
                 currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: "",
                 onReplyClicked = { comment -> replyTo(comment) },
                 onLikeClicked = { comment ->
-                    commentViewModel.toggleLikeComment(comment.id, FirebaseAuth.getInstance().currentUser?.uid ?: "")
+                    commentViewModel.toggleLikeComment(comment.id, FirebaseAuth.getInstance().currentUser?.uid ?: "") {
+
+                    }
                 },
                 onReplyLikeClicked = { reply ->
-                    commentViewModel.toggleLikeComment(reply.id, FirebaseAuth.getInstance().currentUser?.uid ?: "")
+                    commentViewModel.toggleLikeComment(reply.id, FirebaseAuth.getInstance().currentUser?.uid ?: "") {
+
+                    }
                 },
                 highlightCommentId = commentId,
                 onCommentClicked = {userid->
