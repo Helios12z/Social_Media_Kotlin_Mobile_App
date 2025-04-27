@@ -89,19 +89,26 @@ class CommentViewModel : ViewModel() {
                                 comment.avatarurl = avatar
                             }
                         }
-                        cachedComments = comments
-                        onResult(comments)
+                        cachedComments = sortComments(comments)
+                        onResult(cachedComments!!)
                     }
                 }
                 .addOnFailureListener {
                     completedBatches++
                     if (completedBatches == batches.size) {
-                        cachedComments = comments
-                        onResult(comments)
+                        cachedComments = sortComments(comments)
+                        onResult(cachedComments!!)
                     }
                 }
             }
         }
+    }
+
+    private fun sortComments(comments: List<Comment>): List<Comment> {
+        return comments.sortedWith(
+            compareByDescending<Comment> { it.likes?.size ?: 0 }
+                .thenByDescending { it.timestamp }
+        )
     }
 
     fun toggleLikeComment(commentId: String, userId: String, onFinish: ()->Unit) {

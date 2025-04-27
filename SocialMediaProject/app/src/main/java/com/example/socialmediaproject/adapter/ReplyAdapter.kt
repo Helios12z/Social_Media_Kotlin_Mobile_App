@@ -9,6 +9,9 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.Comment
 import com.google.android.material.imageview.ShapeableImageView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ReplyAdapter(
     private val replies: List<Comment>,
@@ -63,6 +66,15 @@ class ReplyAdapter(
         val diff = System.currentTimeMillis() - timestamp
         val minutes = diff / (60 * 1000)
         val hours = minutes / 60
-        return if (hours > 0) "$hours giờ trước" else "$minutes phút trước"
+        val days = hours / 24
+        return when {
+            minutes < 60 -> "$minutes phút trước"
+            hours < 24 -> "$hours giờ trước"
+            days < 7 -> "$days ngày trước"
+            else -> {
+                val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                sdf.format(Date(timestamp))
+            }
+        }
     }
 }
