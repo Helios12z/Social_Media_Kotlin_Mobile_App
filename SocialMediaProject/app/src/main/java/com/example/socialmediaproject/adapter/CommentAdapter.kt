@@ -25,7 +25,8 @@ class CommentAdapter(
     private val onLikeClicked: (Comment) -> Unit,
     private val onReplyLikeClicked: (Comment) -> Unit,
     private val highlightCommentId: String? = null,
-    private val onCommentClicked: (String) -> Unit
+    private val onCommentClicked: (String) -> Unit,
+    private val expandedCommentIds: MutableSet<String>,
 ) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
     inner class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -46,8 +47,6 @@ class CommentAdapter(
     }
 
     override fun getItemCount(): Int = comments.size
-
-    private val expandedCommentIds = mutableSetOf<String>()
 
     fun updateComments(newComments: List<Comment>) {
         comments.clear()

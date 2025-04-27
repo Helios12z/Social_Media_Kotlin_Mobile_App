@@ -143,7 +143,8 @@ class CommentFragment : Fragment() {
                 val bundle=Bundle()
                 bundle.putString("wall_user_id", userId)
                 findNavController().navigate(R.id.navigation_mainpage, bundle)
-            }
+            },
+            expandedCommentIds = viewModel.expandedCommentIds
         )
         binding.rvComments.apply {
             adapter = this@CommentFragment.adapter

@@ -173,7 +173,8 @@ class PostWithCommentFragment : Fragment() {
                     val bundle=Bundle()
                     bundle.putString("wall_user_id", userid)
                     findNavController().navigate(R.id.navigation_mainpage, bundle)
-                }
+                },
+                expandedCommentIds = mutableSetOf()
             )
             binding.rvComments.adapter = adapter
             binding.rvComments.layoutManager = LinearLayoutManager(context?:return@getComments)
