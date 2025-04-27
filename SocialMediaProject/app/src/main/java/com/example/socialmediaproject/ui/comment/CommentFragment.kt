@@ -115,8 +115,8 @@ class CommentFragment : Fragment() {
                         adapter.notifyItemChanged(position)
                     } else {
                         for (i in adapter.comments.indices) {
-                            val comment = adapter.comments[i]
-                            val replyPosition = comment.replies.indexOfFirst { it.id == comment.id }
+                            val parentComment = adapter.comments[i]
+                            val replyPosition = parentComment.replies.indexOfFirst { it.id == comment.id }
                             if (replyPosition != -1) {
                                 adapter.notifyItemChanged(i)
                                 break
