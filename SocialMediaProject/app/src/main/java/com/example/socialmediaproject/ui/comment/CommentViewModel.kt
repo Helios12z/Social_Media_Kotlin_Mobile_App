@@ -89,26 +89,19 @@ class CommentViewModel : ViewModel() {
                                 comment.avatarurl = avatar
                             }
                         }
-                        cachedComments = sortComments(comments)
+                        cachedComments = comments
                         onResult(cachedComments!!)
                     }
                 }
                 .addOnFailureListener {
                     completedBatches++
                     if (completedBatches == batches.size) {
-                        cachedComments = sortComments(comments)
+                        cachedComments = comments
                         onResult(cachedComments!!)
                     }
                 }
             }
         }
-    }
-
-    private fun sortComments(comments: List<Comment>): List<Comment> {
-        return comments.sortedWith(
-            compareByDescending<Comment> { it.likes?.size ?: 0 }
-                .thenByDescending { it.timestamp }
-        )
     }
 
     fun toggleLikeComment(commentId: String, userId: String, onFinish: ()->Unit) {
@@ -237,5 +230,13 @@ class CommentViewModel : ViewModel() {
                 //handle error
             }
         })
+    }
+
+    fun getSortedCommentsForDisplay(postId: String): List<Comment> {
+        val filteredComments = cachedComments?.filter { it.postId == postId } ?: listOf()
+        return filteredComments.sortedWith(
+            compareByDescending<Comment> { it.likes?.size ?: 0 }
+                .thenByDescending { it.timestamp }
+        )
     }
 }

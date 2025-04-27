@@ -70,6 +70,9 @@ class CommentFragment : Fragment() {
         setupAdapter()
         setupUI()
         observeComments(postId)
+        val sortedComments = viewModel.getSortedCommentsForDisplay(postId)
+        val commentTree = buildCommentTree(sortedComments)
+        adapter.updateComments(commentTree)
         binding.etCommentInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 s ?: return
