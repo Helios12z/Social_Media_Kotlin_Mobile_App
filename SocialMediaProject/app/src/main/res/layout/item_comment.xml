@@ -139,7 +139,6 @@
         android:textColor="@color/text_color"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/rvReplies"
-        app:layout_constraintBottom_toTopOf="@id/divide_line"
         app:layout_constraintStart_toStartOf="parent"
         android:padding="8dp" />
 
@@ -159,8 +158,7 @@
         android:id="@+id/divide_line"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="20dp"
         android:background="#E0E0E0"
-        app:layout_constraintTop_toBottomOf="@id/rvReplies" />
+        app:layout_constraintTop_toBottomOf="@id/tvShowMoreReplies" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
