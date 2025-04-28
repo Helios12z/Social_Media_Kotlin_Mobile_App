@@ -1,7 +1,6 @@
 package com.example.socialmediaproject.adapter
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,7 +56,6 @@ class CommentAdapter(
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
-        Log.d("CommentAdapter", "Comment ${comment.id} has ${comment.replies.size} flat replies")
         if (comment.id == highlightCommentId) {
             holder.cardComment.setCardBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.highlight_color))
             holder.cardComment.startAnimation(AnimationUtils.loadAnimation(holder.itemView.context, R.anim.pulse))

@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.ui.comment
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -98,7 +97,8 @@ class CommentViewModel : ViewModel() {
     }
 
     private fun bindReplies(parents: List<Comment>, allReplies: List<Comment>) {
-        fetchUsersAndBind(parents, allReplies, allReplies.map { it.userId }.toSet())
+        val userIds = parents.map { it.userId } + allReplies.map { it.userId }
+        fetchUsersAndBind(parents, allReplies, userIds.toSet())
     }
 
     private fun buildFlatReplies(
@@ -150,7 +150,6 @@ class CommentViewModel : ViewModel() {
                             replies   = buildFlatReplies(parent.id, replies, userMap)
                         )
                     }
-                    Log.d("VM", "All replies for all parents = ${replies.size}")
                     addParentsToComments(parentsWithReplies)
                 }
             }
@@ -311,7 +310,7 @@ class CommentViewModel : ViewModel() {
                 committed: Boolean,
                 currentData: DataSnapshot?
             ) {
-                //handle error
+
             }
         })
     }
