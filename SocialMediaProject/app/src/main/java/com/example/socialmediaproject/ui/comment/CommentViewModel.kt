@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.comment
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -71,59 +72,76 @@ class CommentViewModel : ViewModel() {
 
     private fun fetchRepliesForParents(parents: List<Comment>) {
         if (parents.isEmpty()) return
-
         val parentIds = parents.map { it.id }
         val allUserIds = parents.map { it.userId }.toMutableSet()
-
-        db.collection("comments")
-        .whereIn("parentId", parentIds)
-        .orderBy("timestamp", Query.Direction.ASCENDING)
-        .get()
-        .addOnSuccessListener { replySnapshot ->
-            val replies = replySnapshot.documents.mapNotNull { it.toComment() }
-            allUserIds.addAll(replies.map { it.userId })
-            if (allUserIds.isEmpty()) {
-                addParentsToComments(parents)
-                return@addOnSuccessListener
-            }
-            val userIdList = allUserIds.toList()
-            val batches = userIdList.chunked(10)
-            val userMap = mutableMapOf<String, Pair<String, String>>()
-            var completedBatches = 0
-            batches.forEach { batch ->
-                db.collection("Users")
-                .whereIn("userid", batch)
-                .get()
-                .addOnSuccessListener { userSnapshot ->
-                    userSnapshot.documents.forEach { doc ->
-                        val id = doc.getString("userid") ?: return@forEach
-                        val name = doc.getString("name") ?: "Unknown"
-                        val avatar = doc.getString("avatarurl") ?: ""
-                        userMap[id] = Pair(name, avatar)
-                    }
-                    completedBatches++
-                    if (completedBatches == batches.size) {
-                        val parentsWithReplies = parents.map { parent ->
-                            parent.copy(
-                                username = userMap[parent.userId]?.first ?: "Unknown",
-                                avatarurl = userMap[parent.userId]?.second ?: "",
-                                replies = replies.filter { it.parentId == parent.id }
-                                    .map { reply ->
-                                        reply.copy(
-                                            username = userMap[reply.userId]?.first ?: "Unknown",
-                                            avatarurl = userMap[reply.userId]?.second ?: ""
-                                        )
-                                    }.toMutableList()
-                            )
-                        }
-                        addParentsToComments(parentsWithReplies)
-                    }
+        val repliesList = mutableListOf<Comment>()
+        var completedBatches = 0
+        val batches = parentIds.chunked(10)
+        batches.forEach { batch ->
+            db.collection("comments")
+            .whereIn("parentId", batch)
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+            .get()
+            .addOnSuccessListener { replySnapshot ->
+                val replies = replySnapshot.documents.mapNotNull { it.toComment() }
+                repliesList.addAll(replies)
+                allUserIds.addAll(replies.map { it.userId })
+                completedBatches++
+                if (completedBatches == batches.size) {
+                    fetchUsersAndBind(parents, repliesList, allUserIds)
                 }
-                .addOnFailureListener {
-                    completedBatches++
-                    if (completedBatches == batches.size) {
-                        addParentsToComments(parents)
+            }
+            .addOnFailureListener {
+                completedBatches++
+                if (completedBatches == batches.size) {
+                    fetchUsersAndBind(parents, repliesList, allUserIds)
+                }
+            }
+        }
+    }
+
+    private fun fetchUsersAndBind(parents: List<Comment>, replies: List<Comment>, allUserIds: Set<String>) {
+        if (allUserIds.isEmpty()) {
+            addParentsToComments(parents)
+            return
+        }
+        val userIdList = allUserIds.toList()
+        val userMap = mutableMapOf<String, Pair<String, String>>()
+        var completedBatches = 0
+        val batches = userIdList.chunked(10)
+        batches.forEach { batch ->
+            db.collection("Users")
+            .whereIn("userid", batch)
+            .get()
+            .addOnSuccessListener { userSnapshot ->
+                userSnapshot.documents.forEach { doc ->
+                    val id = doc.getString("userid") ?: return@forEach
+                    val name = doc.getString("name") ?: "Unknown"
+                    val avatar = doc.getString("avatarurl") ?: ""
+                    userMap[id] = Pair(name, avatar)
+                }
+                completedBatches++
+                if (completedBatches == batches.size) {
+                    val parentsWithReplies = parents.map { parent ->
+                        parent.copy(
+                            username = userMap[parent.userId]?.first ?: "Unknown",
+                            avatarurl = userMap[parent.userId]?.second ?: "",
+                            replies = replies.filter { it.parentId == parent.id }
+                            .map { reply ->
+                                reply.copy(
+                                    username = userMap[reply.userId]?.first ?: "Unknown",
+                                    avatarurl = userMap[reply.userId]?.second ?: ""
+                                )
+                            }.toMutableList()
+                        )
                     }
+                    addParentsToComments(parentsWithReplies)
+                }
+            }
+            .addOnFailureListener {
+                completedBatches++
+                if (completedBatches == batches.size) {
+                    addParentsToComments(parents)
                 }
             }
         }
