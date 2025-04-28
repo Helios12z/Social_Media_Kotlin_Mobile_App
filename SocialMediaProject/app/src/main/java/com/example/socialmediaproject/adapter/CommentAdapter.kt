@@ -81,10 +81,10 @@ class CommentAdapter(
         holder.btnLike.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0)
         holder.btnLike.setOnClickListener { onLikeClicked(comment) }
         holder.btnReply.setOnClickListener { onReplyClicked(comment) }
-        val repliesToShow = if (comment.replies.size > 2 && !expandedCommentIds.contains(comment.id)) {
-            comment.replies.take(2)
-        } else {
+        val repliesToShow = if (expandedCommentIds.contains(comment.id)) {
             comment.replies
+        } else {
+            if (comment.replies.size > 2) comment.replies.take(2) else comment.replies
         }
         val replyAdapter = ReplyAdapter(
             replies = repliesToShow,

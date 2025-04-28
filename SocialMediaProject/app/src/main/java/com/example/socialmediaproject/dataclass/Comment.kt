@@ -1,7 +1,6 @@
 package com.example.socialmediaproject.dataclass
 
 import com.google.firebase.firestore.Exclude
-import com.google.firebase.firestore.IgnoreExtraProperties
 
 data class Comment(val id: String = "",
                    val content: String = "",

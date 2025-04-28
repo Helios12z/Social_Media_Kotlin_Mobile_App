@@ -123,7 +123,6 @@ class CommentFragment : Fragment() {
                 super.onScrolled(recyclerView, dx, dy)
                 val layoutManager = recyclerView.layoutManager as LinearLayoutManager
                 val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
-
                 if (lastVisibleItemPosition == adapter.itemCount - 1) {
                     viewModel.loadMoreComments()
                 }

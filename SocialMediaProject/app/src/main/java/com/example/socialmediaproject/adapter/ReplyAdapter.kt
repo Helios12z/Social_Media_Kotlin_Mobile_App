@@ -3,7 +3,9 @@ package com.example.socialmediaproject.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
@@ -18,17 +20,20 @@ class ReplyAdapter(
     private val currentUserId: String,
     private val onReplyClicked: (Comment) -> Unit,
     private val onLikeClicked: (Comment) -> Unit,
-    private val onCommentClicked: (String) -> Unit
+    private val onCommentClicked: (String) -> Unit,
+    private val level: Int = 0,
+    private val maxLevel: Int = 3
 ) : RecyclerView.Adapter<ReplyAdapter.ReplyViewHolder>() {
 
     inner class ReplyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val avatar=itemView.findViewById<ShapeableImageView>(R.id.ivReplyUserAvatar)
+        val avatar = itemView.findViewById<ShapeableImageView>(R.id.ivReplyUserAvatar)
         val username = view.findViewById<TextView>(R.id.tvReplyUsername)
         val time = view.findViewById<TextView>(R.id.tvReplyTime)
         val content = view.findViewById<TextView>(R.id.tvReplyContent)
         val likeCount = view.findViewById<TextView>(R.id.tvReplyLikeCount)
         val btnLike = view.findViewById<TextView>(R.id.btnReplyLike)
         val btnReply = view.findViewById<TextView>(R.id.btnReplyToReply)
+        val nestedRepliesContainer = view.findViewById<LinearLayout>(R.id.nestedRepliesContainer)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyViewHolder {
@@ -46,7 +51,6 @@ class ReplyAdapter(
         holder.likeCount.text = reply.likes.size.toString()
         holder.time.text = getTimeAgo(reply.timestamp)
         holder.btnLike.setOnClickListener { onLikeClicked(reply) }
-        holder.btnReply.visibility = View.VISIBLE
         holder.btnReply.setOnClickListener { onReplyClicked(reply) }
         if (reply.avatarurl.isNotEmpty()) {
             Glide.with(holder.avatar.context)
@@ -57,6 +61,28 @@ class ReplyAdapter(
         }
         holder.avatar.setOnClickListener {
             onCommentClicked(reply.userId)
+        }
+        holder.nestedRepliesContainer.removeAllViews()
+        if (reply.replies.isNotEmpty() && level < maxLevel) {
+            val nestedRecyclerView = RecyclerView(holder.itemView.context)
+            val layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            nestedRecyclerView.layoutParams = layoutParams
+            val nestedAdapter = ReplyAdapter(
+                replies = reply.replies,
+                currentUserId = currentUserId,
+                onReplyClicked = onReplyClicked,
+                onLikeClicked = onLikeClicked,
+                onCommentClicked = onCommentClicked,
+                level = level + 1,
+                maxLevel = maxLevel
+            )
+            nestedRecyclerView.adapter = nestedAdapter
+            nestedRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
+            nestedRecyclerView.isNestedScrollingEnabled = false
+            holder.nestedRepliesContainer.addView(nestedRecyclerView)
         }
     }
 

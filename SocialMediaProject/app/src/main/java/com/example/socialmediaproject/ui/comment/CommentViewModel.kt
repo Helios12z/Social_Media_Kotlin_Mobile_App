@@ -73,31 +73,62 @@ class CommentViewModel : ViewModel() {
     private fun fetchRepliesForParents(parents: List<Comment>) {
         if (parents.isEmpty()) return
         val parentIds = parents.map { it.id }
-        val allUserIds = parents.map { it.userId }.toMutableSet()
-        val repliesList = mutableListOf<Comment>()
-        var completedBatches = 0
-        val batches = parentIds.chunked(10)
-        batches.forEach { batch ->
-            db.collection("comments")
-            .whereIn("parentId", batch)
+        // Lần 1: direct replies
+        db.collection("comments")
+            .whereIn("parentId", parentIds)
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .get()
-            .addOnSuccessListener { replySnapshot ->
-                val replies = replySnapshot.documents.mapNotNull { it.toComment() }
-                repliesList.addAll(replies)
-                allUserIds.addAll(replies.map { it.userId })
-                completedBatches++
-                if (completedBatches == batches.size) {
-                    fetchUsersAndBind(parents, repliesList, allUserIds)
+            .addOnSuccessListener { lvl1Snap ->
+                val lvl1 = lvl1Snap.documents.mapNotNull { it.toComment() }
+                val lvl1Ids = lvl1.map { it.id }
+                // Lần 2: nested replies
+                if (lvl1Ids.isEmpty()) {
+                    bindReplies(parents, lvl1)
+                } else {
+                    db.collection("comments")
+                        .whereIn("parentId", lvl1Ids)
+                        .orderBy("timestamp", Query.Direction.ASCENDING)
+                        .get()
+                        .addOnSuccessListener { lvl2Snap ->
+                            val lvl2 = lvl2Snap.documents.mapNotNull { it.toComment() }
+                            bindReplies(parents, lvl1 + lvl2)
+                        }
+                        .addOnFailureListener {
+                            bindReplies(parents, lvl1)  // fallback
+                        }
                 }
             }
             .addOnFailureListener {
-                completedBatches++
-                if (completedBatches == batches.size) {
-                    fetchUsersAndBind(parents, repliesList, allUserIds)
-                }
+                bindReplies(parents, emptyList())
             }
-        }
+    }
+
+    private fun bindReplies(parents: List<Comment>, allReplies: List<Comment>) {
+        // fetchUsersAndBind gọi tới hàm này, truyền allReplies bao gồm 2 cấp
+        fetchUsersAndBind(parents, allReplies, allReplies.map { it.userId }.toSet())
+    }
+
+    private fun buildFlatReplies(
+        parentId: String,
+        allReplies: List<Comment>,
+        userMap: Map<String, Pair<String,String>>
+    ): MutableList<Comment> {
+        return allReplies
+            .filter { reply ->
+                // Nếu reply.parentId = commentId (cấp 1)
+                // hoặc reply.parentId là 1 trong cấp 1 (cấp 2)
+                reply.parentId == parentId || allReplies
+                    .firstOrNull { it.id == reply.parentId }
+                    ?.parentId == parentId
+            }
+            .map { reply ->
+                reply.copy(
+                    username = userMap[reply.userId]?.first ?: "Unknown",
+                    avatarurl = userMap[reply.userId]?.second ?: "",
+                    replies = mutableListOf()  // bóc hết nested
+                )
+            }
+            .toMutableList()
     }
 
     private fun fetchUsersAndBind(parents: List<Comment>, replies: List<Comment>, allUserIds: Set<String>) {
@@ -111,39 +142,33 @@ class CommentViewModel : ViewModel() {
         val batches = userIdList.chunked(10)
         batches.forEach { batch ->
             db.collection("Users")
-            .whereIn("userid", batch)
-            .get()
-            .addOnSuccessListener { userSnapshot ->
-                userSnapshot.documents.forEach { doc ->
-                    val id = doc.getString("userid") ?: return@forEach
-                    val name = doc.getString("name") ?: "Unknown"
-                    val avatar = doc.getString("avatarurl") ?: ""
-                    userMap[id] = Pair(name, avatar)
-                }
-                completedBatches++
-                if (completedBatches == batches.size) {
-                    val parentsWithReplies = parents.map { parent ->
-                        parent.copy(
-                            username = userMap[parent.userId]?.first ?: "Unknown",
-                            avatarurl = userMap[parent.userId]?.second ?: "",
-                            replies = replies.filter { it.parentId == parent.id }
-                            .map { reply ->
-                                reply.copy(
-                                    username = userMap[reply.userId]?.first ?: "Unknown",
-                                    avatarurl = userMap[reply.userId]?.second ?: ""
-                                )
-                            }.toMutableList()
-                        )
+                .whereIn("userid", batch)
+                .get()
+                .addOnSuccessListener { userSnapshot ->
+                    userSnapshot.documents.forEach { doc ->
+                        val id = doc.getString("userid") ?: return@forEach
+                        val name = doc.getString("name") ?: "Unknown"
+                        val avatar = doc.getString("avatarurl") ?: ""
+                        userMap[id] = Pair(name, avatar)
                     }
-                    addParentsToComments(parentsWithReplies)
+                    completedBatches++
+                    if (completedBatches == batches.size) {
+                        val parentsWithReplies = parents.map { parent ->
+                            parent.copy(
+                                username = userMap[parent.userId]?.first ?: "Unknown",
+                                avatarurl = userMap[parent.userId]?.second ?: "",
+                                replies   = buildFlatReplies(parent.id, replies, userMap)
+                            )
+                        }
+                        addParentsToComments(parentsWithReplies)
+                    }
                 }
-            }
-            .addOnFailureListener {
-                completedBatches++
-                if (completedBatches == batches.size) {
-                    addParentsToComments(parents)
+                .addOnFailureListener {
+                    completedBatches++
+                    if (completedBatches == batches.size) {
+                        addParentsToComments(parents)
+                    }
                 }
-            }
         }
     }
 
