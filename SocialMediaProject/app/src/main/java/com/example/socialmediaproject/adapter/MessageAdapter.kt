@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.Constant
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.Message
 import java.text.SimpleDateFormat
@@ -56,11 +57,14 @@ class MessageAdapter(private val currentUserId: String, private val senderAvatar
             holder.layoutReceived.visibility = View.GONE
             holder.tvSentMessage.text = message.text
             holder.tvSentTime.text = timeText
-            val tickIcon = if (message.read)
-                R.drawable.tickicon_double
-            else
-                R.drawable.tickicon
-            holder.ivMessageStatus.setImageResource(tickIcon)
+            if (message.receiverId!=Constant.ChatConstants.VECTOR_AI_ID) {
+                val tickIcon = if (message.read)
+                    R.drawable.tickicon_double
+                else
+                    R.drawable.tickicon
+                holder.ivMessageStatus.setImageResource(tickIcon)
+            }
+            else holder.ivMessageStatus.visibility=View.GONE
         }
         else if (isFromAI) {
             holder.layoutSent.visibility = View.GONE

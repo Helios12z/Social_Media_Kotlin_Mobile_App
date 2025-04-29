@@ -18,13 +18,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.Constant
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.MessageAdapter
 import com.example.socialmediaproject.databinding.FragmentChatDetailBinding
 import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.service.AIService
-import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
@@ -56,16 +56,22 @@ class ChatDetailFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
-        binding.ivChatAvatar.setOnClickListener {
-            val bundle = Bundle()
-            bundle.putString("wall_user_id", chatUser.id)
-            findNavController().navigate(R.id.navigation_mainpage, bundle)
+        if (chatUser.id!=Constant.ChatConstants.VECTOR_AI_ID) {
+            binding.ivChatAvatar.setOnClickListener {
+                val bundle = Bundle()
+                bundle.putString("wall_user_id", chatUser.id)
+                findNavController().navigate(R.id.navigation_mainpage, bundle)
+            }
+            binding.tvChatUsername.text = chatUser.username
+            Glide.with(requireContext())
+                .load(chatUser.avatarUrl)
+                .placeholder(R.drawable.avataricon)
+                .into(binding.ivChatAvatar)
         }
-        binding.tvChatUsername.text = chatUser.username
-        Glide.with(requireContext())
-            .load(chatUser.avatarUrl)
-            .placeholder(R.drawable.avataricon)
-            .into(binding.ivChatAvatar)
+        else {
+            binding.ivChatAvatar.setImageResource(R.drawable.vectorai)
+            binding.tvChatUsername.text = "VectorAI"
+        }
         val currentUserId = auth.currentUser?.uid ?: return
         val chatId = if (currentUserId < chatUser.id) "${currentUserId}_${chatUser.id}"
         else "${chatUser.id}_${currentUserId}"
@@ -95,7 +101,12 @@ class ChatDetailFragment : Fragment() {
         })
         binding.btnSend.setOnClickListener {
             val text = binding.etMessage.text.toString().trim()
-            if (text.isNotEmpty()) {
+            if (text.isEmpty()) return@setOnClickListener
+            if (chatUser.id==Constant.ChatConstants.VECTOR_AI_ID) {
+                chatWithVectorAI(chatId, text)
+                binding.etMessage.setText("")
+            }
+            else {
                 val message = Message(
                     senderId = currentUserId,
                     receiverId = chatUser.id,
@@ -104,13 +115,13 @@ class ChatDetailFragment : Fragment() {
                 )
                 viewModel.sendMessage(chatId, message)
                 binding.etMessage.setText("")
-            }
-            if (text.startsWith("@VectorAI", true)) {
-                val prompt = text.removePrefix("@VectorAI").trim()
-                askVectorAI(chatId, prompt)
+                if (text.startsWith("@VectorAI", true)) {
+                    val prompt = text.removePrefix("@VectorAI").trim()
+                    askVectorAI(chatId, prompt)
+                }
             }
         }
-        checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
+        if (chatUser.id!=Constant.ChatConstants.VECTOR_AI_ID) checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
     }
 
     override fun onResume() {
@@ -175,7 +186,6 @@ class ChatDetailFragment : Fragment() {
                 val template = getVectorAIPromptTemplate(requireContext())
                 val truePrompt = template.replace("{{user_input}}", userPrompt)
                 val aiResponse = AIService.chatWithAI(truePrompt)
-                Log.d("VectorAI", "AI Response: $aiResponse")
                 val aiMessage = Message(
                     senderId = "Ordinary_VectorAI",
                     receiverId = auth.currentUser?.uid ?: "",
@@ -185,7 +195,7 @@ class ChatDetailFragment : Fragment() {
                 )
                 viewModel.sendMessage(chatId, aiMessage)
             } catch (e: Exception) {
-                Log.e("VectorAI", "Error asking AI", e)
+                e.printStackTrace()
                 val errorMessage = Message(
                     senderId = "Ordinary_VectorAI",
                     receiverId = auth.currentUser?.uid ?: "",
@@ -202,5 +212,40 @@ class ChatDetailFragment : Fragment() {
         return context.assets.open("VectorAI_Data.txt")
             .bufferedReader()
             .use { it.readText() }
+    }
+
+    private fun chatWithVectorAI(chatId: String, userText: String) {
+        val userMessage = Message(
+            senderId   = auth.currentUser?.uid ?: "",
+            receiverId = Constant.ChatConstants.VECTOR_AI_ID,
+            text       = userText,
+            timestamp  = Timestamp.now(),
+            read       = false
+        )
+        viewModel.sendMessage(chatId, userMessage)
+        lifecycleScope.launch {
+            try {
+                val template   = getVectorAIPromptTemplate(requireContext())
+                val truePrompt = template.replace("{{user_input}}", userText)
+                val aiResponse = AIService.chatWithAI(truePrompt)
+                val aiMessage = Message(
+                    senderId   = Constant.ChatConstants.VECTOR_AI_ID,
+                    receiverId = auth.currentUser?.uid ?: "",
+                    text       = aiResponse,
+                    timestamp  = Timestamp.now(),
+                    read       = false
+                )
+                viewModel.sendMessage(chatId, aiMessage)
+            } catch (e: Exception) {
+                val errorMessage = Message(
+                    senderId   = Constant.ChatConstants.VECTOR_AI_ID,
+                    receiverId = auth.currentUser?.uid ?: "",
+                    text       = "Xin lỗi, tôi gặp lỗi khi xử lý yêu cầu của bạn.",
+                    timestamp  = Timestamp.now(),
+                    read       = false
+                )
+                viewModel.sendMessage(chatId, errorMessage)
+            }
+        }
     }
 }
