@@ -18,6 +18,8 @@ class ChatViewModel : ViewModel() {
     private var isInitialized = false
     private var currentUserId = ""
     private val userMap = mutableMapOf<String, ChatUser>()
+    private val _totalUnreadCount = MutableLiveData(0)
+    val totalUnreadCount: LiveData<Int> = _totalUnreadCount
 
     fun initializeFriends(userId: String) {
         if (isInitialized && userId == currentUserId) return
@@ -98,7 +100,7 @@ class ChatViewModel : ViewModel() {
                     val senderId = lastMsgDoc?.getString("senderId") ?: ""
                     val timestamp = lastMsgDoc?.getTimestamp("timestamp")?.toDate()?.time ?: 0
                     val prefix = when (senderId) {
-                        currentUserId -> "Bạn:"
+                        currentUserId -> "Bạn"
                         Constant.ChatConstants.VECTOR_AI_ID -> "VectorAI:"
                         else -> userMap[partnerId]?.username ?: ""
                     }
@@ -136,6 +138,8 @@ class ChatViewModel : ViewModel() {
             compareByDescending<ChatUser> { it.unreadCount }.thenByDescending { it.timestamp }
         )
         _chatUsers.postValue(sorted)
+        val total = userMap.values.sumBy { it.unreadCount }
+        _totalUnreadCount.postValue(total)
     }
 
     private fun cleanupListeners() {
