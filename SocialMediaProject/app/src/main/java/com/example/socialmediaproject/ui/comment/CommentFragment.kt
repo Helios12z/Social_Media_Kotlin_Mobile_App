@@ -54,6 +54,7 @@ class CommentFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        viewModel.resetComments()
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(0f).setDuration(200).start()
         bottomnavbar.visibility=View.VISIBLE

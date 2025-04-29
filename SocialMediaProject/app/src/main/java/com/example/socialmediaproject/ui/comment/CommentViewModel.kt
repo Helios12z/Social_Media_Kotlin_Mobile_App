@@ -314,4 +314,10 @@ class CommentViewModel : ViewModel() {
             }
         })
     }
+
+    fun resetComments() {
+        _comments.value = mutableListOf()
+        lastVisibleComment = null
+        isLoading = false
+    }
 }
