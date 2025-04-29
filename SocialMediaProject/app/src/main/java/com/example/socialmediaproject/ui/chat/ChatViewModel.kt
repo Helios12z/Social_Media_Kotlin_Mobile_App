@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.socialmediaproject.Constant
 import com.example.socialmediaproject.dataclass.ChatUser
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -20,6 +21,10 @@ class ChatViewModel : ViewModel() {
     private val userMap = mutableMapOf<String, ChatUser>()
     private val _totalUnreadCount = MutableLiveData(0)
     val totalUnreadCount: LiveData<Int> = _totalUnreadCount
+
+    init {
+        initializeFriends(FirebaseAuth.getInstance().currentUser?.uid?:"")
+    }
 
     fun initializeFriends(userId: String) {
         if (isInitialized && userId == currentUserId) return
@@ -101,7 +106,7 @@ class ChatViewModel : ViewModel() {
                     val timestamp = lastMsgDoc?.getTimestamp("timestamp")?.toDate()?.time ?: 0
                     val prefix = when (senderId) {
                         currentUserId -> "Bạn"
-                        Constant.ChatConstants.VECTOR_AI_ID -> "VectorAI:"
+                        Constant.ChatConstants.VECTOR_AI_ID -> "VectorAI"
                         else -> userMap[partnerId]?.username ?: ""
                     }
                     userMap[partnerId]?.let {

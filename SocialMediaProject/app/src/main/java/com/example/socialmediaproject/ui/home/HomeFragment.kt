@@ -1,8 +1,6 @@
 package com.example.socialmediaproject.ui.home
 
-import android.content.Context
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +10,8 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -71,10 +67,10 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             isVisible = false
             maxCharacterCount = 3
             badgeGravity = BadgeDrawable.TOP_END
-            setHorizontalOffset(dpToPx(-2f))
-            setVerticalOffset(dpToPx(6f))
         }
-        BadgeUtils.attachBadgeDrawable(badge, chatButton, chatContainer)
+        chatButton.post {
+            BadgeUtils.attachBadgeDrawable(badge, chatButton, chatContainer)
+        }
         chatViewModel.totalUnreadCount.observe(viewLifecycleOwner) { count ->
             if (count > 0) {
                 badge.isVisible = true
@@ -85,12 +81,6 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             }
         }
     }
-
-    private fun dpToPx(dp: Float): Int =
-        TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dp,
-            resources.displayMetrics).toInt()
 
     private fun initViews(view: View) {
         recyclerViewFeed = view.findViewById(R.id.recyclerViewFeed)

@@ -14,7 +14,6 @@ import com.example.socialmediaproject.adapter.ChatUserAdapter
 import com.example.socialmediaproject.databinding.FragmentChatBinding
 import com.example.socialmediaproject.ui.chatdetail.ChatDetailFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.auth.FirebaseAuth
 
 class ChatFragment : Fragment() {
 
@@ -22,7 +21,6 @@ class ChatFragment : Fragment() {
     private lateinit var viewModel: ChatViewModel
     private lateinit var adapter: ChatUserAdapter
     private lateinit var recyclerView: RecyclerView
-    private val auth: FirebaseAuth=FirebaseAuth.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,7 +51,6 @@ class ChatFragment : Fragment() {
         }
             recyclerView.adapter = adapter
         }
-        viewModel.initializeFriends(auth.currentUser?.uid ?: "")
     }
 
     override fun onResume() {
