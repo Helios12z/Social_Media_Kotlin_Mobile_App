@@ -71,7 +71,19 @@
             android:layout_marginTop="12dp"
             android:text="Nội dung bài viết ở đây..."
             android:textColor="@color/text_color"
+            android:maxLines="3"
+            android:ellipsize="end"
             android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/textViewReadMore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Xem thêm"
+            android:visibility="gone"
+            android:textColor="@color/purple_200"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewImages"

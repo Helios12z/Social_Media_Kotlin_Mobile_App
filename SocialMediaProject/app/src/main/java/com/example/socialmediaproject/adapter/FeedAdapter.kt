@@ -1,9 +1,12 @@
 package com.example.socialmediaproject.adapter
 
 import android.content.Context
+import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -23,6 +26,7 @@ class FeedAdapter(
 ) : RecyclerView.Adapter<FeedAdapter.PostViewHolder>() {
 
     private val db:FirebaseFirestore=FirebaseFirestore.getInstance()
+    private val expandedPositions = mutableSetOf<Int>()
 
     interface OnPostInteractionListener {
         fun onLikeClicked(position: Int)
@@ -51,7 +55,6 @@ class FeedAdapter(
             .addOnFailureListener {
                 holder.textViewCommentCount.text = "0"
             }
-
         holder.textViewUsername.text = post.userName
         holder.textViewTimestamp.text = post.getTimeAgo()
         holder.textViewPostContent.text = post.content
@@ -72,10 +75,31 @@ class FeedAdapter(
         } else {
             holder.recyclerViewImages.visibility = View.GONE
         }
-
         holder.imageViewLike.setImageResource(
             if (post.isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
         )
+        val isExpanded = expandedPositions.contains(position)
+        holder.textViewPostContent.apply {
+            text = post.content
+            maxLines = if (isExpanded) Int.MAX_VALUE else 3
+            ellipsize = if (isExpanded) null else TextUtils.TruncateAt.END
+        }
+        holder.textViewReadMore.visibility = View.GONE
+        holder.textViewPostContent.post {
+            val layout = holder.textViewPostContent.layout
+            if (layout != null) {
+                val isTruncated = layout.getEllipsisCount(2) > 0
+                holder.textViewReadMore.apply {
+                    visibility = if (isExpanded || isTruncated) View.VISIBLE else View.GONE
+                    text = if (isExpanded) "Ẩn bớt" else "Xem thêm"
+                }
+            }
+        }
+        holder.textViewReadMore.setOnClickListener {
+            if (isExpanded) expandedPositions.remove(position)
+            else             expandedPositions.add(position)
+            notifyItemChanged(position)
+        }
         setupClickListeners(holder, position)
     }
 
@@ -131,6 +155,7 @@ class FeedAdapter(
         val textViewUsername: TextView = itemView.findViewById(R.id.textViewUsername)
         val textViewTimestamp: TextView = itemView.findViewById(R.id.textViewTimestamp)
         val textViewPostContent: TextView = itemView.findViewById(R.id.textViewPostContent)
+        val textViewReadMore: TextView = itemView.findViewById(R.id.textViewReadMore)
         val recyclerViewImages: RecyclerView = itemView.findViewById(R.id.recyclerViewImages)
         val imageViewLike: ImageView = itemView.findViewById(R.id.imageViewLike)
         val textViewLikeCount: TextView = itemView.findViewById(R.id.textViewLikeCount)
