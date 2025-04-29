@@ -3,6 +3,7 @@ package com.example.socialmediaproject.ui.chat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.socialmediaproject.Constant
 import com.example.socialmediaproject.dataclass.ChatUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -25,17 +26,27 @@ class ChatViewModel : ViewModel() {
         _chatUsers.value = emptyList()
         friendsListener = db.collection("Users").document(userId)
             .addSnapshotListener { userDoc, error ->
-                if (error != null || userDoc == null) {
-                    return@addSnapshotListener
-                }
+                if (error != null || userDoc == null) return@addSnapshotListener
                 val friends = userDoc["friends"] as? List<String> ?: emptyList()
-                loadChatPartners(userId, friends.toMutableSet())
+                val initialSet = friends.toMutableSet().apply {
+                    add(Constant.ChatConstants.VECTOR_AI_ID)
+                }
+                loadChatPartners(currentUserId, initialSet)
             }
         isInitialized = true
     }
 
     private fun loadChatPartners(currentUserId: String, initialFriendSet: MutableSet<String>) {
         userMap.clear()
+        userMap[Constant.ChatConstants.VECTOR_AI_ID] = ChatUser(
+            id = Constant.ChatConstants.VECTOR_AI_ID,
+            username = Constant.ChatConstants.VECTOR_AI_NAME,
+            avatarUrl = Constant.ChatConstants.VECTOR_AI_AVATAR_URL,
+            lastMessage = "",
+            unreadCount = 0,
+            timestamp = 0
+        )
+        setupChatListeners(currentUserId, Constant.ChatConstants.VECTOR_AI_ID)
         db.collection("chats").get().addOnSuccessListener { chatDocs ->
             val friendSet = initialFriendSet.toMutableSet()
             for (chatDoc in chatDocs) {
@@ -52,20 +63,21 @@ class ChatViewModel : ViewModel() {
                 _chatUsers.value = emptyList()
                 return@addOnSuccessListener
             }
-            for (userId in friendSet) {
-                db.collection("Users").document(userId).get()
+            for (partnerId in friendSet) {
+                if (partnerId == Constant.ChatConstants.VECTOR_AI_ID) continue
+                db.collection("Users").document(partnerId).get()
                 .addOnSuccessListener { friendDoc ->
                     val chatUser = ChatUser(
-                        id = userId,
+                        id = partnerId,
                         username = friendDoc.getString("name") ?: "",
                         avatarUrl = friendDoc.getString("avatarurl"),
                         lastMessage = "",
                         unreadCount = 0,
                         timestamp = 0
                     )
-                    userMap[userId] = chatUser
+                    userMap[partnerId] = chatUser
                     sortAndUpdateChatUsers()
-                    setupChatListeners(currentUserId, userId)
+                    setupChatListeners(currentUserId, partnerId)
                 }
             }
         }
@@ -81,18 +93,26 @@ class ChatViewModel : ViewModel() {
             .limit(1)
             .addSnapshotListener { snapshot, _ ->
                 val lastMsgDoc = snapshot?.documents?.firstOrNull()
-                val lastMsg = lastMsgDoc?.getString("text") ?: ""
-                val senderId = lastMsgDoc?.getString("senderId") ?: ""
-                val timestamp = lastMsgDoc?.getTimestamp("timestamp")?.toDate()?.time ?: 0
-                val prefix = when (senderId) {
-                    currentUserId -> "bạn:"
-                    "Ordinary_VectorAI" -> "VectorAI:"
-                    else -> userMap[partnerId]?.username ?: ""
+                if (lastMsgDoc!=null) {
+                    val lastMsg = lastMsgDoc?.getString("text") ?: ""
+                    val senderId = lastMsgDoc?.getString("senderId") ?: ""
+                    val timestamp = lastMsgDoc?.getTimestamp("timestamp")?.toDate()?.time ?: 0
+                    val prefix = when (senderId) {
+                        currentUserId -> "bạn:"
+                        Constant.ChatConstants.VECTOR_AI_ID -> "VectorAI:"
+                        else -> userMap[partnerId]?.username ?: ""
+                    }
+                    userMap[partnerId]?.let {
+                        it.lastMessage = "$prefix $lastMsg"
+                        it.timestamp = timestamp
+                        sortAndUpdateChatUsers()
+                    }
                 }
-                userMap[partnerId]?.let {
-                    it.lastMessage = "$prefix $lastMsg"
-                    it.timestamp = timestamp
-                    sortAndUpdateChatUsers()
+                else {
+                    userMap[partnerId]?.let {
+                        it.lastMessage = "Chưa có tin nhắn"
+                        sortAndUpdateChatUsers()
+                    }
                 }
             }
         val unreadListener = db.collection("chats")
@@ -107,16 +127,16 @@ class ChatViewModel : ViewModel() {
                     sortAndUpdateChatUsers()
                 }
             }
-        listenerRegistrations.add(lastMsgListener)
-        listenerRegistrations.add(unreadListener)
+        listenerRegistrations += lastMsgListener
+        listenerRegistrations += unreadListener
     }
 
     private fun sortAndUpdateChatUsers() {
-        val sortedUsers = userMap.values.sortedWith(
+        val sorted = userMap.values.sortedWith(
             compareByDescending<ChatUser> { it.unreadCount }
                 .thenByDescending { it.timestamp }
         )
-        _chatUsers.postValue(sortedUsers)
+        _chatUsers.postValue(sorted)
     }
 
     private fun cleanupListeners() {
