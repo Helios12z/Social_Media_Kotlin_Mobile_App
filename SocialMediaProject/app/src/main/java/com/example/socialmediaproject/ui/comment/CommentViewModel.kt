@@ -236,6 +236,7 @@ class CommentViewModel : ViewModel() {
             .document(commentId)
             .set(comment)
             .addOnSuccessListener {
+                addCommentLocally(comment)
                 handleMentions(content, commentId)
                 updateCommentCount(postId)
             }
@@ -309,9 +310,7 @@ class CommentViewModel : ViewModel() {
                 error: DatabaseError?,
                 committed: Boolean,
                 currentData: DataSnapshot?
-            ) {
-
-            }
+            ) {}
         })
     }
 
@@ -319,5 +318,24 @@ class CommentViewModel : ViewModel() {
         _comments.value = mutableListOf()
         lastVisibleComment = null
         isLoading = false
+    }
+
+    private fun addCommentLocally(comment: Comment) {
+        val current = _comments.value ?: mutableListOf()
+        if (comment.parentId == null) {
+            current.add(0, comment)
+        } else {
+            for ((idx, parent) in current.withIndex()) {
+                val isDirect = parent.id == comment.parentId
+                val isNested = parent.replies.any { it.id == comment.parentId }
+                if (isDirect || isNested) {
+                    val newReplies = parent.replies.toMutableList()
+                    newReplies.add(0, comment)
+                    current[idx] = parent.copy(replies = newReplies)
+                    break
+                }
+            }
+        }
+        _comments.postValue(current)
     }
 }
