@@ -254,33 +254,38 @@ class ChatDetailFragment : Fragment() {
     }
 
     private fun listenUserActivity(userId: String) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("Users")
-        .document(userId)
-        .addSnapshotListener { snap, err ->
-            if (err != null || snap == null || !snap.exists()) return@addSnapshotListener
-            val ts = snap.getTimestamp("lastActive") ?: return@addSnapshotListener
-            val last = ts.toDate().time
-            val now  = System.currentTimeMillis()
-            val diff = now - last
-            val statusText = when {
-                diff < 60_000 -> {
-                    "Đang hoạt động"
+        if (chatUser.id==Constant.ChatConstants.VECTOR_AI_ID) {
+            binding.activeStatus.visibility=View.GONE
+        }
+        else {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("Users")
+            .document(userId)
+            .addSnapshotListener { snap, err ->
+                if (err != null || snap == null || !snap.exists()) return@addSnapshotListener
+                val ts = snap.getTimestamp("lastActive") ?: return@addSnapshotListener
+                val last = ts.toDate().time
+                val now  = System.currentTimeMillis()
+                val diff = now - last
+                val statusText = when {
+                    diff < 60_000 -> {
+                        "Đang hoạt động"
+                    }
+                    diff < 3_600_000 -> {
+                        val mins = TimeUnit.MILLISECONDS.toMinutes(diff)
+                        "Hoạt động $mins phút trước"
+                    }
+                    diff < 86_400_000 -> {
+                        val hours = TimeUnit.MILLISECONDS.toHours(diff)
+                        "Hoạt động $hours giờ trước"
+                    }
+                    else -> {
+                        val fmt = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        "Hoạt động vào ${fmt.format(Date(last))}"
+                    }
                 }
-                diff < 3_600_000 -> {
-                    val mins = TimeUnit.MILLISECONDS.toMinutes(diff)
-                    "Hoạt động $mins phút trước"
-                }
-                diff < 86_400_000 -> {
-                    val hours = TimeUnit.MILLISECONDS.toHours(diff)
-                    "Hoạt động $hours giờ trước"
-                }
-                else -> {
-                    val fmt = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    "Hoạt động vào ${fmt.format(Date(last))}"
-                }
+                binding.activeStatus.text = statusText
             }
-            binding.activeStatus.text = statusText
         }
     }
 }
