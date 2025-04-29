@@ -11,6 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
 import com.example.socialmediaproject.databinding.FragmentCommentBinding
@@ -64,6 +65,21 @@ class CommentFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         postId = arguments?.getString("post_id") ?: return
         viewModel.postId = postId
+        viewModel.isLoadingLive.observe(viewLifecycleOwner) { isLoading ->
+            val fm = childFragmentManager
+            val existing = fm.findFragmentByTag("loading") as? LoadingDialogFragment
+            if (!viewModel.comments.value.isNullOrEmpty()) {
+                existing?.dismissAllowingStateLoss()
+                return@observe
+            }
+            if (isLoading) {
+                if (existing == null) {
+                    LoadingDialogFragment().show(fm, "loading")
+                }
+            } else {
+                existing?.dismissAllowingStateLoss()
+            }
+        }
         setupAdapter()
         setupUI()
         observeComments()

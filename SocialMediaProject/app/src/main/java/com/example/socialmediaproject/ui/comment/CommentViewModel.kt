@@ -30,10 +30,13 @@ class CommentViewModel : ViewModel() {
     private var isLoading = false
     private val pageSize = 6
     var postId: String = ""
+    private val _isLoadingLive = MutableLiveData<Boolean>()
+    val isLoadingLive: LiveData<Boolean> = _isLoadingLive
 
     fun loadInitialComments() {
         if (isLoading || (_comments.value?.isNotEmpty() == true)) return
         isLoading = true
+        _isLoadingLive.postValue(true)
         db.collection("comments")
         .whereEqualTo("postId", postId)
         .whereEqualTo("parentId", null)
@@ -43,12 +46,19 @@ class CommentViewModel : ViewModel() {
         .addOnSuccessListener { snapshot ->
             lastVisibleComment = snapshot.documents.lastOrNull()
             val parents = snapshot.documents.mapNotNull { it.toComment() }
-            fetchRepliesForParents(parents)
+            if (parents.isEmpty()) {
+                addParentsToComments(emptyList())
+                isLoading = false
+                _isLoadingLive.postValue(false)
+            }
+            else fetchRepliesForParents(parents)
         }
         .addOnFailureListener { e ->
             e.printStackTrace()
         }
-        .addOnCompleteListener { isLoading = false }
+        .addOnCompleteListener {
+            isLoading = false
+        }
     }
 
     fun loadMoreComments() {
@@ -151,12 +161,14 @@ class CommentViewModel : ViewModel() {
                         )
                     }
                     addParentsToComments(parentsWithReplies)
+                    _isLoadingLive.postValue(false)
                 }
             }
             .addOnFailureListener {
                 completedBatches++
                 if (completedBatches == batches.size) {
                     addParentsToComments(parents)
+                    _isLoadingLive.postValue(false)
                 }
             }
         }
