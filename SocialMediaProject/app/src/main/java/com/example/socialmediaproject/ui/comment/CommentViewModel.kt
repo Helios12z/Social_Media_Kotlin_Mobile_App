@@ -236,7 +236,19 @@ class CommentViewModel : ViewModel() {
             .document(commentId)
             .set(comment)
             .addOnSuccessListener {
-                addCommentLocally(comment)
+                db.collection("Users").document(auth.currentUser?.uid ?: "").get().addOnSuccessListener {
+                    result-> var username=""
+                    var avatarurl=""
+                    if (result.exists()) {
+                        username=result.getString("name") ?: ""
+                        avatarurl=result.getString("avatarurl") ?: ""
+                    }
+                    val ful=comment.copy(username=username, avatarurl=avatarurl)
+                    addCommentLocally(ful)
+                }
+                .addOnFailureListener {
+                    addCommentLocally(comment.copy(username = "", avatarurl = ""))
+                }
                 handleMentions(content, commentId)
                 updateCommentCount(postId)
             }
