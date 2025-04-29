@@ -98,12 +98,12 @@ class ChatViewModel : ViewModel() {
                     val senderId = lastMsgDoc?.getString("senderId") ?: ""
                     val timestamp = lastMsgDoc?.getTimestamp("timestamp")?.toDate()?.time ?: 0
                     val prefix = when (senderId) {
-                        currentUserId -> "bạn:"
+                        currentUserId -> "Bạn:"
                         Constant.ChatConstants.VECTOR_AI_ID -> "VectorAI:"
                         else -> userMap[partnerId]?.username ?: ""
                     }
                     userMap[partnerId]?.let {
-                        it.lastMessage = "$prefix $lastMsg"
+                        it.lastMessage = "$prefix: $lastMsg"
                         it.timestamp = timestamp
                         sortAndUpdateChatUsers()
                     }
@@ -133,8 +133,7 @@ class ChatViewModel : ViewModel() {
 
     private fun sortAndUpdateChatUsers() {
         val sorted = userMap.values.sortedWith(
-            compareByDescending<ChatUser> { it.unreadCount }
-                .thenByDescending { it.timestamp }
+            compareByDescending<ChatUser> { it.unreadCount }.thenByDescending { it.timestamp }
         )
         _chatUsers.postValue(sorted)
     }
