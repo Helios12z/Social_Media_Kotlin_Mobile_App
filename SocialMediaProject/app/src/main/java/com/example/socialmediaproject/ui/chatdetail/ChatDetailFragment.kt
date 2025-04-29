@@ -30,6 +30,10 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class ChatDetailFragment : Fragment() {
     private lateinit var binding: FragmentChatDetailBinding
@@ -121,6 +125,7 @@ class ChatDetailFragment : Fragment() {
             }
         }
         if (chatUser.id!=Constant.ChatConstants.VECTOR_AI_ID) checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
+        listenUserActivity(chatUser.id)
     }
 
     override fun onResume() {
@@ -245,6 +250,37 @@ class ChatDetailFragment : Fragment() {
                 )
                 viewModel.sendMessage(chatId, errorMessage)
             }
+        }
+    }
+
+    private fun listenUserActivity(userId: String) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("Users")
+        .document(userId)
+        .addSnapshotListener { snap, err ->
+            if (err != null || snap == null || !snap.exists()) return@addSnapshotListener
+            val ts = snap.getTimestamp("lastActive") ?: return@addSnapshotListener
+            val last = ts.toDate().time
+            val now  = System.currentTimeMillis()
+            val diff = now - last
+            val statusText = when {
+                diff < 60_000 -> {
+                    "Đang hoạt động"
+                }
+                diff < 3_600_000 -> {
+                    val mins = TimeUnit.MILLISECONDS.toMinutes(diff)
+                    "Hoạt động $mins phút trước"
+                }
+                diff < 86_400_000 -> {
+                    val hours = TimeUnit.MILLISECONDS.toHours(diff)
+                    "Hoạt động $hours giờ trước"
+                }
+                else -> {
+                    val fmt = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    "Hoạt động vào ${fmt.format(Date(last))}"
+                }
+            }
+            binding.activeStatus.text = statusText
         }
     }
 }
