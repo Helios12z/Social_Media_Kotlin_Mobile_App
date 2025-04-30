@@ -6,4 +6,5 @@ data class Friend(
     val avatarUrl: String,
     var isFriend: Boolean,
     var mutualFriendCount: Int,
+    var fullName: String
 )

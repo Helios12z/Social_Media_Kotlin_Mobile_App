@@ -73,7 +73,8 @@ class FriendListViewModel : ViewModel() {
                     displayName = d.getString("name") ?: "",
                     avatarUrl = d.getString("avatarurl") ?: "",
                     isFriend = isFriend,
-                    mutualFriendCount = mutual
+                    mutualFriendCount = mutual,
+                    fullName = d.getString("fullname") ?: ""
                 )
             }
             val sorted = ids.mapNotNull { id -> loaded.find { it.id == id } }

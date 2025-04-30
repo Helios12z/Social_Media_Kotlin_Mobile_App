@@ -34,7 +34,8 @@ class FriendAdapter(private val onClick: (Friend) -> Unit): ListAdapter<Friend, 
 
     inner class FriendViewHolder(private val b: ItemFriendBinding) : RecyclerView.ViewHolder(b.root) {
         fun bind(f: Friend) = with(b) {
-            textViewName.text = f.displayName
+            if (f.fullName!="") textViewName.text = "${f.displayName} (${f.fullName})"
+            else textViewName.text = f.displayName
             textViewMutualFriends.text = "${f.mutualFriendCount} bạn chung"
             if (f.id==FirebaseAuth.getInstance().currentUser?.uid?:"") {
                 friendStatus.visibility= View.GONE

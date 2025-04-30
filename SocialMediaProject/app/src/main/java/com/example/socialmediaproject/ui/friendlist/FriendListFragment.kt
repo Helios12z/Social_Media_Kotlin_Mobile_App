@@ -92,9 +92,10 @@ class FriendListFragment : Fragment() {
 
     private fun filterList(query: String): List<Friend> {
         if (query.isEmpty()) return fullFriendsList
-        val lower = query.lowercase()
-        return fullFriendsList.filter {
-            it.displayName.lowercase().contains(lower)
+        val terms = query.lowercase().split("\\s+".toRegex())
+        return fullFriendsList.filter { f ->
+            val nameCombined = "${f.displayName} ${f.fullName}".lowercase()
+            terms.all { term -> nameCombined.contains(term) }
         }
     }
 }
