@@ -20,11 +20,19 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
+import com.example.socialmediaproject.adapter.FriendShareAdapter
+import com.example.socialmediaproject.dataclass.Friend
+import com.example.socialmediaproject.dataclass.Message
+import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
 import com.example.socialmediaproject.ui.chat.ChatViewModel
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.badge.ExperimentalBadgeUtils
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
@@ -137,11 +145,36 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onShareClicked(position: Int) {
-        Toast.makeText(
-            requireContext(),
-            "Chia sẻ bài viết: ${postList[position].id}",
-            Toast.LENGTH_SHORT
-        ).show()
+        val post = homeviewmodel.postlist.value?.get(position) ?: return
+        val senderId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val shareLink = "https://yourapp.com/posts/${post.id}"
+        val dialog = FriendShareDialogFragment.newInstance()
+        dialog.setOnFriendSelectedListener(object : FriendShareDialogFragment.OnFriendSelectedListener {
+            override fun onFriendSelected(friend: Friend) {
+                val receiverId = friend.id
+                val chatId = if (senderId < receiverId)
+                    "${senderId}_$receiverId"
+                else
+                    "${receiverId}_$senderId"
+                val message = Message(
+                    senderId   = senderId,
+                    receiverId = receiverId,
+                    text       = shareLink,
+                    timestamp  = Timestamp.now()
+                )
+                sendMessage(
+                    chatId    = chatId,
+                    message   = message,
+                    onSuccess = {
+                        Toast.makeText(requireContext(), "Chia sẻ thành công!", Toast.LENGTH_SHORT).show()
+                    },
+                    onError   = { e -> e.printStackTrace()
+                        Toast.makeText(requireContext(), "Share thất bại", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+        })
+        dialog.show(parentFragmentManager, "FriendShareDialog")
     }
 
     override fun onUserClicked(position: Int) {
@@ -187,6 +220,32 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         if (imageurl!=null) {
             val bundle = bundleOf("IMAGE_URL" to imageurl)
             findNavController().navigate(R.id.viewingimagefragment, bundle)
+        }
+    }
+
+    fun sendMessage(
+        chatId: String,
+        message: Message,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((Exception) -> Unit)? = null) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("chats")
+            .document(chatId)
+            .set(mapOf("exists" to true), SetOptions.merge())
+            .addOnFailureListener { e ->
+                onError?.invoke(e)
+            }
+        val msgRef = db.collection("chats")
+            .document(chatId)
+            .collection("messages")
+            .document()
+        val msgWithId = message.copy(id = msgRef.id)
+        msgRef.set(msgWithId)
+        .addOnSuccessListener {
+            onSuccess?.invoke()
+        }
+        .addOnFailureListener { e ->
+            onError?.invoke(e)
         }
     }
 }
