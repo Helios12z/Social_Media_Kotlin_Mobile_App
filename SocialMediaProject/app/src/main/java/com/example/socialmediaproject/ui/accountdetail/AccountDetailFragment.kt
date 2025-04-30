@@ -165,7 +165,7 @@ class AccountDetailFragment : Fragment() {
                     )
                     viewModel.startUploadWorker(data, requireContext())
                     viewModel.workStatus.observe(viewLifecycleOwner) {
-                            isUploading->binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
+                        isUploading->binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
                         binding.btnSaveProfile.isEnabled = !isUploading
                     }
                 }

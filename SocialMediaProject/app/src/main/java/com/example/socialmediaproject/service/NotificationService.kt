@@ -8,28 +8,52 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.content.getSystemService
 import com.example.socialmediaproject.R
 
 class NotificationService: Service() {
+    companion object {
+        const val CHANNEL_ID = "account_update_channel"
+        const val NOTIF_ID   = 1001
+    }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action)
-        {
-            ACTION.START.toString()->{
-                val content=intent.getStringExtra("content") ?: ""
-                Start(content)
+    override fun onCreate() {
+        super.onCreate()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val chan = NotificationChannel(
+                CHANNEL_ID,
+                "Cập nhật tài khoản",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Thông báo kết quả cập nhật tài khoản"
             }
-            ACTION.STOP.toString()->stopSelf()
-            ACTION.UPDATE.toString()->{
-                val content=intent.getStringExtra("content") ?: ""
-                Update(content)
+            val mgr = getSystemService(NotificationManager::class.java)
+            mgr.createNotificationChannel(chan)
+        }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        intent ?: return START_NOT_STICKY
+
+        when (intent.action) {
+            ACTION.START.name -> {
+                val content = intent.getStringExtra("content") ?: "Bắt đầu..."
+                startInForeground(content)
+            }
+            ACTION.UPDATE.name -> {
+                val content = intent.getStringExtra("content") ?: "Hoàn tất!"
+                updateNotification(content)
+            }
+            ACTION.STOP.name -> {
+                stopForeground(true)
+                stopSelf()
             }
         }
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     enum class ACTION {
@@ -38,25 +62,37 @@ class NotificationService: Service() {
         UPDATE
     }
 
-    private fun Start(content: String)
-    {
-        CreateNotificationChannel()
-        val notification=NotificationCompat.Builder(this, "Notifications")
-            .setSmallIcon(R.drawable.uploadicon)
-            .setContentTitle("Thông báo")
-            .setContentText(content)
-            .build()
-        startForeground(1, notification)
+    private fun ensureChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val chan = NotificationChannel(
+                CHANNEL_ID,
+                "Cập nhật tài khoản",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply { description = "Thông báo kết quả cập nhật" }
+            getSystemService<NotificationManager>()?.createNotificationChannel(chan)
+        }
     }
 
-    private fun Update(content: String)
-    {
-        val notification=NotificationCompat.Builder(this, "Notifications")
+    private fun startInForeground(content: String) {
+        ensureChannel()
+        val n = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.uploadicon)
-            .setContentTitle("Thông báo")
+            .setContentTitle("Cập nhật tài khoản")
             .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
-        startForeground(1, notification)
+        startForeground(NOTIF_ID, n)
+    }
+
+    private fun updateNotification(content: String) {
+        // Với foreground service, bạn có thể gọi lại startForeground để cập nhật
+        val n = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.uploadicon)
+            .setContentTitle("Cập nhật tài khoản")
+            .setContentText(content)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+        startForeground(NOTIF_ID, n)
     }
 
     private fun CreateNotificationChannel()

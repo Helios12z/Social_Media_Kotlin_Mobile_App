@@ -3,6 +3,7 @@ package com.example.socialmediaproject.service
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.util.Base64
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -69,10 +70,14 @@ class UpdateAccountWorker(context: Context, workerParams: WorkerParameters): Cor
 
     private fun sendNotification(content: String) {
         val intent = Intent(applicationContext, NotificationService::class.java).apply {
-            action = NotificationService.ACTION.UPDATE.toString()
+            action = NotificationService.ACTION.UPDATE.name
             putExtra("content", content)
         }
-        applicationContext.startService(intent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            applicationContext.startForegroundService(intent)
+        } else {
+            applicationContext.startService(intent)
+        }
     }
 
     private suspend fun uploadImageToImgbb(context: Context, imageUri: Uri): String? {

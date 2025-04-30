@@ -2,30 +2,15 @@ package com.example.socialmediaproject.ui.accountdetail
 
 import android.app.Application
 import android.content.Context
-import android.net.Uri
-import android.util.Base64
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.test.core.app.ApplicationProvider
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.example.socialmediaproject.service.UpdateAccountWorker
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.FormBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
-import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.util.UUID
 
 class AccountDetailViewModel(application: Application) : AndroidViewModel(application) {
