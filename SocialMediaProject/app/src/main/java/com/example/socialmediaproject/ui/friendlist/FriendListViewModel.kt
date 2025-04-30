@@ -20,9 +20,17 @@ class FriendListViewModel : ViewModel() {
     private var currentPage = 0
     private var hasMore = true
     var isLoading = false
+    private var lastTargetUserId: String? = null
 
     fun loadInitialFriends(targetUserId: String) {
-        if (targetFriendIds.isNotEmpty()) return
+        if (targetUserId == lastTargetUserId && targetFriendIds.isNotEmpty()) return
+        lastTargetUserId = targetUserId
+        targetFriendIds = emptyList()
+        currentUserFriendIds = emptySet()
+        currentPage = 0
+        hasMore     = true
+        isLoading   = false
+        _friends.value = emptyList()
         val currentUid = auth.currentUser?.uid ?: return
         db.collection("Users").document(currentUid).get()
         .addOnSuccessListener { currentDoc ->
@@ -67,7 +75,7 @@ class FriendListViewModel : ViewModel() {
             val loaded = snap.documents.mapNotNull { d ->
                 val theirFriends = (d.get("friends") as? List<String>)?.toSet() ?: emptySet()
                 val isFriend = currentUserFriendIds.contains(d.id)
-                val mutual   = theirFriends.intersect(currentUserFriendIds).size
+                val mutual = theirFriends.intersect(currentUserFriendIds).size
                 Friend(
                     id = d.id,
                     displayName = d.getString("name") ?: "",
