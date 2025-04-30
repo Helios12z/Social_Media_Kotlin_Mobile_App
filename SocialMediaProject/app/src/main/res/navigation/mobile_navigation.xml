@@ -100,4 +100,13 @@
         android:label="Comment"
         tools:layout="@layout/fragment_comment">
     </fragment>
+
+    <fragment android:id="@+id/navigation_friend_list"
+        android:name="com.example.socialmediaproject.ui.friendlist.FriendListFragment"
+        android:label="FriendList"
+        tools:layout="@layout/fragment_friend_list">
+        <argument
+            android:name="user_id"
+            app:argType="string"/>
+    </fragment>
 </navigation>

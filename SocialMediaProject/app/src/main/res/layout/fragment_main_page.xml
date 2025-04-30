@@ -127,6 +127,10 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical"
+                            android:id="@+id/friend_list_button"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackground"
                             android:gravity="center">
                             <TextView
                                 android:id="@+id/profile_followers_count"

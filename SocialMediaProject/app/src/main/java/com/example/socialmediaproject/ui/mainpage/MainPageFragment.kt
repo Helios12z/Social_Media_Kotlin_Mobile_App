@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.os.bundleOf
@@ -19,7 +20,6 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
 import com.example.socialmediaproject.dataclass.PostViewModel
-import com.example.socialmediaproject.ui.comment.CommentFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -136,6 +136,11 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         }
         binding.buttonUnfriend.setOnClickListener {
             showBottomSheet()
+        }
+        binding.friendListButton.setOnClickListener {
+            val bundle=Bundle()
+            bundle.putString("user_id", wallUserId)
+            findNavController().navigate(R.id.navigation_friend_list, bundle)
         }
     }
 
