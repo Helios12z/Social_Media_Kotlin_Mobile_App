@@ -93,7 +93,8 @@ class HomeViewModel : ViewModel() {
                                 likeCount = likecount,
                                 commentCount = commentcount,
                                 shareCount = sharecount,
-                                isLiked = isliked
+                                isLiked = isliked,
+                                privacy = doc.getString("privacy")?:""
                             )
                             finalPostList.add(post)
                         }

@@ -16,7 +16,8 @@ data class PostViewModel(
     var likeCount: Int = 0,
     var commentCount: Int = 0,
     var shareCount: Int = 0,
-    var isLiked: Boolean = false
+    var isLiked: Boolean = false,
+    var privacy: String = ""
 ) {
     fun getTimeAgo(): String {
         val currentTime = System.currentTimeMillis()

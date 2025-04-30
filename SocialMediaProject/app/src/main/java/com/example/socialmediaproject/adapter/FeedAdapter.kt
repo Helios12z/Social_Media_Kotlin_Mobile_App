@@ -100,6 +100,9 @@ class FeedAdapter(
             else             expandedPositions.add(position)
             notifyItemChanged(position)
         }
+        if (post.privacy=="Công khai") holder.privacyIcon.setImageResource(R.drawable.icon_global)
+        else if (post.privacy=="Bạn bè") holder.privacyIcon.setImageResource(R.drawable.iconfriends)
+        else holder.privacyIcon.setImageResource(R.drawable.icon_private)
         setupClickListeners(holder, position)
     }
 
@@ -165,5 +168,6 @@ class FeedAdapter(
         val layoutLike: LinearLayout = itemView.findViewById(R.id.layoutLike)
         val layoutComment: LinearLayout = itemView.findViewById(R.id.layoutComment)
         val layoutShare: LinearLayout = itemView.findViewById(R.id.layoutShare)
+        val privacyIcon: ImageView = itemView.findViewById(R.id.privacy_icon)
     }
 }
