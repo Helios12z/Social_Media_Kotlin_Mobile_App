@@ -12,12 +12,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FriendAdapter
 import com.example.socialmediaproject.databinding.FragmentFriendListBinding
+import com.example.socialmediaproject.dataclass.Friend
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class FriendListFragment : Fragment() {
     private lateinit var binding: FragmentFriendListBinding
     private lateinit var viewModel: FriendListViewModel
     private lateinit var userId: String
+    private var fullFriendsList: List<Friend> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,8 +68,33 @@ class FriendListFragment : Fragment() {
             })
         }
         viewModel.friends.observe(viewLifecycleOwner) { list ->
-            adapter.submitList(list)
+            fullFriendsList=list
+            val query = binding.searchViewFriends.query?.toString().orEmpty()
+            if (query.isEmpty()) {
+                adapter.submitList(fullFriendsList)
+            } else {
+                adapter.submitList(filterList(query))
+            }
         }
+        binding.searchViewFriends.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val q = newText.orEmpty()
+                adapter.submitList(filterList(q))
+                return true
+            }
+        })
         viewModel.loadInitialFriends(userId)
+    }
+
+    private fun filterList(query: String): List<Friend> {
+        if (query.isEmpty()) return fullFriendsList
+        val lower = query.lowercase()
+        return fullFriendsList.filter {
+            it.displayName.lowercase().contains(lower)
+        }
     }
 }
