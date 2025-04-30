@@ -1,26 +1,18 @@
 package com.example.socialmediaproject.fragmentwithoutviewmodel
 
-import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FriendShareAdapter
 import com.example.socialmediaproject.databinding.FragmentFriendShareDialogBinding
 import com.example.socialmediaproject.dataclass.Friend
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.FieldPath
-import com.google.android.gms.tasks.Tasks
 
 class FriendShareDialogFragment : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentFriendShareDialogBinding

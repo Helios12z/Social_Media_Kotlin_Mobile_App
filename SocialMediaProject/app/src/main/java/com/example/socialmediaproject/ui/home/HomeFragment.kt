@@ -20,7 +20,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
-import com.example.socialmediaproject.adapter.FriendShareAdapter
 import com.example.socialmediaproject.dataclass.Friend
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
