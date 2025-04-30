@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FriendAdapter
 import com.example.socialmediaproject.databinding.FragmentFriendListBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class FriendListFragment : Fragment() {
     private lateinit var binding: FragmentFriendListBinding
@@ -25,7 +26,24 @@ class FriendListFragment : Fragment() {
         binding= FragmentFriendListBinding.inflate(inflater, container, false)
         viewModel=ViewModelProvider(requireActivity())[FriendListViewModel::class.java]
         userId=arguments?.getString("user_id")?:""
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(0f).setDuration(200).start()
+        bottomnavbar.visibility=View.VISIBLE
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
