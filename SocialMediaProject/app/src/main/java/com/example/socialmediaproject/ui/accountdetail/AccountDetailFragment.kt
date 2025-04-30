@@ -151,7 +151,8 @@ class AccountDetailFragment : Fragment() {
                 }
                 else {
                     binding.btnSaveProfile.isEnabled = false
-                    binding.progressBar.visibility=View.VISIBLE
+                    val loading=LoadingDialogFragment()
+                    loading.show(parentFragmentManager, "loading")
                     val data= workDataOf(
                         "name" to binding.tilNickname.editText?.text.toString(),
                         "fullname" to binding.tilFullName.editText?.text.toString(),
@@ -165,7 +166,7 @@ class AccountDetailFragment : Fragment() {
                     )
                     viewModel.startUploadWorker(data, requireContext())
                     viewModel.workStatus.observe(viewLifecycleOwner) {
-                        isUploading->binding.progressBar.visibility = if (isUploading) View.VISIBLE else View.GONE
+                        isUploading->if (!isUploading) loading.dismiss()
                         binding.btnSaveProfile.isEnabled = !isUploading
                     }
                 }
