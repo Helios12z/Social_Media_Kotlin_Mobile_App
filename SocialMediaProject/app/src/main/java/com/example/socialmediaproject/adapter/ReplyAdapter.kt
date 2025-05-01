@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.Comment
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -39,6 +40,8 @@ class ReplyAdapter(
         val btnReply = view.findViewById<TextView>(R.id.btnReplyToReply)
         val nestedRepliesContainer = view.findViewById<LinearLayout>(R.id.nestedRepliesContainer)
         val cardReply=view.findViewById<CardView>(R.id.cardReplyComment)
+        val editReply=view.findViewById<TextView>(R.id.editReply)
+        val deleteReply=view.findViewById<TextView>(R.id.deleteReply)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyViewHolder {
@@ -46,8 +49,22 @@ class ReplyAdapter(
         return ReplyViewHolder(view)
     }
 
+    private val db=FirebaseFirestore.getInstance()
+
     override fun onBindViewHolder(holder: ReplyViewHolder, position: Int) {
         val reply = replies[position]
+        db.collection("Users").document(currentUserId).get().addOnSuccessListener { result ->
+            if (result.exists()) {
+                if (result.getString("role") == "admin") {
+                    holder.deleteReply.visibility = View.VISIBLE
+                    holder.editReply.visibility = View.GONE
+                }
+            }
+        }
+        if (reply.userId==currentUserId) {
+            holder.deleteReply.visibility = View.VISIBLE
+            holder.editReply.visibility = View.VISIBLE
+        }
         if (reply.id == highlightReplyId) {
             holder.cardReply.setCardBackgroundColor(
                 ContextCompat.getColor(holder.itemView.context, R.color.highlight_color)

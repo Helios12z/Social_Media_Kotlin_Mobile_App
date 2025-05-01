@@ -129,6 +129,28 @@
             android:text="Trả lời"
             android:textColor="@color/text_color"
             android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/editComment"
+            android:layout_marginStart="10dp"
+            android:text="Sửa"
+            android:visibility="gone"
+            android:textColor="@color/text_color"
+            android:padding="8dp"
+            android:textSize="12sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/deleteComment"
+            android:layout_marginStart="10dp"
+            android:text="Xóa"
+            android:textColor="@color/text_color"
+            android:visibility="gone"
+            android:padding="8dp"
+            android:textSize="12sp"/>
     </LinearLayout>
 
     <TextView

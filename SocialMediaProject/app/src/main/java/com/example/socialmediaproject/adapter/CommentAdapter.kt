@@ -14,6 +14,8 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.Comment
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -39,6 +41,8 @@ class CommentAdapter(
         val btnReply = itemView.findViewById<TextView>(R.id.btnReply)
         val rvReplies = itemView.findViewById<RecyclerView>(R.id.rvReplies)
         val cardComment = itemView.findViewById<androidx.cardview.widget.CardView>(R.id.cardComment)
+        val deleteComment=itemView.findViewById<TextView>(R.id.deleteComment)
+        val editComment=itemView.findViewById<TextView>(R.id.editComment)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
@@ -53,6 +57,9 @@ class CommentAdapter(
         comments.addAll(newComments)
         notifyDataSetChanged()
     }
+
+    private val auth=FirebaseAuth.getInstance()
+    private val db=FirebaseFirestore.getInstance()
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
         val comment = comments[position]
@@ -110,6 +117,18 @@ class CommentAdapter(
             }
         } else {
             holder.itemView.findViewById<TextView>(R.id.tvShowMoreReplies).visibility = View.GONE
+        }
+        db.collection("Users").document(auth.currentUser?.uid?:"").get().addOnSuccessListener {
+            result->if (result.exists()) {
+                if (result.getString("role") == "admin") {
+                    holder.deleteComment.visibility = View.VISIBLE
+                    holder.editComment.visibility = View.GONE
+                }
+            }
+        }
+        if (comment.userId==auth.currentUser?.uid) {
+            holder.deleteComment.visibility=View.VISIBLE
+            holder.editComment.visibility=View.VISIBLE
         }
     }
 
