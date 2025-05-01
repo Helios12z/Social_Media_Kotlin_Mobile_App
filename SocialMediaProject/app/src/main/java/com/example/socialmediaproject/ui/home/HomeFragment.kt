@@ -146,7 +146,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     override fun onShareClicked(position: Int) {
         val post = homeviewmodel.postlist.value?.get(position) ?: return
         val senderId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val shareLink = "https://yourapp.com/posts/${post.id}"
+        val shareLink = "Bài viết được chia sẻ"
         val dialog = FriendShareDialogFragment.newInstance()
         dialog.setOnFriendSelectedListener(object : FriendShareDialogFragment.OnFriendSelectedListener {
             override fun onFriendSelected(friend: Friend) {
@@ -159,7 +159,9 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                     senderId   = senderId,
                     receiverId = receiverId,
                     text       = shareLink,
-                    timestamp  = Timestamp.now()
+                    timestamp  = Timestamp.now(),
+                    link = true,
+                    postId = post.id
                 )
                 sendMessage(
                     chatId    = chatId,

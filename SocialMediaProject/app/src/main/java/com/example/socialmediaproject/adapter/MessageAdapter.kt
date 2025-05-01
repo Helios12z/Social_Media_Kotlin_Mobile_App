@@ -1,6 +1,7 @@
 package com.example.socialmediaproject.adapter
 
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -19,7 +20,10 @@ import com.example.socialmediaproject.dataclass.Message
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class MessageAdapter(private val currentUserId: String, private val senderAvatarUrl: String?, private val onMessageLongClick: (Message) -> Unit): ListAdapter<Message, MessageAdapter.MessageViewHolder>(DIFF_CALLBACK) {
+class MessageAdapter(private val currentUserId: String,
+                     private val senderAvatarUrl: String?,
+                     private val onMessageLongClick: (Message) -> Unit,
+                     private val onLinkClick: (postId: String, commentId: String?, messageContent: String?) -> Unit): ListAdapter<Message, MessageAdapter.MessageViewHolder>(DIFF_CALLBACK) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Message>() {
             override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean =
@@ -120,6 +124,39 @@ class MessageAdapter(private val currentUserId: String, private val senderAvatar
             }
             holder.itemView.isClickable = true
             holder.itemView.isLongClickable = true
+        }
+        if (message.link) {
+            if (isSentByCurrentUser) {
+                holder.tvSentMessage.setTextColor(Color.BLUE)
+                holder.tvSentMessage.paintFlags = holder.tvSentMessage.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+                holder.tvSentMessage.setOnClickListener {
+                    onLinkClick(message.postId, "", "")
+                }
+            }
+            else {
+                holder.tvReceivedMessage.setTextColor(Color.BLUE)
+                holder.tvReceivedMessage.paintFlags = holder.tvReceivedMessage.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+                holder.tvReceivedMessage.setOnClickListener {
+                    onLinkClick(message.postId, "", message.text)
+                }
+            }
+        }
+        else {
+            if (isSentByCurrentUser) {
+                holder.tvSentMessage.setTypeface(null, Typeface.NORMAL)
+                val typedValue = TypedValue()
+                val theme = holder.itemView.context.theme
+                theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+                val color = ContextCompat.getColor(holder.itemView.context, typedValue.resourceId)
+                holder.tvSentMessage.setTextColor(color)
+            } else {
+                holder.tvReceivedMessage.setTypeface(null, Typeface.NORMAL)
+                val typedValue = TypedValue()
+                val theme = holder.itemView.context.theme
+                theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+                val color = ContextCompat.getColor(holder.itemView.context, typedValue.resourceId)
+                holder.tvReceivedMessage.setTextColor(color)
+            }
         }
     }
 }

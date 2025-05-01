@@ -3,6 +3,8 @@ package com.example.socialmediaproject.ui.chatdetail
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.view.Gravity
@@ -80,9 +82,22 @@ class ChatDetailFragment : Fragment() {
         else "${chatUser.id}_${currentUserId}"
         val layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewMessages.layoutManager = layoutManager
-        val adapter = MessageAdapter(currentUserId, chatUser.avatarUrl) {
+        val adapter = MessageAdapter(currentUserId, chatUser.avatarUrl,
+        onMessageLongClick = {
             message->showMessageOptionBottomSheet(message, chatId)
-        }
+        },
+        onLinkClick = {
+            postId, commentId, messageContent->if (postId!="") {
+                val bundle=Bundle()
+                bundle.putString("post_id", postId)
+                bundle.putString("comment_id", commentId)
+                findNavController().navigate(R.id.navigation_postWithComment, bundle)
+            }
+            else {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(messageContent))
+                startActivity(intent)
+            }
+        })
         binding.recyclerViewMessages.adapter = adapter
         viewModel.messages.observe(viewLifecycleOwner) { messages ->
             adapter.submitList(messages)

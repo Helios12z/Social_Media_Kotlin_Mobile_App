@@ -9,5 +9,7 @@ data class Message(
     val text: String = "",
     val timestamp: Timestamp = Timestamp.now(),
     val read: Boolean = false,
-    val removed: Boolean = false
+    val removed: Boolean = false,
+    val link: Boolean = false,
+    val postId: String = ""
 )

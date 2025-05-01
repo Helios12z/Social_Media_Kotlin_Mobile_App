@@ -183,9 +183,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="15dp"
-                    android:text="Chia sẻ"
+                    android:text=""
                     app:tint="@color/text_color"
                     android:textColor="?android:textColorPrimary"
+                    android:visibility="gone"
                     android:textSize="18sp" />
             </LinearLayout>
         </LinearLayout>
