@@ -121,7 +121,7 @@ class HomeViewModel : ViewModel() {
             .addOnFailureListener { callback(emptyList()) }
     }
 
-    fun toggleLike(post: PostViewModel, position: Int) {
+    fun toggleLike(post: PostViewModel) {
         auth=FirebaseAuth.getInstance()
         db=FirebaseFirestore.getInstance()
         val userId = auth.currentUser?.uid ?: return
@@ -134,9 +134,9 @@ class HomeViewModel : ViewModel() {
                     for (result in results) {
                         post.isLiked = result.getBoolean("status") ?: false
                     }
-                    updateLikeStatus(post, position, userId, results)
+                    updateLikeStatus(post, userId, results)
                 } else {
-                    updateLikeStatus(post, position, userId, null)
+                    updateLikeStatus(post, userId, null)
                 }
             }
             .addOnFailureListener { e->
@@ -144,7 +144,7 @@ class HomeViewModel : ViewModel() {
             }
     }
 
-    private fun updateLikeStatus(post: PostViewModel, position: Int, userId: String, results: QuerySnapshot?) {
+    private fun updateLikeStatus(post: PostViewModel, userId: String, results: QuerySnapshot?) {
         val ref = realtimedb.getReference("PostStats").child(post.id)
         ref.runTransaction(object : Transaction.Handler {
             override fun doTransaction(currentData: MutableData): Transaction.Result {

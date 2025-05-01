@@ -3,8 +3,11 @@ package com.example.socialmediaproject.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -22,7 +25,8 @@ class ReplyAdapter(
     private val onLikeClicked: (Comment) -> Unit,
     private val onCommentClicked: (String) -> Unit,
     private val level: Int = 0,
-    private val maxLevel: Int = 3
+    private val maxLevel: Int = 3,
+    private val highlightReplyId: String?
 ) : RecyclerView.Adapter<ReplyAdapter.ReplyViewHolder>() {
 
     inner class ReplyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -34,6 +38,7 @@ class ReplyAdapter(
         val btnLike = view.findViewById<TextView>(R.id.btnReplyLike)
         val btnReply = view.findViewById<TextView>(R.id.btnReplyToReply)
         val nestedRepliesContainer = view.findViewById<LinearLayout>(R.id.nestedRepliesContainer)
+        val cardReply=view.findViewById<CardView>(R.id.cardReplyComment)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyViewHolder {
@@ -43,6 +48,18 @@ class ReplyAdapter(
 
     override fun onBindViewHolder(holder: ReplyViewHolder, position: Int) {
         val reply = replies[position]
+        if (reply.id == highlightReplyId) {
+            holder.cardReply.setCardBackgroundColor(
+                ContextCompat.getColor(holder.itemView.context, R.color.highlight_color)
+            )
+            holder.cardReply.startAnimation(
+                AnimationUtils.loadAnimation(holder.itemView.context, R.anim.pulse)
+            )
+        } else {
+            holder.cardReply.setCardBackgroundColor(
+                ContextCompat.getColor(holder.itemView.context, R.color.normal_comment_background)
+            )
+        }
         val isLiked = reply.likes.contains(currentUserId)
         val iconRes = if (isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
         holder.btnLike.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0)
@@ -77,7 +94,8 @@ class ReplyAdapter(
                 onLikeClicked = onLikeClicked,
                 onCommentClicked = onCommentClicked,
                 level = level + 1,
-                maxLevel = maxLevel
+                maxLevel = maxLevel,
+                highlightReplyId=highlightReplyId
             )
             nestedRecyclerView.adapter = nestedAdapter
             nestedRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)

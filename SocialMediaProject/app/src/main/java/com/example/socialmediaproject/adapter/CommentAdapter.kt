@@ -95,7 +95,8 @@ class CommentAdapter(
                 val bundle=Bundle()
                 bundle.putString("wall_user_id", userId)
                 findNavController(holder.itemView).navigate(R.id.navigation_mainpage, bundle)
-            }
+            },
+            highlightReplyId = highlightCommentId
         )
         holder.rvReplies.adapter = replyAdapter
         holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)

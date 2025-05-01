@@ -126,7 +126,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     override fun onLikeClicked(position: Int) {
         val post=homeviewmodel.postlist.value?.get(position)?:return
-        homeviewmodel.toggleLike(post, position)
+        homeviewmodel.toggleLike(post)
     }
 
     override fun onCommentClicked(position: Int) {

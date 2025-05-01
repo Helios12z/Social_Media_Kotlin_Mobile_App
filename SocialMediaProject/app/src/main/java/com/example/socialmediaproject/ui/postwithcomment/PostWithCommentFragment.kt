@@ -1,43 +1,49 @@
 package com.example.socialmediaproject.ui.postwithcomment
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.Spannable
-import android.text.TextWatcher
-import android.text.style.ForegroundColorSpan
+import android.os.Parcelable
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
 import com.example.socialmediaproject.databinding.FragmentPostWithCommentBinding
 import com.example.socialmediaproject.dataclass.Comment
+import com.example.socialmediaproject.dataclass.Friend
+import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.dataclass.PostViewModel
+import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
 import com.example.socialmediaproject.ui.comment.CommentViewModel
+import com.example.socialmediaproject.ui.home.HomeViewModel
+import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.regex.Pattern
+import com.google.firebase.firestore.SetOptions
 
 class PostWithCommentFragment : Fragment() {
     private lateinit var binding: FragmentPostWithCommentBinding
     private lateinit var postId: String
     private lateinit var commentId: String
     private lateinit var viewModel: PostWithCommentViewModel
-    private val commentViewModel: CommentViewModel by viewModels()
+    private lateinit var commentViewModel: CommentViewModel
+    private lateinit var homeViewModel: HomeViewModel
     private var replyingTo: Comment? = null
     private val db=FirebaseFirestore.getInstance()
-    private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
+    private lateinit var adapter: CommentAdapter
+    private val auth=FirebaseAuth.getInstance()
+    private var recyclerViewState: Parcelable? = null
+    private val expandedCommentIds = mutableSetOf<String>()
+    private lateinit var post: PostViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,10 +51,18 @@ class PostWithCommentFragment : Fragment() {
     ): View? {
         binding=FragmentPostWithCommentBinding.inflate(inflater, container, false)
         postId=arguments?.getString("post_id")?:""
+        commentId=arguments?.getString("comment_id")?:""
         viewModel=ViewModelProvider(requireActivity())[PostWithCommentViewModel::class.java]
+        commentViewModel=ViewModelProvider(requireActivity())[CommentViewModel::class.java]
+        commentViewModel.postId=postId
+        homeViewModel=ViewModelProvider(requireActivity())[HomeViewModel::class.java]
+        viewModel.postId=postId
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+        viewModel.fetchPost()
+        viewModel.listenToStats()
+        viewModel.fetchCurrentUserAvatar()
         return binding.root
     }
 
@@ -68,53 +82,212 @@ class PostWithCommentFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-    }
-
-
-
-    private fun replyTo(comment: Comment) {
-        replyingTo = comment
-        binding.tvReplyingTo.visibility = View.VISIBLE
-        binding.btnCancelReply.visibility = View.VISIBLE
-        binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
-        if (binding.etCommentInput.text.toString().isBlank()) {
-            binding.etCommentInput.setText("@${comment.username} ")
-        }
-    }
-
-    private fun hideReplyUI() {
-        replyingTo = null
-        binding.tvReplyingTo.visibility = View.GONE
-        binding.btnCancelReply.visibility = View.GONE
-    }
-
-    private fun buildCommentTree(comments: List<Comment>): List<Comment> {
-        val rootComments = comments.filter { it.parentId == null }
-        rootComments.forEach { parent ->
-            parent.replies = collectAllRepliesFlat(parent.id, comments).toMutableList()
-        }
-        return rootComments
-    }
-
-    private fun collectAllRepliesFlat(rootId: String, allComments: List<Comment>): List<Comment> {
-        val directReplies = allComments.filter { it.parentId == rootId }
-        val allReplies = mutableListOf<Comment>()
-        allReplies.addAll(directReplies)
-        directReplies.forEach { reply ->
-            allReplies.addAll(collectAllRepliesFlat(reply.id, allComments))
-        }
-        return allReplies
-    }
-
-    private fun checkIfUserHasLikedPost() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        db.collection("Likes").whereEqualTo("postid", postId)
-        .whereEqualTo("userid", userId).get().addOnSuccessListener {
-            results->if (!results.isEmpty) {
-                binding.imageViewLike.setImageResource(R.drawable.smallheartedicon)
+        setupAdapter()
+        setupUI()
+        observeComments()
+        commentViewModel.loadInitialComments()
+        setupLoadMore()
+        db.collection("Posts").document(postId).get().addOnSuccessListener {
+            result->if (result.exists()) {
+                val vm = result.toObject(PostViewModel::class.java)
+                if (vm != null) {
+                    post = vm
+                }
             }
-            else binding.imageViewLike.setImageResource(R.drawable.smallhearticon)
         }
+        binding.imageViewLike.setOnClickListener {
+            homeViewModel.toggleLike(post)
+        }
+        viewModel.postData.observe(viewLifecycleOwner) {
+            binding.textViewPostContent.text=it.getString("content")
+            binding.textViewTimestamp.text=viewModel.getTimeAgo(it.getLong("timestamp")?:0)
+        }
+        viewModel.postUser.observe(viewLifecycleOwner) {
+            binding.textViewUsername.text=it.getString("name")
+            Glide.with(requireContext())
+                .load(it.getString("avatarurl"))
+                .error(R.drawable.avataricon)
+                .placeholder(R.drawable.avataricon)
+                .into(binding.imageViewUserAvatar)
+            val postUserId=it.getString("userid")
+            binding.imageViewUserAvatar.setOnClickListener {
+                val goToFragment= MainPageFragment()
+                val bundle=Bundle()
+                bundle.putString("wall_user_id", postUserId)
+                goToFragment.arguments=bundle
+                findNavController().navigate(R.id.navigation_mainpage, bundle)
+            }
+        }
+        viewModel.statsLiveData.observe(viewLifecycleOwner) {
+            (likecount, commentcount, sharecount)->
+                binding.textViewLikeCount.text=likecount.toString()
+                binding.textViewCommentCount.text=commentcount.toString()
+        }
+        binding.imageViewLike.setOnClickListener {
+            homeViewModel.toggleLike(post)
+        }
+        binding.imageViewShare.setOnClickListener {
+            val senderId = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
+            val shareLink = "Bài viết được chia sẻ"
+            val dialog = FriendShareDialogFragment.newInstance()
+            dialog.setOnFriendSelectedListener(object : FriendShareDialogFragment.OnFriendSelectedListener {
+                override fun onFriendSelected(friend: Friend) {
+                    val receiverId = friend.id
+                    val chatId = if (senderId < receiverId)
+                        "${senderId}_$receiverId"
+                    else
+                        "${receiverId}_$senderId"
+                    val message = Message(
+                        senderId   = senderId,
+                        receiverId = receiverId,
+                        text       = shareLink,
+                        timestamp  = Timestamp.now(),
+                        link = true,
+                        postId = post.id
+                    )
+                    sendMessage(
+                        chatId    = chatId,
+                        message   = message,
+                        onSuccess = {
+                            Toast.makeText(requireContext(), "Chia sẻ thành công!", Toast.LENGTH_SHORT).show()
+                        },
+                        onError   = { e -> e.printStackTrace()
+                            Toast.makeText(requireContext(), "Share thất bại", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            })
+            dialog.show(parentFragmentManager, "FriendShareDialog")
+        }
+    }
+
+    private fun setupAdapter() {
+        adapter = CommentAdapter(
+            comments = mutableListOf(),
+            currentUserId = auth.currentUser?.uid ?: "",
+            onReplyClicked = { comment ->
+                replyingTo = comment
+                binding.tvReplyingTo.visibility = View.VISIBLE
+                binding.btnCancelReply.visibility = View.VISIBLE
+                binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
+                if (binding.etCommentInput.text.toString().isBlank()) {
+                    binding.etCommentInput.setText("@${comment.username} ")
+                }
+            },
+            onLikeClicked = { comment ->
+                commentViewModel.toggleLikeComment(comment.id) {
+                    val index = adapter.comments.indexOfFirst { it.id == comment.id }
+                    if (index != -1) adapter.notifyItemChanged(index)
+                }
+            },
+            onReplyLikeClicked = { reply ->
+                commentViewModel.toggleLikeComment(reply.id) {
+                    val index = adapter.comments.indexOfFirst { it.id == reply.id }
+                    if (index != -1) adapter.notifyItemChanged(index)
+                    else {
+                        for (i in adapter.comments.indices) {
+                            val parent = adapter.comments[i]
+                            val replyIndex = parent.replies.indexOfFirst { it.id == reply.id }
+                            if (replyIndex != -1) {
+                                adapter.notifyItemChanged(i)
+                                break
+                            }
+                        }
+                    }
+                }
+            },
+            highlightCommentId = null,
+            onCommentClicked = { userId ->
+                val bundle = Bundle()
+                bundle.putString("wall_user_id", userId)
+                findNavController().navigate(R.id.navigation_mainpage, bundle)
+            },
+            expandedCommentIds = expandedCommentIds
+        )
+        binding.rvComments.adapter = adapter
+        binding.rvComments.layoutManager = LinearLayoutManager(requireContext())
+    }
+
+    private fun setupLoadMore() {
+        binding.rvComments.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                if (lastVisibleItemPosition == adapter.itemCount - 1) {
+                    commentViewModel.loadMoreComments()
+                }
+            }
+        })
+    }
+
+    private fun setupUI() {
+        binding.btnSendComment.setOnClickListener {
+            val text = binding.etCommentInput.text.toString().trim()
+            if (text.isNotEmpty()) {
+                commentViewModel.postComment(text, replyingTo?.id, postId)
+                binding.etCommentInput.setText("")
+                binding.tvReplyingTo.visibility = View.GONE
+                binding.btnCancelReply.visibility = View.GONE
+                replyingTo = null
+            }
+            else {
+                binding.etCommentInput.error = "Không nhập gì mà đòi comment à!"
+            }
+        }
+        binding.btnCancelReply.setOnClickListener {
+            replyingTo = null
+            binding.tvReplyingTo.visibility = View.GONE
+            binding.btnCancelReply.visibility = View.GONE
+        }
+        db.collection("Users").document(auth.currentUser?.uid?:"").get().addOnSuccessListener {
+                result->if (result.exists()) {
+            if (result.getString("avatarurl")!="") {
+                Glide.with(requireContext())
+                    .load(result.getString("avatarurl"))
+                    .placeholder(R.drawable.avataricon)
+                    .error(R.drawable.avataricon)
+                    .into(binding.ivUserAvatar)
+            }
+        }
+        }
+    }
+
+    private fun observeComments() {
+        commentViewModel.comments.observe(viewLifecycleOwner) { newComments ->
+            Log.d("PostWithComment", "loaded comments: ${newComments.size}")
+            adapter.updateFullComments(newComments)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        recyclerViewState = binding.rvComments.layoutManager?.onSaveInstanceState()
+    }
+
+    fun sendMessage(
+        chatId: String,
+        message: Message,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((Exception) -> Unit)? = null) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("chats")
+            .document(chatId)
+            .set(mapOf("exists" to true), SetOptions.merge())
+            .addOnFailureListener { e ->
+                onError?.invoke(e)
+            }
+        val msgRef = db.collection("chats")
+            .document(chatId)
+            .collection("messages")
+            .document()
+        val msgWithId = message.copy(id = msgRef.id)
+        msgRef.set(msgWithId)
+            .addOnSuccessListener {
+                onSuccess?.invoke()
+            }
+            .addOnFailureListener { e ->
+                onError?.invoke(e)
+            }
     }
 }
