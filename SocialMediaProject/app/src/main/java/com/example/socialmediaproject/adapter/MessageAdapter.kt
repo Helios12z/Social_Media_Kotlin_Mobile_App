@@ -123,6 +123,10 @@ class MessageAdapter(private val currentUserId: String,
                         onLinkClick("", "", message.text)
                     }
                 }
+                setOnLongClickListener {
+                    onMessageLongClick(message)
+                    true
+                }
             }
             return
         }
