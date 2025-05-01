@@ -180,21 +180,41 @@ class ChatDetailFragment : Fragment() {
     fun showMessageOptionBottomSheet(message: Message, chatId: String) {
         val bottomSheetDialog = BottomSheetDialog(requireContext())
         val view = layoutInflater.inflate(R.layout.bottom_sheet_dialog, null)
-        bottomSheetDialog.setContentView(view)
-        val button1: Button=view.findViewById(R.id.button1)
-        val button2: Button=view.findViewById(R.id.button2)
-        button1.setText("Sao chép")
-        button2.setText("Thu hồi")
-        button1.setOnClickListener {
-            bottomSheetDialog.dismiss()
-            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("Tin nhắn sao chép", message.text)
-            clipboard.setPrimaryClip(clip)
-            Toast.makeText(requireContext(), "Đã sao chép tin nhắn", Toast.LENGTH_SHORT).show()
+        val currentUserId=auth.currentUser?.uid?:""
+        if (message.senderId==currentUserId) {
+            bottomSheetDialog.setContentView(view)
+            val button1: Button=view.findViewById(R.id.button1)
+            val button2: Button=view.findViewById(R.id.button2)
+            button1.setText("Sao chép")
+            button2.setText("Thu hồi")
+            button1.setOnClickListener {
+                bottomSheetDialog.dismiss()
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Tin nhắn sao chép", message.text)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(requireContext(), "Đã sao chép tin nhắn", Toast.LENGTH_SHORT).show()
+            }
+            button2.setOnClickListener {
+                bottomSheetDialog.dismiss()
+                viewModel.removeMessage(chatId, message)
+            }
         }
-        button2.setOnClickListener {
-            bottomSheetDialog.dismiss()
-            viewModel.removeMessage(chatId, message)
+        else {
+            bottomSheetDialog.setContentView(view)
+            val button1: Button=view.findViewById(R.id.button1)
+            val button2: Button=view.findViewById(R.id.button2)
+            button1.setText("Sao chép")
+            button2.setText("Hủy")
+            button1.setOnClickListener {
+                bottomSheetDialog.dismiss()
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Tin nhắn sao chép", message.text)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(requireContext(), "Đã sao chép tin nhắn", Toast.LENGTH_SHORT).show()
+            }
+            button2.setOnClickListener {
+                bottomSheetDialog.dismiss()
+            }
         }
         bottomSheetDialog.show()
     }

@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.os.bundleOf
@@ -19,9 +18,16 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
+import com.example.socialmediaproject.dataclass.Friend
+import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.dataclass.PostViewModel
+import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private lateinit var viewModel: MainPageViewModel
@@ -260,11 +266,38 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onShareClicked(position: Int) {
-        Toast.makeText(
-            requireContext(),
-            "Chia sẻ bài viết: ${postList[position].id}",
-            Toast.LENGTH_SHORT
-        ).show()
+        val post = viewModel.postlist.value?.get(position) ?: return
+        val senderId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val shareLink = "Bài viết được chia sẻ"
+        val dialog = FriendShareDialogFragment.newInstance()
+        dialog.setOnFriendSelectedListener(object : FriendShareDialogFragment.OnFriendSelectedListener {
+            override fun onFriendSelected(friend: Friend) {
+                val receiverId = friend.id
+                val chatId = if (senderId < receiverId)
+                    "${senderId}_$receiverId"
+                else
+                    "${receiverId}_$senderId"
+                val message = Message(
+                    senderId   = senderId,
+                    receiverId = receiverId,
+                    text       = shareLink,
+                    timestamp  = Timestamp.now(),
+                    link = true,
+                    postId = post.id
+                )
+                sendMessage(
+                    chatId    = chatId,
+                    message   = message,
+                    onSuccess = {
+                        Toast.makeText(requireContext(), "Chia sẻ thành công!", Toast.LENGTH_SHORT).show()
+                    },
+                    onError   = { e -> e.printStackTrace()
+                        Toast.makeText(requireContext(), "Share thất bại", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+        })
+        dialog.show(parentFragmentManager, "FriendShareDialog")
     }
 
     override fun onUserClicked(position: Int) {
@@ -339,5 +372,31 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                 }
             }
         }
+    }
+
+    fun sendMessage(
+        chatId: String,
+        message: Message,
+        onSuccess: (() -> Unit)? = null,
+        onError: ((Exception) -> Unit)? = null) {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("chats")
+            .document(chatId)
+            .set(mapOf("exists" to true), SetOptions.merge())
+            .addOnFailureListener { e ->
+                onError?.invoke(e)
+            }
+        val msgRef = db.collection("chats")
+            .document(chatId)
+            .collection("messages")
+            .document()
+        val msgWithId = message.copy(id = msgRef.id)
+        msgRef.set(msgWithId)
+            .addOnSuccessListener {
+                onSuccess?.invoke()
+            }
+            .addOnFailureListener { e ->
+                onError?.invoke(e)
+            }
     }
 }

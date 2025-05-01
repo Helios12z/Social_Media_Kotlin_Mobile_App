@@ -52,111 +52,79 @@ class MessageAdapter(private val currentUserId: String,
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val message = getItem(position)
-        val isSentByCurrentUser = message.senderId == currentUserId
-        val isFromAI = message.senderId == "Ordinary_VectorAI"
-        val timeFormat = SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault())
-        val timeText = timeFormat.format(message.timestamp.toDate())
-        if (isSentByCurrentUser) {
+        val isSent = message.senderId == currentUserId
+        val isFromAI = message.senderId == Constant.ChatConstants.VECTOR_AI_ID
+        val timeText = SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault())
+            .format(message.timestamp.toDate())
+        listOf(holder.tvSentMessage, holder.tvReceivedMessage).forEach { tv ->
+            tv.paintFlags = tv.paintFlags and Paint.UNDERLINE_TEXT_FLAG.inv()
+            tv.setOnClickListener(null)
+            val tvp = TypedValue().apply {
+                holder.itemView.context.theme.resolveAttribute(
+                    android.R.attr.textColorPrimary, this, true
+                )
+            }
+            val baseColor = if (tvp.resourceId != 0)
+                ContextCompat.getColor(holder.itemView.context, tvp.resourceId)
+            else tvp.data
+            tv.setTextColor(baseColor)
+
+            tv.setTypeface(null, Typeface.NORMAL)
+            tv.isClickable = false
+            tv.isLongClickable = false
+        }
+        if (isSent) {
             holder.layoutSent.visibility = View.VISIBLE
             holder.layoutReceived.visibility = View.GONE
             holder.tvSentMessage.text = message.text
             holder.tvSentTime.text = timeText
-            if (message.receiverId!=Constant.ChatConstants.VECTOR_AI_ID) {
-                val tickIcon = if (message.read)
-                    R.drawable.tickicon_double
-                else
-                    R.drawable.tickicon
-                holder.ivMessageStatus.setImageResource(tickIcon)
+            holder.ivMessageStatus.apply {
+                visibility = if (message.receiverId != Constant.ChatConstants.VECTOR_AI_ID) View.VISIBLE else View.GONE
+                setImageResource(if (message.read) R.drawable.tickicon_double else R.drawable.tickicon)
             }
-            else holder.ivMessageStatus.visibility=View.GONE
-        }
-        else if (isFromAI) {
+        } else {
             holder.layoutSent.visibility = View.GONE
             holder.layoutReceived.visibility = View.VISIBLE
             holder.tvReceivedMessage.text = message.text
             holder.tvReceivedTime.text = timeText
+            val avatarSrc = if (isFromAI) R.drawable.vectorai else senderAvatarUrl
             Glide.with(holder.itemView.context)
-                .load(R.drawable.vectorai)
-                .placeholder(R.drawable.vectorai)
-                .into(holder.ivSenderAvatar)
+                .load(avatarSrc).placeholder(R.drawable.avataricon).into(holder.ivSenderAvatar)
         }
-        else {
-            holder.layoutSent.visibility = View.GONE
-            holder.layoutReceived.visibility = View.VISIBLE
-            holder.tvReceivedMessage.text = message.text
-            holder.tvReceivedTime.text = timeText
-            Glide.with(holder.itemView.context).load(senderAvatarUrl)
-                .placeholder(R.drawable.avataricon)
-                .error(R.drawable.avataricon)
-                .into(holder.ivSenderAvatar)
-        }
-        holder.itemView.setOnLongClickListener {
-            if (message.senderId==currentUserId) onMessageLongClick.invoke(message)
-            true
+        holder.itemView.apply {
+            isLongClickable = true
+            setOnLongClickListener {
+                if (!message.removed) {
+                    onMessageLongClick(message)
+                    true
+                } else false
+            }
         }
         if (message.removed) {
-            if (isSentByCurrentUser) {
-                holder.tvSentMessage.text = "Tin nhắn đã được thu hồi"
-                holder.tvSentMessage.setTypeface(null, Typeface.ITALIC)
-                holder.tvSentMessage.setTextColor(Color.GRAY)
-            } else {
-                holder.tvReceivedMessage.text = "Tin nhắn đã được thu hồi"
-                holder.tvReceivedMessage.setTypeface(null, Typeface.ITALIC)
-                holder.tvReceivedMessage.setTextColor(Color.GRAY)
+            val tv = if (isSent) holder.tvSentMessage else holder.tvReceivedMessage
+            tv.apply {
+                text = "Tin nhắn đã được thu hồi"
+                setTypeface(null, Typeface.ITALIC)
+                setTextColor(Color.GRAY)
             }
-            holder.itemView.isClickable = false
-            holder.itemView.isLongClickable = false
-        } else {
-            if (isSentByCurrentUser) {
-                holder.tvSentMessage.setTypeface(null, Typeface.NORMAL)
-                val typedValue = TypedValue()
-                val theme = holder.itemView.context.theme
-                theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-                val color = ContextCompat.getColor(holder.itemView.context, typedValue.resourceId)
-                holder.tvSentMessage.setTextColor(color)
-            } else {
-                holder.tvReceivedMessage.setTypeface(null, Typeface.NORMAL)
-                val typedValue = TypedValue()
-                val theme = holder.itemView.context.theme
-                theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-                val color = ContextCompat.getColor(holder.itemView.context, typedValue.resourceId)
-                holder.tvReceivedMessage.setTextColor(color)
-            }
-            holder.itemView.isClickable = true
-            holder.itemView.isLongClickable = true
+            return
         }
         if (message.link) {
-            if (isSentByCurrentUser) {
-                holder.tvSentMessage.setTextColor(Color.BLUE)
-                holder.tvSentMessage.paintFlags = holder.tvSentMessage.paintFlags or Paint.UNDERLINE_TEXT_FLAG
-                holder.tvSentMessage.setOnClickListener {
-                    onLinkClick(message.postId, "", "")
+            val tv = if (isSent) holder.tvSentMessage else holder.tvReceivedMessage
+            tv.apply {
+                isClickable = true
+                isLongClickable = true
+                setTextColor(Color.YELLOW)
+                paintFlags = paintFlags or Paint.UNDERLINE_TEXT_FLAG
+                setOnClickListener {
+                    if (!message.postId.isNullOrEmpty()) {
+                        onLinkClick(message.postId, "", "")
+                    } else {
+                        onLinkClick("", "", message.text)
+                    }
                 }
             }
-            else {
-                holder.tvReceivedMessage.setTextColor(Color.BLUE)
-                holder.tvReceivedMessage.paintFlags = holder.tvReceivedMessage.paintFlags or Paint.UNDERLINE_TEXT_FLAG
-                holder.tvReceivedMessage.setOnClickListener {
-                    onLinkClick(message.postId, "", message.text)
-                }
-            }
-        }
-        else {
-            if (isSentByCurrentUser) {
-                holder.tvSentMessage.setTypeface(null, Typeface.NORMAL)
-                val typedValue = TypedValue()
-                val theme = holder.itemView.context.theme
-                theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-                val color = ContextCompat.getColor(holder.itemView.context, typedValue.resourceId)
-                holder.tvSentMessage.setTextColor(color)
-            } else {
-                holder.tvReceivedMessage.setTypeface(null, Typeface.NORMAL)
-                val typedValue = TypedValue()
-                val theme = holder.itemView.context.theme
-                theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-                val color = ContextCompat.getColor(holder.itemView.context, typedValue.resourceId)
-                holder.tvReceivedMessage.setTextColor(color)
-            }
+            return
         }
     }
 }
