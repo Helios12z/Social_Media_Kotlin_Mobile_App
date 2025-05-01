@@ -15,12 +15,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
+import com.example.socialmediaproject.adapter.ImagePostAdapter
 import com.example.socialmediaproject.databinding.FragmentPostWithCommentBinding
 import com.example.socialmediaproject.dataclass.Comment
 import com.example.socialmediaproject.dataclass.Friend
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
+import com.example.socialmediaproject.fragmentwithoutviewmodel.ViewingImageFragment
 import com.example.socialmediaproject.ui.comment.CommentViewModel
 import com.example.socialmediaproject.ui.home.HomeViewModel
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
@@ -63,6 +65,7 @@ class PostWithCommentFragment : Fragment() {
         viewModel.fetchPost()
         viewModel.listenToStats()
         viewModel.fetchCurrentUserAvatar()
+        viewModel.listenToLikeState()
         return binding.root
     }
 
@@ -91,6 +94,7 @@ class PostWithCommentFragment : Fragment() {
             result->if (result.exists()) {
                 val vm = result.toObject(PostViewModel::class.java)
                 if (vm != null) {
+                    vm.id=result.id
                     post = vm
                 }
             }
@@ -101,6 +105,35 @@ class PostWithCommentFragment : Fragment() {
         viewModel.postData.observe(viewLifecycleOwner) {
             binding.textViewPostContent.text=it.getString("content")
             binding.textViewTimestamp.text=viewModel.getTimeAgo(it.getLong("timestamp")?:0)
+            binding.imageViewLike.setOnClickListener {
+                db.collection("Posts").document(postId).get().addOnSuccessListener {
+                    result->if (result.exists()) {
+                        val vm=result.toObject(PostViewModel::class.java)
+                        vm?.id=result.id
+                        if (vm!=null) {
+                            homeViewModel.toggleLike(vm)
+                        }
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Không có internet!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            val imgUrls=it.get("imageurl") as? List<String> ?: emptyList()
+            if (imgUrls.isNotEmpty()) {
+                val recyclerView=binding.recyclerViewImages
+                val imageAdapter = ImagePostAdapter(imgUrls) { imagePosition ->
+                    val gotofragment= ViewingImageFragment()
+                    val bundle=Bundle()
+                    bundle.putString("IMAGE_URL", imgUrls[imagePosition])
+                    gotofragment.arguments=bundle
+                    findNavController().navigate(R.id.viewingimagefragment, bundle)
+                }
+                recyclerView.layoutManager = LinearLayoutManager(recyclerView.context, LinearLayoutManager.HORIZONTAL, false)
+                recyclerView.setHasFixedSize(true)
+                recyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
+                recyclerView.adapter = imageAdapter
+            }
         }
         viewModel.postUser.observe(viewLifecycleOwner) {
             binding.textViewUsername.text=it.getString("name")
@@ -122,9 +155,6 @@ class PostWithCommentFragment : Fragment() {
             (likecount, commentcount, sharecount)->
                 binding.textViewLikeCount.text=likecount.toString()
                 binding.textViewCommentCount.text=commentcount.toString()
-        }
-        binding.imageViewLike.setOnClickListener {
-            homeViewModel.toggleLike(post)
         }
         binding.imageViewShare.setOnClickListener {
             val senderId = FirebaseAuth.getInstance().currentUser?.uid ?: return@setOnClickListener
@@ -158,6 +188,10 @@ class PostWithCommentFragment : Fragment() {
                 }
             })
             dialog.show(parentFragmentManager, "FriendShareDialog")
+        }
+        viewModel.isPostLiked.observe(viewLifecycleOwner) {
+            if (it) binding.imageViewLike.setImageResource(R.drawable.smallheartedicon)
+            else binding.imageViewLike.setImageResource(R.drawable.smallhearticon)
         }
     }
 

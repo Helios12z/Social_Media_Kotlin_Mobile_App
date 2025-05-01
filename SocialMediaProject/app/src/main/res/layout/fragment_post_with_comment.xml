@@ -148,7 +148,8 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:contentDescription="Comment button"
-                                android:src="@drawable/commentbutton" />
+                                android:src="@drawable/commentbutton"
+                                app:tint="@color/text_color" />
 
                             <TextView
                                 android:id="@+id/textViewCommentCount"
@@ -173,7 +174,8 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:contentDescription="Share button"
-                                android:src="@drawable/sharebuttonicon" />
+                                android:src="@drawable/sharebuttonicon"
+                                app:tint="@color/text_color" />
 
                             <TextView
                                 android:id="@+id/textViewShareCount"

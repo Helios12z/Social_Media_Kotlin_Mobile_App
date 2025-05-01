@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.postwithcomment
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
@@ -53,6 +54,21 @@ class PostWithCommentViewModel: ViewModel() {
                 errorMessage.postValue("Không thể lấy dữ liệu")
             }
         })
+    }
+
+    fun listenToLikeState() {
+        db.collection("Likes")
+            .whereEqualTo("postid", postId)
+            .whereEqualTo("userid", auth.currentUser?.uid)
+            .addSnapshotListener { snap, error ->
+                if (error != null) {
+                    isPostLiked.postValue(false)
+                    return@addSnapshotListener
+                }
+                val liked = snap?.documents?.isNotEmpty() ?: false
+                isPostLiked.postValue(liked)
+                Log.d("PostWithCommentViewModel", "isPostLiked: $liked")
+            }
     }
 
     fun fetchCurrentUserAvatar() {
