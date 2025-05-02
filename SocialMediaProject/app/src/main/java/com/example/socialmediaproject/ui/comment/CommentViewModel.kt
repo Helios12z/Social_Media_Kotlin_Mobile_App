@@ -9,10 +9,6 @@ import com.example.socialmediaproject.service.OneSignalHelper
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.MutableData
-import com.google.firebase.database.Transaction
 import com.google.firebase.database.database
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,7 +19,6 @@ import java.util.regex.Pattern
 class CommentViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-    private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
     private val _comments = MutableLiveData<MutableList<Comment>>(mutableListOf())
     val comments: LiveData<MutableList<Comment>> = _comments
     private var lastVisibleComment: DocumentSnapshot? = null
@@ -35,7 +30,7 @@ class CommentViewModel : ViewModel() {
     val isLoadingLive: LiveData<Boolean> = _isLoadingLive
 
     fun loadInitialComments() {
-        if (isLoading || postId==oldPostId) return
+        if (isLoading) return
         oldPostId=postId
         isLoading = true
         _isLoadingLive.postValue(true)
@@ -324,20 +319,7 @@ class CommentViewModel : ViewModel() {
     }
 
     private fun updateCommentCount(postId: String) {
-        realtimedb.getReference("PostStats").child(postId).runTransaction(object: Transaction.Handler {
-            override fun doTransaction(currentData: MutableData): Transaction.Result {
-                var commentCount = currentData.child("commentcount").getValue(Int::class.java) ?: 0
-                commentCount += 1
-                currentData.child("commentcount").value = commentCount
-                return Transaction.success(currentData)
-            }
-
-            override fun onComplete(
-                error: DatabaseError?,
-                committed: Boolean,
-                currentData: DataSnapshot?
-            ) {}
-        })
+        //do nothing
     }
 
     fun resetComments() {

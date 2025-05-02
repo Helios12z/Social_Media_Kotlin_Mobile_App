@@ -9,6 +9,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import com.google.firebase.firestore.AggregateSource
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
@@ -42,16 +43,26 @@ class PostWithCommentViewModel: ViewModel() {
     }
 
     fun listenToStats() {
-        realtimedb.getReference("PostStats").child(postId)
+        realtimedb.getReference("PostStats")
+        .child(postId)
         .addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val like = snapshot.child("likecount").getValue(Int::class.java) ?: 0
-                val comment = snapshot.child("commentcount").getValue(Int::class.java) ?: 0
                 val share = snapshot.child("sharecount").getValue(Int::class.java) ?: 0
-                statsLiveData.postValue(Triple(like, comment, share))
+                db.collection("comments")
+                    .whereEqualTo("postId", postId)
+                    .count()
+                    .get(AggregateSource.SERVER)
+                    .addOnSuccessListener { aggSnap ->
+                        val commentCount = aggSnap.count.toInt()
+                        statsLiveData.postValue(Triple(like, commentCount, share))
+                    }
+                    .addOnFailureListener {
+                        statsLiveData.postValue(Triple(like, 0, share))
+                    }
             }
             override fun onCancelled(error: DatabaseError) {
-                errorMessage.postValue("Không thể lấy dữ liệu")
+                errorMessage.postValue("Không thể lấy dữ liệu RealtimeDB: ${error.message}")
             }
         })
     }
@@ -67,7 +78,6 @@ class PostWithCommentViewModel: ViewModel() {
                 }
                 val liked = snap?.documents?.isNotEmpty() ?: false
                 isPostLiked.postValue(liked)
-                Log.d("PostWithCommentViewModel", "isPostLiked: $liked")
             }
     }
 
