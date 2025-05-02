@@ -159,46 +159,46 @@ class CommentFragment : Fragment() {
     fun deleteComment(commentId: String) {
         val commentRef = db.collection("comments").document(commentId)
         commentRef.get().addOnSuccessListener { doc ->
-            if (!doc.exists()) {
-                Toast.makeText(requireContext(), "Bình luận không tồn tại", Toast.LENGTH_SHORT).show()
-                return@addOnSuccessListener
-            }
+            if (!doc.exists()) return@addOnSuccessListener
             val parentId = doc.getString("parentId")
             if (parentId == null) {
                 db.collection("comments")
-                    .whereEqualTo("parentId", commentId)
-                    .get()
-                    .addOnSuccessListener { snapshot ->
-                        val batch = db.batch()
-                        for (childDoc in snapshot.documents) {
-                            batch.delete(childDoc.reference)
+                .whereEqualTo("parentId", commentId)
+                .get()
+                .addOnSuccessListener { snap ->
+                    val batch = db.batch()
+                    for (child in snap.documents) {
+                        batch.delete(child.reference)
+                    }
+                    batch.delete(commentRef)
+                    batch.commit()
+                    .addOnSuccessListener {
+                        val idx = adapter.comments.indexOfFirst { it.id == commentId }
+                        if (idx != -1) {
+                            adapter.comments.removeAt(idx)
+                            adapter.notifyItemRemoved(idx)
                         }
-                        batch.delete(commentRef)
-                        batch.commit()
-                            .addOnSuccessListener {
-                                Toast.makeText(requireContext(), "Xóa bình luận thành công", Toast.LENGTH_SHORT).show()
-                                viewModel.loadInitialComments()
-                            }
-                            .addOnFailureListener {
-                                Toast.makeText(requireContext(), "Xóa bình luận thất bại", Toast.LENGTH_SHORT).show()
-                            }
+                        Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
                     }
-                    .addOnFailureListener { e ->
-                        e.printStackTrace()
-                    }
-            } else {
+                }
+            }
+            else {
                 commentRef.delete()
                 .addOnSuccessListener {
-                    Toast.makeText(requireContext(), "Xóa bình luận thành công", Toast.LENGTH_SHORT).show()
-                    viewModel.loadInitialComments()
-                }
-                .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Xóa bình luận thất bại", Toast.LENGTH_SHORT).show()
+                    for ((parentIdx, parent) in adapter.comments.withIndex()) {
+                        val replyIdx = parent.replies.indexOfFirst { it.id == commentId }
+                        if (replyIdx != -1) {
+                            parent.replies.removeAt(replyIdx)
+                            adapter.notifyItemChanged(parentIdx)
+                            break
+                        }
+                    }
+                    Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
                 }
             }
         }
         .addOnFailureListener {
-            Toast.makeText(requireContext(), "Xóa bình luận thất bại", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Xóa thất bại", Toast.LENGTH_SHORT).show()
         }
     }
 
