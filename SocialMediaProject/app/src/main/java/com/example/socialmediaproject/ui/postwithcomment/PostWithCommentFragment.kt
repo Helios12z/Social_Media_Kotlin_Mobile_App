@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -197,6 +198,26 @@ class PostWithCommentFragment : Fragment() {
             if (it) binding.imageViewLike.setImageResource(R.drawable.smallheartedicon)
             else binding.imageViewLike.setImageResource(R.drawable.smallhearticon)
         }
+        parentFragmentManager.setFragmentResultListener(
+            "editCommentRequest",
+            viewLifecycleOwner) { _, bundle ->
+            val editedId = bundle.getString("commentId") ?: return@setFragmentResultListener
+            val newContent = bundle.getString("newContent") ?: return@setFragmentResultListener
+            val idx = adapter.comments.indexOfFirst { it.id == editedId }
+            if (idx != -1) {
+                adapter.comments[idx].content = newContent
+                adapter.notifyItemChanged(idx)
+            } else {
+                for ((parentIdx, parent) in adapter.comments.withIndex()) {
+                    val replyIdx = parent.replies.indexOfFirst { it.id == editedId }
+                    if (replyIdx != -1) {
+                        parent.replies[replyIdx].content = newContent
+                        adapter.notifyItemChanged(parentIdx)
+                        break
+                    }
+                }
+            }
+        }
     }
 
     private fun setupAdapter() {
@@ -270,37 +291,38 @@ class PostWithCommentFragment : Fragment() {
             val parentId = doc.getString("parentId")
             if (parentId == null) {
                 db.collection("comments")
-                    .whereEqualTo("parentId", commentId)
-                    .get()
-                    .addOnSuccessListener { snap ->
-                        val batch = db.batch()
-                        for (child in snap.documents) {
-                            batch.delete(child.reference)
-                        }
-                        batch.delete(commentRef)
-                        batch.commit()
-                            .addOnSuccessListener {
-                                val idx = adapter.comments.indexOfFirst { it.id == commentId }
-                                if (idx != -1) {
-                                    adapter.comments.removeAt(idx)
-                                    adapter.notifyItemRemoved(idx)
-                                }
-                                Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
-                            }
+                .whereEqualTo("parentId", commentId)
+                .get()
+                .addOnSuccessListener { snap ->
+                    val batch = db.batch()
+                    for (child in snap.documents) {
+                        batch.delete(child.reference)
                     }
-            } else {
-                commentRef.delete()
+                    batch.delete(commentRef)
+                    batch.commit()
                     .addOnSuccessListener {
-                        for ((parentIdx, parent) in adapter.comments.withIndex()) {
-                            val replyIdx = parent.replies.indexOfFirst { it.id == commentId }
-                            if (replyIdx != -1) {
-                                parent.replies.removeAt(replyIdx)
-                                adapter.notifyItemChanged(parentIdx)
-                                break
-                            }
+                        val idx = adapter.comments.indexOfFirst { it.id == commentId }
+                        if (idx != -1) {
+                            adapter.comments.removeAt(idx)
+                            adapter.notifyItemRemoved(idx)
                         }
                         Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
                     }
+                }
+            }
+            else {
+                commentRef.delete()
+                .addOnSuccessListener {
+                    for ((parentIdx, parent) in adapter.comments.withIndex()) {
+                        val replyIdx = parent.replies.indexOfFirst { it.id == commentId }
+                        if (replyIdx != -1) {
+                            parent.replies.removeAt(replyIdx)
+                            adapter.notifyItemChanged(parentIdx)
+                            break
+                        }
+                    }
+                    Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
+                }
             }
         }
         .addOnFailureListener {
@@ -314,6 +336,7 @@ class PostWithCommentFragment : Fragment() {
         bundle.putString("avatarUrl", comment.avatarurl)
         bundle.putString("content", comment.content)
         bundle.putString("time", getTimeAgo(comment.timestamp))
+        bundle.putString("username", comment.username)
         findNavController().navigate(R.id.navigation_edit_comment, bundle)
     }
 
@@ -380,8 +403,15 @@ class PostWithCommentFragment : Fragment() {
 
     private fun observeComments() {
         commentViewModel.comments.observe(viewLifecycleOwner) { newComments ->
-            Log.d("PostWithComment", "loaded comments: ${newComments.size}")
-            adapter.updateFullComments(newComments)
+            if (newComments.isEmpty()) {
+                binding.rvComments.isVisible = false
+                binding.noCommentsLayout.isVisible = true
+            }
+            else {
+                binding.rvComments.isVisible = true
+                binding.noCommentsLayout.isVisible = false
+                adapter.updateFullComments(newComments)
+            }
         }
     }
 

@@ -33,6 +33,34 @@
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         tools:listitem="@layout/item_comment" />
 
+    <LinearLayout
+        android:id="@+id/noCommentsLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintBottom_toTopOf="@id/commentInputLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/no_comment_icon"
+            android:contentDescription="No comments"
+            app:tint="@color/text_color" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chưa có comment nào"
+            android:textSize="14sp"
+            android:textColor="@color/text_color"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/commentInputLayout"
         android:layout_width="0dp"

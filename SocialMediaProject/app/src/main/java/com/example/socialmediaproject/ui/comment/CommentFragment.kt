@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -45,6 +46,8 @@ class CommentFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+        postId = arguments?.getString("post_id") ?: ""
+        viewModel.postId = postId
         return binding.root
     }
 
@@ -68,8 +71,6 @@ class CommentFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        postId = arguments?.getString("post_id") ?: return
-        viewModel.postId = postId
         viewModel.isLoadingLive.observe(viewLifecycleOwner) { isLoading ->
             val fm = childFragmentManager
             val existing = fm.findFragmentByTag("loading") as? LoadingDialogFragment
@@ -90,6 +91,26 @@ class CommentFragment : Fragment() {
         observeComments()
         viewModel.loadInitialComments()
         setupLoadMore()
+        parentFragmentManager.setFragmentResultListener(
+            "editCommentRequest",
+            viewLifecycleOwner) { _, bundle ->
+            val editedId = bundle.getString("commentId") ?: return@setFragmentResultListener
+            val newContent = bundle.getString("newContent") ?: return@setFragmentResultListener
+            val idx = adapter.comments.indexOfFirst { it.id == editedId }
+            if (idx != -1) {
+                adapter.comments[idx].content = newContent
+                adapter.notifyItemChanged(idx)
+            } else {
+                for ((parentIdx, parent) in adapter.comments.withIndex()) {
+                    val replyIdx = parent.replies.indexOfFirst { it.id == editedId }
+                    if (replyIdx != -1) {
+                        parent.replies[replyIdx].content = newContent
+                        adapter.notifyItemChanged(parentIdx)
+                        break
+                    }
+                }
+            }
+        }
     }
 
     private fun setupAdapter() {
@@ -208,6 +229,7 @@ class CommentFragment : Fragment() {
         bundle.putString("avatarUrl", comment.avatarurl)
         bundle.putString("content", comment.content)
         bundle.putString("time", getTimeAgo(comment.timestamp))
+        bundle.putString("username", comment.username)
         findNavController().navigate(R.id.navigation_edit_comment, bundle)
     }
 
@@ -274,7 +296,15 @@ class CommentFragment : Fragment() {
 
     private fun observeComments() {
         viewModel.comments.observe(viewLifecycleOwner) { newComments ->
-            adapter.updateFullComments(newComments)
+            if (newComments.isEmpty()) {
+                binding.rvComments.isVisible = false
+                binding.noCommentsLayout.isVisible = true
+            }
+            else {
+                binding.rvComments.isVisible = true
+                binding.noCommentsLayout.isVisible = false
+                adapter.updateFullComments(newComments)
+            }
         }
     }
 

@@ -30,11 +30,13 @@ class CommentViewModel : ViewModel() {
     private var isLoading = false
     private val pageSize = 6
     var postId: String = ""
+    var oldPostId: String = ""
     private val _isLoadingLive = MutableLiveData<Boolean>()
     val isLoadingLive: LiveData<Boolean> = _isLoadingLive
 
     fun loadInitialComments() {
-        if (isLoading || (_comments.value?.isNotEmpty() == true)) return
+        if (isLoading || postId==oldPostId) return
+        oldPostId=postId
         isLoading = true
         _isLoadingLive.postValue(true)
         db.collection("comments")

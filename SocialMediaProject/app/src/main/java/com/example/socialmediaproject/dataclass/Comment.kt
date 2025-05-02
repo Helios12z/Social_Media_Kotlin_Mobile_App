@@ -3,7 +3,7 @@ package com.example.socialmediaproject.dataclass
 import com.google.firebase.firestore.Exclude
 
 data class Comment(val id: String = "",
-                   val content: String = "",
+                   var content: String = "",
                    val userId: String = "",
                    val timestamp: Long = System.currentTimeMillis(),
                    val parentId: String? = null,

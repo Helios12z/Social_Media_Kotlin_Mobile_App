@@ -6,9 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.FragmentEditCommentBinding
+import com.example.socialmediaproject.ui.comment.CommentViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 
 class EditCommentFragment : Fragment() {
@@ -54,6 +57,13 @@ class EditCommentFragment : Fragment() {
             }
             else {
                 FirebaseFirestore.getInstance().collection("comments").document(commentId).update("content", newContent).addOnSuccessListener {
+                    parentFragmentManager.setFragmentResult(
+                        "editCommentRequest",
+                        bundleOf(
+                            "commentId" to commentId,
+                            "newContent" to newContent
+                        )
+                    )
                     Toast.makeText(requireContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show()
                     parentFragmentManager.popBackStack()
                 }
