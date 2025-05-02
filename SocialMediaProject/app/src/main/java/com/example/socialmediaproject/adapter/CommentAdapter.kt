@@ -29,6 +29,8 @@ class CommentAdapter(
     private val highlightCommentId: String? = null,
     private val onCommentClicked: (String) -> Unit,
     private val expandedCommentIds: MutableSet<String>,
+    private val onDeleteCommentClicked: (Comment) -> Unit,
+    private val onEditCommentClicked: (Comment) -> Unit
 ) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
     inner class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -103,7 +105,9 @@ class CommentAdapter(
                 bundle.putString("wall_user_id", userId)
                 findNavController(holder.itemView).navigate(R.id.navigation_mainpage, bundle)
             },
-            highlightReplyId = highlightCommentId
+            highlightReplyId = highlightCommentId,
+            onDeleteReplyClicked = onDeleteCommentClicked,
+            onEditReplyClicked = onEditCommentClicked
         )
         holder.rvReplies.adapter = replyAdapter
         holder.rvReplies.layoutManager = LinearLayoutManager(holder.itemView.context)
@@ -129,6 +133,12 @@ class CommentAdapter(
         if (comment.userId==auth.currentUser?.uid) {
             holder.deleteComment.visibility=View.VISIBLE
             holder.editComment.visibility=View.VISIBLE
+        }
+        holder.deleteComment.setOnClickListener {
+            onDeleteCommentClicked(comment)
+        }
+        holder.editComment.setOnClickListener {
+            onEditCommentClicked(comment)
         }
     }
 

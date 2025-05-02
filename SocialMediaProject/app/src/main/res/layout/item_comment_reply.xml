@@ -89,7 +89,7 @@
             android:padding="4dp"
             android:text="Thích"
             android:textColor="@color/text_color"
-            android:textSize="14sp" />
+            android:textSize="10sp" />
 
         <TextView
             android:id="@+id/tvReplyLikeCount"
@@ -99,7 +99,7 @@
             android:padding="4dp"
             android:text="5"
             android:textColor="@color/text_color"
-            android:textSize="14sp" />
+            android:textSize="10sp" />
 
         <TextView
             android:id="@+id/btnReplyToReply"
@@ -112,7 +112,7 @@
             android:padding="4dp"
             android:text="Trả lời"
             android:textColor="@color/text_color"
-            android:textSize="14sp" />
+            android:textSize="10sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -121,7 +121,7 @@
             android:textColor="@color/text_color"
             android:visibility="gone"
             android:text="Sửa"
-            android:textSize="14dp"
+            android:textSize="10dp"
             android:padding="4dp"
             android:layout_marginStart="16dp"/>
 
@@ -130,9 +130,9 @@
             android:layout_height="wrap_content"
             android:id="@+id/deleteReply"
             android:textColor="@color/text_color"
-            android:text="Sửa"
+            android:text="Xóa"
             android:visibility="gone"
-            android:textSize="14dp"
+            android:textSize="10dp"
             android:padding="4dp"
             android:layout_marginStart="16dp"/>
     </LinearLayout>

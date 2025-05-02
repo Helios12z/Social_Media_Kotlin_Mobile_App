@@ -27,7 +27,9 @@ class ReplyAdapter(
     private val onCommentClicked: (String) -> Unit,
     private val level: Int = 0,
     private val maxLevel: Int = 3,
-    private val highlightReplyId: String?
+    private val highlightReplyId: String?,
+    private val onDeleteReplyClicked: (Comment) -> Unit,
+    private val onEditReplyClicked: (Comment) -> Unit
 ) : RecyclerView.Adapter<ReplyAdapter.ReplyViewHolder>() {
 
     inner class ReplyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -61,7 +63,7 @@ class ReplyAdapter(
                 }
             }
         }
-        if (reply.userId==currentUserId) {
+        if (reply.userId == currentUserId) {
             holder.deleteReply.visibility = View.VISIBLE
             holder.editReply.visibility = View.VISIBLE
         }
@@ -112,12 +114,20 @@ class ReplyAdapter(
                 onCommentClicked = onCommentClicked,
                 level = level + 1,
                 maxLevel = maxLevel,
-                highlightReplyId=highlightReplyId
+                highlightReplyId = highlightReplyId,
+                onDeleteReplyClicked = onDeleteReplyClicked,
+                onEditReplyClicked = onEditReplyClicked
             )
             nestedRecyclerView.adapter = nestedAdapter
             nestedRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
             nestedRecyclerView.isNestedScrollingEnabled = false
             holder.nestedRepliesContainer.addView(nestedRecyclerView)
+        }
+        holder.deleteReply.setOnClickListener {
+            onDeleteReplyClicked(reply)
+        }
+        holder.editReply.setOnClickListener {
+            onEditReplyClicked(reply)
         }
     }
 

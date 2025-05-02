@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -31,6 +32,9 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class PostWithCommentFragment : Fragment() {
     private lateinit var binding: FragmentPostWithCommentBinding
@@ -236,10 +240,98 @@ class PostWithCommentFragment : Fragment() {
                 bundle.putString("wall_user_id", userId)
                 findNavController().navigate(R.id.navigation_mainpage, bundle)
             },
-            expandedCommentIds = expandedCommentIds
+            expandedCommentIds = expandedCommentIds,
+            onDeleteCommentClicked = { comment ->
+                confirmDeleteComment(comment.id)
+            },
+            onEditCommentClicked = { comment ->
+                editComment(comment)
+            }
         )
         binding.rvComments.adapter = adapter
         binding.rvComments.layoutManager = LinearLayoutManager(requireContext())
+    }
+
+    private fun confirmDeleteComment(commentId: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Xác nhận xóa")
+            .setMessage("Bạn có chắc muốn xóa bình luận này không?")
+            .setPositiveButton("Có") { _, _ ->
+                deleteComment(commentId)
+            }
+            .setNegativeButton("Không", null)
+            .show()
+    }
+
+    fun deleteComment(commentId: String) {
+        val commentRef = db.collection("comments").document(commentId)
+        commentRef.get().addOnSuccessListener { doc ->
+            if (!doc.exists()) {
+                Toast.makeText(requireContext(), "Bình luận không tồn tại", Toast.LENGTH_SHORT).show()
+                return@addOnSuccessListener
+            }
+            val parentId = doc.getString("parentId")
+            if (parentId == null) {
+                db.collection("comments")
+                    .whereEqualTo("parentId", commentId)
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        val batch = db.batch()
+                        for (childDoc in snapshot.documents) {
+                            batch.delete(childDoc.reference)
+                        }
+                        batch.delete(commentRef)
+                        batch.commit()
+                            .addOnSuccessListener {
+                                Toast.makeText(requireContext(), "Xóa bình luận thành công", Toast.LENGTH_SHORT).show()
+                                commentViewModel.loadInitialComments()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(requireContext(), "Xóa bình luận thất bại", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                    .addOnFailureListener { e ->
+                        e.printStackTrace()
+                    }
+            } else {
+                commentRef.delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Xóa bình luận thành công", Toast.LENGTH_SHORT).show()
+                        commentViewModel.loadInitialComments()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), "Xóa bình luận thất bại", Toast.LENGTH_SHORT).show()
+                    }
+            }
+        }
+        .addOnFailureListener {
+            Toast.makeText(requireContext(), "Xóa bình luận thất bại", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun editComment(comment: Comment) {
+        val bundle = Bundle()
+        bundle.putString("commentId", comment.id)
+        bundle.putString("avatarUrl", comment.avatarurl)
+        bundle.putString("content", comment.content)
+        bundle.putString("time", getTimeAgo(comment.timestamp))
+        findNavController().navigate(R.id.navigation_edit_comment, bundle)
+    }
+
+    private fun getTimeAgo(timestamp: Long): String {
+        val diff = System.currentTimeMillis() - timestamp
+        val minutes = diff / (60 * 1000)
+        val hours = minutes / 60
+        val days = hours / 24
+        return when {
+            minutes < 60 -> "$minutes phút trước"
+            hours < 24 -> "$hours giờ trước"
+            days < 7 -> "$days ngày trước"
+            else -> {
+                val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                sdf.format(Date(timestamp))
+            }
+        }
     }
 
     private fun setupLoadMore() {

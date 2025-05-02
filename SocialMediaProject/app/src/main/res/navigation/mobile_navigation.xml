@@ -109,4 +109,10 @@
             android:name="user_id"
             app:argType="string"/>
     </fragment>
+
+    <fragment android:id="@+id/navigation_edit_comment"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.EditCommentFragment"
+        android:label="EditComment"
+        tools:layout="@layout/fragment_edit_comment">
+    </fragment>
 </navigation>
