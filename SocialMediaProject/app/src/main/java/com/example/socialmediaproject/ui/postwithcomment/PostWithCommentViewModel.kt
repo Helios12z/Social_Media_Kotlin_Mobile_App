@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.ui.postwithcomment
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
@@ -62,7 +61,7 @@ class PostWithCommentViewModel: ViewModel() {
                     }
             }
             override fun onCancelled(error: DatabaseError) {
-                errorMessage.postValue("Không thể lấy dữ liệu RealtimeDB: ${error.message}")
+                errorMessage.postValue("Không thể lấy dữ liệu: ${error.message}")
             }
         })
     }
