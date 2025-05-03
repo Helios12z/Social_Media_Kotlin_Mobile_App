@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -42,7 +43,7 @@ class PostWithCommentFragment : Fragment() {
     private lateinit var postId: String
     private lateinit var commentId: String
     private lateinit var viewModel: PostWithCommentViewModel
-    private lateinit var commentViewModel: CommentViewModel
+    private val commentViewModel: CommentViewModel by viewModels()
     private lateinit var homeViewModel: HomeViewModel
     private var replyingTo: Comment? = null
     private val db=FirebaseFirestore.getInstance()
@@ -60,7 +61,6 @@ class PostWithCommentFragment : Fragment() {
         postId=arguments?.getString("post_id")?:""
         commentId=arguments?.getString("comment_id")?:""
         viewModel=ViewModelProvider(requireActivity())[PostWithCommentViewModel::class.java]
-        commentViewModel=ViewModelProvider(requireActivity())[CommentViewModel::class.java]
         commentViewModel.postId=postId
         homeViewModel=ViewModelProvider(requireActivity())[HomeViewModel::class.java]
         viewModel.postId=postId
