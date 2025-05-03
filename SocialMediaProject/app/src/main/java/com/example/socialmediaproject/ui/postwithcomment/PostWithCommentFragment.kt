@@ -126,6 +126,7 @@ class PostWithCommentFragment : Fragment() {
             }
             val imgUrls=it.get("imageurl") as? List<String> ?: emptyList()
             if (imgUrls.isNotEmpty()) {
+                binding.recyclerViewImages.visibility=View.VISIBLE
                 val recyclerView=binding.recyclerViewImages
                 val imageAdapter = ImagePostAdapter(imgUrls) { imagePosition ->
                     val gotofragment= ViewingImageFragment()
@@ -138,6 +139,9 @@ class PostWithCommentFragment : Fragment() {
                 recyclerView.setHasFixedSize(true)
                 recyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
                 recyclerView.adapter = imageAdapter
+            }
+            else {
+                binding.recyclerViewImages.visibility = View.GONE
             }
         }
         viewModel.postUser.observe(viewLifecycleOwner) {
