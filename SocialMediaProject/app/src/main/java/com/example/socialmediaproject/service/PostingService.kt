@@ -111,11 +111,9 @@ class PostingService : Service() {
                 try {
                     updateNotification("Đang phân tích nội dung...")
                     val response = AIService.classifyPost(content, categories) ?: ""
-                    Log.d("AI_RESPONSE", response.ifEmpty { "Không có kết quả" })
                     val categoryList = response.split(",")
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
-                    Log.d("ExtractedCategories", categoryList.joinToString())
                     val userid = auth.currentUser?.uid
                     val post = hashMapOf(
                         "userid" to userid,
@@ -137,7 +135,7 @@ class PostingService : Service() {
                                 db.collection("Categories")
                                 .add(newCategory)
                                 .addOnSuccessListener {
-                                    Log.d("UploadCategory", "Đã thêm danh mục mới: $categoryName")
+
                                 }
                             }
                         }
@@ -224,8 +222,6 @@ class PostingService : Service() {
         val databaseRef = db.getReference("PostStats").child(postId)
         val postStats = mapOf(
             "likecount" to 0,
-            "sharecount" to 0,
-            "commentcount" to 0,
         )
         databaseRef.setValue(postStats)
         .addOnSuccessListener {
@@ -233,7 +229,7 @@ class PostingService : Service() {
             callback()
         }
         .addOnFailureListener { e ->
-            Log.e("RealtimeDB", "Lỗi khi thêm dữ liệu vào Realtime Database", e)
+            e.printStackTrace()
             callback()
         }
     }

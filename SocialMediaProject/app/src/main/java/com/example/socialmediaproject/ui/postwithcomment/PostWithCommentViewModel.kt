@@ -47,17 +47,16 @@ class PostWithCommentViewModel: ViewModel() {
         .addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val like = snapshot.child("likecount").getValue(Int::class.java) ?: 0
-                val share = snapshot.child("sharecount").getValue(Int::class.java) ?: 0
                 db.collection("comments")
                     .whereEqualTo("postId", postId)
                     .count()
                     .get(AggregateSource.SERVER)
                     .addOnSuccessListener { aggSnap ->
                         val commentCount = aggSnap.count.toInt()
-                        statsLiveData.postValue(Triple(like, commentCount, share))
+                        statsLiveData.postValue(Triple(like, commentCount, 0))
                     }
                     .addOnFailureListener {
-                        statsLiveData.postValue(Triple(like, 0, share))
+                        statsLiveData.postValue(Triple(like, 0, 0))
                     }
             }
             override fun onCancelled(error: DatabaseError) {

@@ -123,7 +123,6 @@ class MainPageViewModel : ViewModel() {
                         val userDoc = (results[0] as Task<DocumentSnapshot>).result
                         val ref = (results[1] as Task<DataSnapshot>).result
                         val likeResults = (results[2] as Task<QuerySnapshot>).result
-
                         val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
                         val sharecount = ref.child("sharecount").getValue(Int::class.java) ?: 0
                         val commentcount = ref.child("commentcount").getValue(Int::class.java) ?: 0

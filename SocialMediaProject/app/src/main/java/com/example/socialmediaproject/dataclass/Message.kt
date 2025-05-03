@@ -11,5 +11,6 @@ data class Message(
     val read: Boolean = false,
     val removed: Boolean = false,
     val link: Boolean = false,
+    val picture: Boolean=false,
     val postId: String = ""
 )
