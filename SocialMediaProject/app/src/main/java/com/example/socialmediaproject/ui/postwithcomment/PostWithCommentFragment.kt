@@ -52,6 +52,7 @@ class PostWithCommentFragment : Fragment() {
     private var recyclerViewState: Parcelable? = null
     private val expandedCommentIds = mutableSetOf<String>()
     private lateinit var post: PostViewModel
+    private var hasLoadedComments = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -93,7 +94,10 @@ class PostWithCommentFragment : Fragment() {
         setupAdapter()
         setupUI()
         observeComments()
-        commentViewModel.loadInitialComments()
+        if (!hasLoadedComments) {
+            commentViewModel.loadInitialComments()
+            hasLoadedComments=true 
+        }
         setupLoadMore()
         db.collection("Posts").document(postId).get().addOnSuccessListener {
             result->if (result.exists()) {
