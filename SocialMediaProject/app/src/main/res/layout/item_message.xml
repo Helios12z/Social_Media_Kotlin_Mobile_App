@@ -45,6 +45,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0">
 
+            <ImageView
+                android:id="@+id/ivReceivedImage"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:adjustViewBounds="true"
+                android:contentDescription="Ảnh nhận"/>
+
             <TextView
                 android:id="@+id/tvReceivedMessage"
                 android:layout_width="match_parent"
@@ -94,6 +103,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_max="240dp">
+
+            <ImageView
+                android:id="@+id/ivSentImage"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:adjustViewBounds="true"
+                android:contentDescription="Ảnh gửi"/>
 
             <TextView
                 android:id="@+id/tvSentMessage"

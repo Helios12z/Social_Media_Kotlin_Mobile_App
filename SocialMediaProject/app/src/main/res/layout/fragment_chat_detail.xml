@@ -94,6 +94,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="8dp">
+
+            <TextView
+                android:id="@+id/tvLinkLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Link"
+                android:textColor="@android:color/holo_orange_light"
+                android:textSize="14sp"
+                android:visibility="gone"
+                android:layout_marginBottom="4dp"
+                app:layout_constraintStart_toStartOf="@id/etMessage"
+                app:layout_constraintBottom_toTopOf="@id/etMessage" />
+
+            <ImageButton
+                android:id="@+id/btnCancelLink"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Hủy Link"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/etMessage"
+                app:layout_constraintBottom_toTopOf="@id/etMessage"
+                android:layout_marginBottom="4dp" />
+
             <ImageButton
                 android:id="@+id/btnAttach"
                 android:layout_width="40dp"
@@ -104,8 +129,8 @@
                 android:src="@drawable/attachicon"
                 app:tint="?attr/colorControlNormal"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintTop_toTopOf="@id/etMessage"
+                app:layout_constraintBottom_toBottomOf="@id/etMessage" />
 
             <EditText
                 android:id="@+id/etMessage"
@@ -135,8 +160,8 @@
                 android:src="@drawable/sendicon"
                 app:tint="@color/purple_500"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintTop_toTopOf="@id/etMessage"
+                app:layout_constraintBottom_toBottomOf="@id/etMessage" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

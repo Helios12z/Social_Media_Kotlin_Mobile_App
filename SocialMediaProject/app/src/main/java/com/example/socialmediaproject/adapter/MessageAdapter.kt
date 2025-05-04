@@ -23,7 +23,8 @@ import java.util.Locale
 class MessageAdapter(private val currentUserId: String,
                      private val senderAvatarUrl: String?,
                      private val onMessageLongClick: (Message) -> Unit,
-                     private val onLinkClick: (postId: String, commentId: String?, messageContent: String?) -> Unit): ListAdapter<Message, MessageAdapter.MessageViewHolder>(DIFF_CALLBACK) {
+                     private val onLinkClick: (postId: String, commentId: String?, messageContent: String?) -> Unit,
+                     private val onPictureClick: (imageUrl: String) -> Unit): ListAdapter<Message, MessageAdapter.MessageViewHolder>(DIFF_CALLBACK) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Message>() {
             override fun areItemsTheSame(oldItem: Message, newItem: Message): Boolean =
@@ -42,6 +43,8 @@ class MessageAdapter(private val currentUserId: String,
         val tvReceivedMessage = view.findViewById<TextView>(R.id.tvReceivedMessage)
         val tvReceivedTime = view.findViewById<TextView>(R.id.tvReceivedTime)
         val ivSenderAvatar = view.findViewById<ImageView>(R.id.ivSenderAvatar)
+        val ivSentImage = view.findViewById<ImageView>(R.id.ivSentImage)
+        val ivReceivedImage = view.findViewById<ImageView>(R.id.ivReceivedImage)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
@@ -129,6 +132,30 @@ class MessageAdapter(private val currentUserId: String,
                 }
             }
             return
+        }
+        if (message.picture) {
+            val tv = if (isSent) holder.tvSentMessage else holder.tvReceivedMessage
+            tv.apply {
+                isClickable=true
+                isLongClickable=true
+                setOnLongClickListener {
+                    onMessageLongClick(message)
+                    true
+                }
+                setOnClickListener {
+                    onPictureClick(message.imageUrl)
+                }
+                tv.visibility=View.GONE
+                val iv = if (isSent) holder.ivSentImage else holder.ivReceivedImage
+                iv.visibility=View.VISIBLE
+                Glide.with(holder.itemView.context).load(message.imageUrl).into(iv)
+            }
+        }
+        else {
+            holder.tvSentMessage.visibility=View.VISIBLE
+            holder.tvReceivedMessage.visibility=View.VISIBLE
+            holder.ivSentImage.visibility=View.GONE
+            holder.ivReceivedImage.visibility=View.GONE
         }
     }
 }

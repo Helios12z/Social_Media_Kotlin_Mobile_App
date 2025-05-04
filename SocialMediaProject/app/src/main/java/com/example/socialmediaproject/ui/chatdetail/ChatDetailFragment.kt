@@ -10,9 +10,11 @@ import android.os.Bundle
 import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -97,6 +99,13 @@ class ChatDetailFragment : Fragment() {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(messageContent))
                 startActivity(intent)
             }
+        },
+        onPictureClick = {
+            imageUrl->if (imageUrl!="") {
+                val bundle=Bundle()
+                bundle.putString("IMAGE_URL", imageUrl)
+                findNavController().navigate(R.id.viewingimagefragment, bundle)
+            }
         })
         binding.recyclerViewMessages.adapter = adapter
         viewModel.messages.observe(viewLifecycleOwner) { messages ->
@@ -138,6 +147,36 @@ class ChatDetailFragment : Fragment() {
                     askVectorAI(chatId, prompt)
                 }
             }
+        }
+        binding.btnAttach.setOnClickListener {
+            val popup=PopupMenu(requireContext(), binding.btnAttach)
+            val menuInflater: MenuInflater = popup.menuInflater
+            menuInflater.inflate(R.menu.attachment_menu, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.btnAttachLink -> {
+                        binding.etMessage.setBackgroundResource(R.drawable.border_yellow)
+                        binding.etMessage.setTextColor(resources.getColor(android.R.color.holo_orange_light))
+                        binding.etMessage.hint = "Chỉ nhập Url Link vào đây..."
+                        binding.btnCancelLink.visibility=View.VISIBLE
+                        binding.tvLinkLabel.visibility=View.VISIBLE
+                        true
+                    }
+                    R.id.btnAttachImage -> {
+
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+        binding.btnCancelLink.setOnClickListener {
+            binding.btnCancelLink.visibility = View.GONE
+            binding.tvLinkLabel.visibility=View.GONE
+            binding.etMessage.setBackgroundResource(R.drawable.rounded_edittext)
+            binding.etMessage.setTextColor(resources.getColor(R.color.text_color))
+            binding.etMessage.hint = "Nhập tin nhắn..."
         }
         if (chatUser.id!=Constant.ChatConstants.VECTOR_AI_ID) checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
         listenUserActivity(chatUser.id)
