@@ -45,6 +45,7 @@ class ChatDetailFragment : Fragment() {
     private lateinit var chatUser: ChatUser
     private val auth=FirebaseAuth.getInstance()
     private var hasInitialLoaded = false
+    private var isLink: Boolean=false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -138,7 +139,8 @@ class ChatDetailFragment : Fragment() {
                     senderId = currentUserId,
                     receiverId = chatUser.id,
                     text = text,
-                    timestamp = Timestamp.now()
+                    timestamp = Timestamp.now(),
+                    link = isLink
                 )
                 viewModel.sendMessage(chatId, message)
                 binding.etMessage.setText("")
@@ -155,6 +157,7 @@ class ChatDetailFragment : Fragment() {
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.btnAttachLink -> {
+                        isLink=true
                         binding.etMessage.setBackgroundResource(R.drawable.border_yellow)
                         binding.etMessage.setTextColor(resources.getColor(android.R.color.holo_orange_light))
                         binding.etMessage.hint = "Chỉ nhập Url Link vào đây..."
@@ -172,6 +175,7 @@ class ChatDetailFragment : Fragment() {
             popup.show()
         }
         binding.btnCancelLink.setOnClickListener {
+            isLink=false
             binding.btnCancelLink.visibility = View.GONE
             binding.tvLinkLabel.visibility=View.GONE
             binding.etMessage.setBackgroundResource(R.drawable.rounded_edittext)
@@ -179,6 +183,7 @@ class ChatDetailFragment : Fragment() {
             binding.etMessage.hint = "Nhập tin nhắn..."
         }
         if (chatUser.id!=Constant.ChatConstants.VECTOR_AI_ID) checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
+        else binding.btnAttach.visibility=View.GONE
         listenUserActivity(chatUser.id)
     }
 
