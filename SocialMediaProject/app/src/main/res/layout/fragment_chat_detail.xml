@@ -132,6 +132,41 @@
                 app:layout_constraintTop_toTopOf="@id/etMessage"
                 app:layout_constraintBottom_toBottomOf="@id/etMessage" />
 
+            <androidx.cardview.widget.CardView
+                android:id="@+id/previewImageCard"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_marginHorizontal="8dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toEndOf="@id/btnAttach"
+                app:layout_constraintEnd_toStartOf="@id/btnCancelImage"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <ImageView
+                    android:id="@+id/ivPreviewImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Ảnh xem trước" />
+            </androidx.cardview.widget.CardView>
+
+            <ImageButton
+                android:id="@+id/btnCancelImage"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Hủy ảnh"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:visibility="gone"
+                app:tint="@android:color/holo_red_light"
+                app:layout_constraintEnd_toStartOf="@id/btnSend"
+                app:layout_constraintTop_toTopOf="@id/previewImageCard"
+                app:layout_constraintBottom_toBottomOf="@id/previewImageCard" />
+
             <EditText
                 android:id="@+id/etMessage"
                 android:layout_width="0dp"
@@ -160,8 +195,8 @@
                 android:src="@drawable/sendicon"
                 app:tint="@color/purple_500"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/etMessage"
-                app:layout_constraintBottom_toBottomOf="@id/etMessage" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

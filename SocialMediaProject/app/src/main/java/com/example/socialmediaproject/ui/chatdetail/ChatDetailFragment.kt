@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.chatdetail
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -7,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.fragment.app.viewModels
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -20,6 +22,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.Constant
 import com.example.socialmediaproject.R
@@ -28,6 +33,7 @@ import com.example.socialmediaproject.databinding.FragmentChatDetailBinding
 import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.service.AIService
+import com.example.socialmediaproject.service.UploadChatImgeWorker
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
@@ -39,6 +45,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+private const val REQUEST_IMAGE_PICK = 100
 class ChatDetailFragment : Fragment() {
     private lateinit var binding: FragmentChatDetailBinding
     private val viewModel: ChatDetailViewModel by viewModels()
@@ -46,6 +53,7 @@ class ChatDetailFragment : Fragment() {
     private val auth=FirebaseAuth.getInstance()
     private var hasInitialLoaded = false
     private var isLink: Boolean=false
+    private var selectedImageUri: Uri? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -128,6 +136,21 @@ class ChatDetailFragment : Fragment() {
             }
         })
         binding.btnSend.setOnClickListener {
+            selectedImageUri?.let { uri ->
+                val workData = workDataOf(
+                    "imageUrl" to uri.toString(),
+                    "id" to chatId,
+                    "senderId" to currentUserId,
+                    "receiverId" to chatUser.id,
+                )
+                val uploadWork = OneTimeWorkRequestBuilder<UploadChatImgeWorker>()
+                    .setInputData(workData)
+                    .build()
+                WorkManager.getInstance(requireContext()).enqueue(uploadWork)
+                cancelImagePreview()
+                selectedImageUri=null
+                return@setOnClickListener
+            }
             val text = binding.etMessage.text.toString().trim()
             if (text.isEmpty()) return@setOnClickListener
             if (chatUser.id==Constant.ChatConstants.VECTOR_AI_ID) {
@@ -166,7 +189,7 @@ class ChatDetailFragment : Fragment() {
                         true
                     }
                     R.id.btnAttachImage -> {
-
+                        openGallery()
                         true
                     }
                     else -> false
@@ -181,6 +204,9 @@ class ChatDetailFragment : Fragment() {
             binding.etMessage.setBackgroundResource(R.drawable.rounded_edittext)
             binding.etMessage.setTextColor(resources.getColor(R.color.text_color))
             binding.etMessage.hint = "Nhập tin nhắn..."
+        }
+        binding.btnCancelImage.setOnClickListener {
+            cancelImagePreview()
         }
         if (chatUser.id!=Constant.ChatConstants.VECTOR_AI_ID) checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
         else binding.btnAttach.visibility=View.GONE
@@ -366,5 +392,38 @@ class ChatDetailFragment : Fragment() {
                 binding.activeStatus.text = statusText
             }
         }
+    }
+
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "image/*"
+        startActivityForResult(intent, REQUEST_IMAGE_PICK)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK) {
+            data?.data?.let { imageUri ->
+                showImagePreview(imageUri)
+            }
+        }
+    }
+
+    private fun showImagePreview(imageUri: Uri) {
+        binding.previewImageCard.visibility = View.VISIBLE
+        binding.btnCancelImage.visibility = View.VISIBLE
+        binding.etMessage.visibility = View.GONE
+        Glide.with(requireContext())
+            .load(imageUri)
+            .centerCrop()
+            .into(binding.ivPreviewImage)
+        selectedImageUri = imageUri
+    }
+
+    private fun cancelImagePreview() {
+        binding.previewImageCard.visibility = View.GONE
+        binding.btnCancelImage.visibility = View.GONE
+        binding.etMessage.visibility = View.VISIBLE
+        selectedImageUri = null
     }
 }
