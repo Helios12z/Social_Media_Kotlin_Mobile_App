@@ -18,38 +18,39 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
+import kotlin.math.ln
 
 class HomeViewModel : ViewModel() {
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
-
     private val _postlist=MutableLiveData<List<PostViewModel>>()
     val postlist: LiveData<List<PostViewModel>> = _postlist
-
     private val _isloading= MutableLiveData<Boolean>()
     val isloading: LiveData<Boolean> = _isloading
+    private var userFriends = listOf<String>()
+    private var currentUserId = ""
 
     init {
         loadPosts()
     }
 
     private fun loadPosts() {
-        _isloading.value=true
+        _isloading.value = true
         auth = FirebaseAuth.getInstance()
-        db=FirebaseFirestore.getInstance()
+        db = FirebaseFirestore.getInstance()
         val userId = auth.currentUser?.uid ?: ""
-        getUserInterests(userId) { userInterests ->
-            Log.d("USER INTERESTS: ", userInterests.toString())
-            if (userInterests.isEmpty()) {
-                _isloading.value=false
-                _postlist.value= emptyList()
-                return@getUserInterests
-            }
-            val cleanedUserInterests = userInterests.map { it.trim() }
-            db.collection("Posts")
-                .whereArrayContainsAny("category", cleanedUserInterests)
-                .whereEqualTo("privacy", "Công khai")
+        currentUserId = userId
+        getUserFriends(userId) { friends ->
+            userFriends = friends
+            getUserInterests(userId) { userInterests ->
+                if (userInterests.isEmpty()) {
+                    _isloading.value = false
+                    _postlist.value = emptyList()
+                    return@getUserInterests
+                }
+                val cleanedUserInterests = userInterests.map { it.trim() }
+                db.collection("Posts")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener { documents ->
@@ -71,8 +72,6 @@ class HomeViewModel : ViewModel() {
                             val ref = (results[1] as Task<DataSnapshot>).result
                             val likeResults = (results[2] as Task<QuerySnapshot>).result
                             val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
-                            val sharecount = ref.child("sharecount").getValue(Int::class.java) ?: 0
-                            val commentcount = ref.child("commentcount").getValue(Int::class.java) ?: 0
                             var isliked = false
                             if (!likeResults.isEmpty) {
                                 for (result in likeResults) {
@@ -89,19 +88,28 @@ class HomeViewModel : ViewModel() {
                                 imageUrls = doc.get("imageurl") as? List<String> ?: emptyList(),
                                 timestamp = doc.getLong("timestamp") ?: 0,
                                 likeCount = likecount,
-                                commentCount = commentcount,
-                                shareCount = sharecount,
                                 isLiked = isliked,
-                                privacy = doc.getString("privacy")?:""
+                                privacy = doc.getString("privacy") ?: ""
                             )
                             finalPostList.add(post)
                         }
                     }
                     Tasks.whenAllComplete(tasks).addOnSuccessListener {
-                        _postlist.value=finalPostList.sortedByDescending { it.timestamp }
-                        _isloading.value=false
+                        val filteredPosts = finalPostList.filter { post ->
+                            when(post.privacy) {
+                                "Công khai" -> true
+                                "Bạn bè" -> userFriends.contains(post.userId) || post.userId == currentUserId
+                                "Riêng tư" -> post.userId == currentUserId
+                                else -> false
+                            }
+                        }
+                        _postlist.value = filteredPosts.sortedByDescending { post ->
+                            calculatePostDisplayValue(post, cleanedUserInterests)
+                        }
+                        _isloading.value = false
                     }
                 }
+            }
         }
     }
 
@@ -117,6 +125,51 @@ class HomeViewModel : ViewModel() {
                 callback(interests)
             }
             .addOnFailureListener { callback(emptyList()) }
+    }
+
+    private fun getUserFriends(userId: String, callback: (List<String>) -> Unit) {
+        db.collection("Users").document(userId).get().addOnSuccessListener {
+            result->if (result.exists()) {
+                val friends = result.get("friends") as? List<String> ?: emptyList()
+                callback(friends)
+            }
+        }
+        .addOnFailureListener {
+            callback(emptyList())
+        }
+    }
+
+    private fun calculatePostDisplayValue(post: PostViewModel, userInterests: List<String>): Double {
+        val TIME_WEIGHT = 0.4
+        val INTERACTION_WEIGHT = 0.25
+        val CATEGORY_WEIGHT = 0.2
+        val SELF_POST_WEIGHT = 0.1
+        val FRIEND_POST_WEIGHT = 0.05
+        var value = 0.0
+        val currentTimeMillis = System.currentTimeMillis()
+        val postTimeMillis = post.timestamp
+        val timeDifferenceHours = (currentTimeMillis - postTimeMillis) / (1000 * 60 * 60)
+        val timeScore = maxOf(0.0, 1.0 - (timeDifferenceHours / 72.0))
+        val likes = post.likeCount
+        val interactionScore = minOf(1.0, ln((likes + 1).toDouble()) / 5.0)
+        var categoryScore = 0.0
+        post.category.forEach { category ->
+            if (userInterests.any { it.equals(category, ignoreCase = true) }) {
+                categoryScore += 0.25
+            }
+        }
+        categoryScore = minOf(1.0, categoryScore)
+        val selfPostScore = if (post.userId == currentUserId) 1.0 else 0.0
+        val friendPostScore = if (userFriends.contains(post.userId)) 1.0 else 0.0
+        value = (timeScore * TIME_WEIGHT) +
+                (interactionScore * INTERACTION_WEIGHT) +
+                (categoryScore * CATEGORY_WEIGHT) +
+                (selfPostScore * SELF_POST_WEIGHT) +
+                (friendPostScore * FRIEND_POST_WEIGHT)
+        if (post.userId == currentUserId && likes > 0) {
+            value += 0.05 * minOf(1.0, ln(likes.toDouble()) / 5.0)
+        }
+        return value
     }
 
     fun toggleLike(post: PostViewModel) {
