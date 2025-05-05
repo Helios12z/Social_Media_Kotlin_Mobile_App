@@ -31,7 +31,8 @@ class UploadChatImgeWorker(context: Context, params: WorkerParameters): Coroutin
         val message = mapOf(
             "senderId" to senderId,
             "receiverId" to receiverId,
-            "text" to imageUrl,
+            "text" to "Đã gửi một ảnh",
+            "imageUrl" to imageUrl,
             "timestamp" to Timestamp.now(),
             "picture" to true,
             "read" to false

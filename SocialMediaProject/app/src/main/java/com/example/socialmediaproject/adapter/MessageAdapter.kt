@@ -3,6 +3,7 @@ package com.example.socialmediaproject.adapter
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -146,10 +147,14 @@ class MessageAdapter(private val currentUserId: String,
                     onPictureClick(message.imageUrl)
                 }
                 tv.visibility=View.GONE
-                val iv = if (isSent) holder.ivSentImage else holder.ivReceivedImage
-                iv.visibility=View.VISIBLE
-                Glide.with(holder.itemView.context).load(message.imageUrl).into(iv)
             }
+            val iv = if (isSent) holder.ivSentImage else holder.ivReceivedImage
+            iv.visibility=View.VISIBLE
+            Log.d("IMAGE URL: ", message.imageUrl)
+            Glide.with(holder.itemView.context).load(message.imageUrl)
+                .placeholder(R.drawable.imageicon)
+                .error(R.drawable.imageicon)
+                .into(iv)
         }
         else {
             holder.tvSentMessage.visibility=View.VISIBLE
