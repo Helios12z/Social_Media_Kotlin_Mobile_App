@@ -139,18 +139,19 @@ class MessageAdapter(private val currentUserId: String,
             tv.apply {
                 isClickable=true
                 isLongClickable=true
+                tv.visibility=View.GONE
+            }
+            val iv = if (isSent) holder.ivSentImage else holder.ivReceivedImage
+            iv.apply {
+                visibility=View.VISIBLE
+                setOnClickListener {
+                    onPictureClick(message.imageUrl)
+                }
                 setOnLongClickListener {
                     onMessageLongClick(message)
                     true
                 }
-                setOnClickListener {
-                    onPictureClick(message.imageUrl)
-                }
-                tv.visibility=View.GONE
             }
-            val iv = if (isSent) holder.ivSentImage else holder.ivReceivedImage
-            iv.visibility=View.VISIBLE
-            Log.d("IMAGE URL: ", message.imageUrl)
             Glide.with(holder.itemView.context).load(message.imageUrl)
                 .placeholder(R.drawable.imageicon)
                 .error(R.drawable.imageicon)
