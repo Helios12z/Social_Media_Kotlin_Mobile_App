@@ -21,8 +21,8 @@ import com.google.firebase.firestore.QuerySnapshot
 import kotlin.math.ln
 
 class HomeViewModel : ViewModel() {
-    private lateinit var db: FirebaseFirestore
-    private lateinit var auth: FirebaseAuth
+    private val db=FirebaseFirestore.getInstance()
+    private val auth=FirebaseAuth.getInstance()
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
     private val _postlist=MutableLiveData<List<PostViewModel>>()
     val postlist: LiveData<List<PostViewModel>> = _postlist
@@ -30,15 +30,19 @@ class HomeViewModel : ViewModel() {
     val isloading: LiveData<Boolean> = _isloading
     private var userFriends = listOf<String>()
     private var currentUserId = ""
+    private val _canLoadMore = MutableLiveData<Boolean>()
+    val canLoadMore: LiveData<Boolean> = _canLoadMore
+    private var lastVisiblePost: DocumentSnapshot? = null
+    private val postsPerPage = 10
+    private var isLoadingMore = false
+    private val allLoadedPosts = mutableListOf<PostViewModel>()
 
     init {
-        loadPosts()
+        loadInitialPosts()
     }
 
-    private fun loadPosts() {
+    private fun loadInitialPosts() {
         _isloading.value = true
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
         val userId = auth.currentUser?.uid ?: ""
         currentUserId = userId
         getUserFriends(userId) { friends ->
@@ -47,74 +51,119 @@ class HomeViewModel : ViewModel() {
                 if (userInterests.isEmpty()) {
                     _isloading.value = false
                     _postlist.value = emptyList()
+                    _canLoadMore.value = false
                     return@getUserInterests
                 }
                 val cleanedUserInterests = userInterests.map { it.trim() }
-                db.collection("Posts")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener { documents ->
-                    val finalPostList = mutableListOf<PostViewModel>()
-                    val tasks = mutableListOf<Task<*>>()
-                    for (doc in documents) {
-                        val userid = doc.getString("userid") ?: ""
-                        val userTask = db.collection("Users").document(userid).get()
-                        val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
-                        val likesTask = db.collection("Likes")
-                            .whereEqualTo("userid", userId)
-                            .whereEqualTo("postid", doc.id)
-                            .get()
-                        tasks.add(userTask)
-                        tasks.add(postStatsTask)
-                        tasks.add(likesTask)
-                        Tasks.whenAllComplete(listOf(userTask, postStatsTask, likesTask)).addOnSuccessListener { results ->
-                            val userDoc = (results[0] as Task<DocumentSnapshot>).result
-                            val ref = (results[1] as Task<DataSnapshot>).result
-                            val likeResults = (results[2] as Task<QuerySnapshot>).result
-                            val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
-                            var isliked = false
-                            if (!likeResults.isEmpty) {
-                                for (result in likeResults) {
-                                    isliked = result.getBoolean("status") ?: false
-                                }
-                            }
-                            val post = PostViewModel(
-                                id = doc.id,
-                                userId = userid,
-                                userName = userDoc.getString("name") ?: "",
-                                userAvatarUrl = userDoc.getString("avatarurl") ?: "",
-                                content = doc.getString("content") ?: "",
-                                category = doc.get("category") as? List<String> ?: emptyList(),
-                                imageUrls = doc.get("imageurl") as? List<String> ?: emptyList(),
-                                timestamp = doc.getLong("timestamp") ?: 0,
-                                likeCount = likecount,
-                                isLiked = isliked,
-                                privacy = doc.getString("privacy") ?: ""
-                            )
-                            finalPostList.add(post)
-                        }
-                    }
-                    Tasks.whenAllComplete(tasks).addOnSuccessListener {
-                        val filteredPosts = finalPostList.filter { post ->
-                            when(post.privacy) {
-                                "Công khai" -> true
-                                "Bạn bè" -> userFriends.contains(post.userId) || post.userId == currentUserId
-                                "Riêng tư" -> post.userId == currentUserId
-                                else -> false
-                            }
-                        }
-                        _postlist.value = filteredPosts.sortedByDescending { post ->
-                            calculatePostDisplayValue(post, cleanedUserInterests)
-                        }
-                        _isloading.value = false
-                    }
-                }
+                loadPagedPosts(cleanedUserInterests, true)
             }
         }
     }
 
+    fun loadMorePosts() {
+        if (isLoadingMore || lastVisiblePost == null) return
+        val userId = auth.currentUser?.uid ?: ""
+        getUserInterests(userId) { userInterests ->
+            val cleanedUserInterests = userInterests.map { it.trim() }
+            loadPagedPosts(cleanedUserInterests, false)
+        }
+    }
+
+    private fun loadPagedPosts(userInterests: List<String>, isInitialLoad: Boolean) {
+        isLoadingMore = true
+        if (isInitialLoad) {
+            _isloading.value = true
+        }
+        var postsQuery = db.collection("Posts")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(postsPerPage.toLong())
+        if (!isInitialLoad && lastVisiblePost != null) {
+            postsQuery = postsQuery.startAfter(lastVisiblePost!!)
+        }
+        postsQuery.get().addOnSuccessListener { documents ->
+            if (documents.isEmpty) {
+                _canLoadMore.value = false
+                _isloading.value = false
+                isLoadingMore = false
+                return@addOnSuccessListener
+            }
+            lastVisiblePost = documents.documents[documents.size() - 1]
+            _canLoadMore.value = documents.size() == postsPerPage
+            val pagePostList = mutableListOf<PostViewModel>()
+            val tasks = mutableListOf<Task<*>>()
+            for (doc in documents) {
+                val userid = doc.getString("userid") ?: ""
+                val userTask = db.collection("Users").document(userid).get()
+                val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
+                val likesTask = db.collection("Likes")
+                    .whereEqualTo("userid", currentUserId)
+                    .whereEqualTo("postid", doc.id)
+                    .get()
+                tasks.add(userTask)
+                tasks.add(postStatsTask)
+                tasks.add(likesTask)
+                Tasks.whenAllComplete(listOf(userTask, postStatsTask, likesTask)).addOnSuccessListener { results ->
+                    val userDoc = (results[0] as Task<DocumentSnapshot>).result
+                    val ref = (results[1] as Task<DataSnapshot>).result
+                    val likeResults = (results[2] as Task<QuerySnapshot>).result
+                    val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
+                    var isliked = false
+                    if (!likeResults.isEmpty) {
+                        for (result in likeResults) {
+                            isliked = result.getBoolean("status") ?: false
+                        }
+                    }
+                    val post = PostViewModel(
+                        id = doc.id,
+                        userId = userid,
+                        userName = userDoc.getString("name") ?: "",
+                        userAvatarUrl = userDoc.getString("avatarurl") ?: "",
+                        content = doc.getString("content") ?: "",
+                        category = doc.get("category") as? List<String> ?: emptyList(),
+                        imageUrls = doc.get("imageurl") as? List<String> ?: emptyList(),
+                        timestamp = doc.getLong("timestamp") ?: 0,
+                        likeCount = likecount,
+                        isLiked = isliked,
+                        privacy = doc.getString("privacy") ?: ""
+                    )
+
+                    pagePostList.add(post)
+                }
+            }
+            Tasks.whenAllComplete(tasks).addOnSuccessListener {
+                val filteredPosts = pagePostList.filter { post ->
+                    when(post.privacy) {
+                        "Công khai" -> true
+                        "Bạn bè" -> userFriends.contains(post.userId) || post.userId == currentUserId
+                        "Riêng tư" -> post.userId == currentUserId
+                        else -> false
+                    }
+                }
+                val sortedPagePosts = filteredPosts.sortedByDescending { post ->
+                    calculatePostDisplayValue(post, userInterests)
+                }
+                if (isInitialLoad) {
+                    allLoadedPosts.clear()
+                }
+                allLoadedPosts.addAll(sortedPagePosts)
+                val allSortedPosts = allLoadedPosts.sortedByDescending { post ->
+                    calculatePostDisplayValue(post, userInterests)
+                }
+                _postlist.value = allSortedPosts
+                _isloading.value = false
+                isLoadingMore = false
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("HomeViewModel", "Error loading posts: ${exception.message}")
+            _isloading.value = false
+            isLoadingMore = false
+        }
+    }
+
     fun refreshFeed() {
-        loadPosts()
+        lastVisiblePost = null
+        allLoadedPosts.clear()
+        loadInitialPosts()
     }
 
     private fun getUserInterests(userId: String, callback: (List<String>) -> Unit) {
@@ -175,8 +224,6 @@ class HomeViewModel : ViewModel() {
     }
 
     fun toggleLike(post: PostViewModel) {
-        auth=FirebaseAuth.getInstance()
-        db=FirebaseFirestore.getInstance()
         val userId = auth.currentUser?.uid ?: return
         db.collection("Likes")
             .whereEqualTo("userid", userId)

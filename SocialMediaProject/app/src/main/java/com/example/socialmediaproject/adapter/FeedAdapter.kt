@@ -21,12 +21,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class FeedAdapter(
     private val context: Context,
-    private var postList: List<PostViewModel>,
+    private var postList: MutableList<PostViewModel>,
     private val listener: OnPostInteractionListener
 ) : RecyclerView.Adapter<FeedAdapter.PostViewHolder>() {
 
     private val db:FirebaseFirestore=FirebaseFirestore.getInstance()
     private val expandedPositions = mutableSetOf<Int>()
+    private val VIEW_TYPE_ITEM = 0
+    private val VIEW_TYPE_LOADING = 1
+    private var isLoadingAdded = false
+
 
     interface OnPostInteractionListener {
         fun onLikeClicked(position: Int)
@@ -149,8 +153,15 @@ class FeedAdapter(
     override fun getItemCount(): Int = postList.size
 
     fun updatePosts(newPosts: List<PostViewModel>) {
-        this.postList = newPosts
+        this.postList.clear()
+        this.postList.addAll(newPosts)
         notifyDataSetChanged()
+    }
+
+    fun addPosts(newPosts: List<PostViewModel>) {
+        val positionStart = this.postList.size
+        this.postList.addAll(newPosts)
+        notifyItemRangeInserted(positionStart, newPosts.size)
     }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

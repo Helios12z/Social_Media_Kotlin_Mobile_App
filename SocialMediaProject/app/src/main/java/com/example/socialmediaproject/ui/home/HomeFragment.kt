@@ -43,6 +43,8 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private lateinit var chatbutton: ImageView
     private lateinit var chatViewModel: ChatViewModel
     private lateinit var badge: BadgeDrawable
+    private var isLoading = false
+    private var isLastPage = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -96,10 +98,31 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     private fun setupRecyclerView() {
         feedAdapter = FeedAdapter(requireContext(), postList, this)
+        val layoutManager = LinearLayoutManager(requireContext())
         recyclerViewFeed.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            this.layoutManager = layoutManager
             adapter = feedAdapter
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+                    if (!isLoading && !isLastPage) {
+                        if ((visibleItemCount + firstVisibleItemPosition + 5) >= totalItemCount
+                            && firstVisibleItemPosition >= 0) {
+                            loadMorePosts()
+                        }
+                    }
+                }
+            })
         }
+    }
+
+    private fun loadMorePosts() {
+        if (isLoading || isLastPage) return
+        isLoading = true
+        homeviewmodel.loadMorePosts()
     }
 
     private fun setupSwipeRefresh() {
@@ -118,9 +141,12 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         homeviewmodel.postlist.observe(viewLifecycleOwner) { posts ->
             feedAdapter.updatePosts(posts)
         }
-
         homeviewmodel.isloading.observe(viewLifecycleOwner) { isLoading ->
+            this.isLoading = isLoading
             swipeRefreshLayout.isRefreshing = isLoading
+        }
+        homeviewmodel.canLoadMore.observe(viewLifecycleOwner) { canLoadMore ->
+            isLastPage = !canLoadMore
         }
     }
 
