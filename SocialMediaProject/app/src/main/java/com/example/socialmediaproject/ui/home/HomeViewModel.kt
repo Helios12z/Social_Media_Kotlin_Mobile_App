@@ -140,16 +140,17 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun calculatePostDisplayValue(post: PostViewModel, userInterests: List<String>): Double {
-        val TIME_WEIGHT = 0.4
-        val INTERACTION_WEIGHT = 0.25
-        val CATEGORY_WEIGHT = 0.2
-        val SELF_POST_WEIGHT = 0.1
+        val TIME_WEIGHT = 0.6
+        val INTERACTION_WEIGHT = 0.15
+        val CATEGORY_WEIGHT = 0.15
+        val SELF_POST_WEIGHT = 0.05
         val FRIEND_POST_WEIGHT = 0.05
         var value = 0.0
         val currentTimeMillis = System.currentTimeMillis()
         val postTimeMillis = post.timestamp
         val timeDifferenceHours = (currentTimeMillis - postTimeMillis) / (1000 * 60 * 60)
-        val timeScore = maxOf(0.0, 1.0 - (timeDifferenceHours / 72.0))
+        val timeScore = maxOf(0.0, 1.0 - (timeDifferenceHours / 48.0))
+        val veryRecentBonus = if (timeDifferenceHours < 1) 0.2 else 0.0
         val likes = post.likeCount
         val interactionScore = minOf(1.0, ln((likes + 1).toDouble()) / 5.0)
         var categoryScore = 0.0
@@ -165,7 +166,8 @@ class HomeViewModel : ViewModel() {
                 (interactionScore * INTERACTION_WEIGHT) +
                 (categoryScore * CATEGORY_WEIGHT) +
                 (selfPostScore * SELF_POST_WEIGHT) +
-                (friendPostScore * FRIEND_POST_WEIGHT)
+                (friendPostScore * FRIEND_POST_WEIGHT) +
+                veryRecentBonus
         if (post.userId == currentUserId && likes > 0) {
             value += 0.05 * minOf(1.0, ln(likes.toDouble()) / 5.0)
         }
