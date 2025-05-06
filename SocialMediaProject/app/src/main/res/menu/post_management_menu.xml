@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/btnEditPost"
+        android:title="Sửa bài đăng" />
+    <item
+        android:id="@+id/btnDeletePost"
+        android:title="Xóa bài đăng" />
+    <item
+        android:id="@+id/btnHideOrUnhidePost"
+        android:title="Ẩn bài đăng" />
+</menu>

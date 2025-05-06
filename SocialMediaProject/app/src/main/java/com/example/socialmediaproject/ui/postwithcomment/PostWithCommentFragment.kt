@@ -5,8 +5,10 @@ import android.os.Parcelable
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
@@ -225,6 +227,26 @@ class PostWithCommentFragment : Fragment() {
                     }
                 }
             }
+        }
+        binding.buttonMore.setOnClickListener {
+            val popup= PopupMenu(requireContext(), binding.buttonMore)
+            val menuInflater: MenuInflater = popup.menuInflater
+            menuInflater.inflate(R.menu.post_management_menu, popup.menu)
+            popup.setOnMenuItemClickListener {
+                item->when (item.itemId) {
+                    R.id.btnEditPost->{
+                        true
+                    }
+                    R.id.btnDeletePost->{
+                        true
+                    }
+                    R.id.btnHideOrUnhidePost->{
+                        true
+                    }
+                    else->false
+                }
+            }
+            popup.show()
         }
     }
 

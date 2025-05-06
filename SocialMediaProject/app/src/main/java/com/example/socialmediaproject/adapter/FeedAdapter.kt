@@ -27,9 +27,6 @@ class FeedAdapter(
 
     private val db:FirebaseFirestore=FirebaseFirestore.getInstance()
     private val expandedPositions = mutableSetOf<Int>()
-    private val VIEW_TYPE_ITEM = 0
-    private val VIEW_TYPE_LOADING = 1
-    private var isLoadingAdded = false
 
 
     interface OnPostInteractionListener {
@@ -101,7 +98,7 @@ class FeedAdapter(
         }
         holder.textViewReadMore.setOnClickListener {
             if (isExpanded) expandedPositions.remove(position)
-            else             expandedPositions.add(position)
+            else expandedPositions.add(position)
             notifyItemChanged(position)
         }
         if (post.privacy=="Công khai") holder.privacyIcon.setImageResource(R.drawable.icon_global)

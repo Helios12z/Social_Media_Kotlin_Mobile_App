@@ -306,24 +306,18 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     override fun onMoreOptionsClicked(position: Int, anchorView: View) {
         PopupMenu(requireContext(), anchorView).apply {
-            //inflate(R.menu.post_options_menu)
-
+            inflate(R.menu.post_management_menu)
             setOnMenuItemClickListener { item ->
                 when (item.itemId) {
-                    /*R.id.action_save -> {
-                        Toast.makeText(requireContext(), "Đã lưu bài viết", Toast.LENGTH_SHORT).show()
+                    R.id.btnDeletePost->{
                         true
                     }
-                    R.id.action_report -> {
-                        Toast.makeText(requireContext(), "Đã báo cáo bài viết", Toast.LENGTH_SHORT).show()
+                    R.id.btnEditPost->{
                         true
                     }
-                    R.id.action_hide -> {
-                        postList.removeAt(position)
-                        feedAdapter.notifyItemRemoved(position)
-                        Toast.makeText(requireContext(), "Đã ẩn bài viết", Toast.LENGTH_SHORT).show()
+                    R.id.btnHideOrUnhidePost->{
                         true
-                    }*/
+                    }
                     else -> false
                 }
             }
