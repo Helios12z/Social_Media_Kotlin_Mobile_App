@@ -115,4 +115,10 @@
         android:label="EditComment"
         tools:layout="@layout/fragment_edit_comment">
     </fragment>
+
+    <fragment android:id="@+id/navigation_editPost"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.EditPostFragment"
+        android:label="EditPost"
+        tools:layout="@layout/fragment_edit_post">
+    </fragment>
 </navigation>

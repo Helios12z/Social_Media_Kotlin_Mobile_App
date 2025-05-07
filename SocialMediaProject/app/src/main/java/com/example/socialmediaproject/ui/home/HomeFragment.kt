@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.home
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
+import androidx.compose.material3.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -17,12 +19,16 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.Friend
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
+import com.example.socialmediaproject.service.PostActionWorker
 import com.example.socialmediaproject.ui.chat.ChatViewModel
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.android.material.badge.BadgeDrawable
@@ -219,12 +225,31 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.btnDeletePost->{
+                        AlertDialog.Builder(requireContext()).setTitle("Xác nhận xóa")
+                            .setMessage("Bạn có chắc chắn muốn xóa post")
+                            .setPositiveButton("Có") {
+                                _, _->val data= workDataOf(
+                                "postId" to homeviewmodel.postlist.value?.get(position)?.id,
+                                "action" to "delete")
+                                WorkManager.getInstance(requireContext()).enqueue(
+                                    OneTimeWorkRequestBuilder<PostActionWorker>().setInputData(data).build()
+                                )
+                            }
+                            .setNegativeButton("Không", null)
+                            .show()
                         true
                     }
                     R.id.btnEditPost->{
+                        findNavController().navigate(R.id.navigation_editPost)
                         true
                     }
                     R.id.btnHideOrUnhidePost->{
+                        val data= workDataOf(
+                            "postId" to homeviewmodel.postlist.value?.get(position)?.id,
+                            "action" to "hide")
+                        WorkManager.getInstance(requireContext()).enqueue(
+                            OneTimeWorkRequestBuilder<PostActionWorker>().setInputData(data).build()
+                        )
                         true
                     }
                     else -> false

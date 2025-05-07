@@ -1,16 +1,18 @@
 package com.example.socialmediaproject.service
 
 import android.content.Context
-import android.app.AlertDialog
-import android.widget.Toast
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.database
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 class PostActionWorker(context: Context, params: WorkerParameters): CoroutineWorker(context, params) {
     private val db=FirebaseFirestore.getInstance()
+    private val auth=FirebaseAuth.getInstance()
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
 
     override suspend fun doWork(): Result {
@@ -21,7 +23,6 @@ class PostActionWorker(context: Context, params: WorkerParameters): CoroutineWor
                 "delete" -> deletePost(postId, applicationContext)
                 "hide"->hidePost(postId)
                 "unhide"->unhidePost(postId)
-                "edit"->editPost(postId)
                 else->{}
             }
             Result.success()
@@ -31,51 +32,44 @@ class PostActionWorker(context: Context, params: WorkerParameters): CoroutineWor
         }
     }
 
-    private suspend fun deletePost(postId: String, context: Context) {
-        AlertDialog.Builder(context).setTitle("Xác nhận xóa")
-        .setTitle("Bạn có chắc chắn muốn xóa post này?")
-        .setPositiveButton("Có") { _, _ ->
-            db.collection("Posts").document(postId).delete().addOnSuccessListener {
-                realtimedb.getReference("PostStats").child(postId).removeValue()
-                    .addOnSuccessListener {
-                        db.collection("comments").whereEqualTo("postId", postId).get()
-                            .addOnSuccessListener { result ->
-                                if (!result.isEmpty) {
-                                    for (document in result) {
-                                        db.collection("comments").document(document.id).delete()
-                                    }
-                                }
-                                db.collection("Likes").whereEqualTo("postid", postId).get()
-                                    .addOnSuccessListener { result ->
-                                        if (!result.isEmpty) {
-                                            for (document in result) {
-                                                db.collection("Likes").document(document.id)
-                                                    .delete()
-                                            }
-                                        }
-                                    }
+    private fun deletePost(postId: String, context: Context) {
+        db.collection("Posts").document(postId).delete().addOnSuccessListener {
+            realtimedb.getReference("PostStats").child(postId).removeValue()
+            .addOnSuccessListener {
+                db.collection("comments").whereEqualTo("postId", postId).get()
+                    .addOnSuccessListener { result ->
+                        if (!result.isEmpty) {
+                            for (document in result) {
+                                db.collection("comments").document(document.id).delete()
                             }
-                        Toast.makeText(context, "Xóa post thành công!", Toast.LENGTH_SHORT).show()
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(context, "Xóa post thất bại!", Toast.LENGTH_SHORT).show()
+                        }
+                        db.collection("Likes").whereEqualTo("postid", postId).get()
+                        .addOnSuccessListener { result ->
+                            if (!result.isEmpty) {
+                                for (document in result) {
+                                    db.collection("Likes").document(document.id).delete()
+                                }
+                            }
+                        }
                     }
             }
+            .addOnFailureListener {
+                Result.retry()
+            }
         }
-        .setNegativeButton("Không", null)
-        .show()
-    }
-
-
-    private suspend fun editPost(postId: String) {
-
     }
 
     private suspend fun hidePost(postId: String) {
-
+        val userDoc=db.collection("Users").document(auth.currentUser?.uid?:"").get().await()
+        if (userDoc.exists()) {
+            db.collection("Users").document(userDoc.id).update("hiddenPosts", FieldValue.arrayUnion(postId)).await()
+        }
     }
 
     private suspend fun unhidePost(postId: String) {
-
+        val userDoc=db.collection("Users").document(auth.currentUser?.uid?:"").get().await()
+        if (userDoc.exists()) {
+            db.collection("Users").document(userDoc.id).update("hiddenPosts", FieldValue.arrayRemove(postId)).await()
+        }
     }
 }
