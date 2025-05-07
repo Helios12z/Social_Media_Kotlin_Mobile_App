@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.ui.mainpage
 
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.lifecycle.LiveData
@@ -107,7 +106,6 @@ class MainPageViewModel : ViewModel() {
             .addOnSuccessListener { documents ->
                 val finalPostList = mutableListOf<PostViewModel>()
                 val tasks = mutableListOf<Task<*>>()
-                Log.d("NUMBER OF POSTS GOT: ", documents.size().toString())
                 for (doc in documents) {
                     val userid = doc.getString("userid") ?: ""
                     val userTask = db.collection("Users").document(userid).get()
@@ -217,8 +215,8 @@ class MainPageViewModel : ViewModel() {
                                 _isloading.value=false
                             }
                         }
-                        .addOnFailureListener() {
-                            Log.e("LOI LAY DATABASE: ", it.toString())
+                        .addOnFailureListener {
+                            it.printStackTrace()
                         }
                     }
                     else {
@@ -278,8 +276,8 @@ class MainPageViewModel : ViewModel() {
                                 _isloading.value=false
                             }
                         }
-                        .addOnFailureListener() {
-                            Log.e("LOI LAY DATABASE: ", it.toString())
+                        .addOnFailureListener {
+                            it.printStackTrace()
                         }
                     }
                 }
@@ -308,7 +306,7 @@ class MainPageViewModel : ViewModel() {
                 }
             }
             .addOnFailureListener { e->
-                Log.e("LOI LAY DATABASE: ", e.toString())
+                e.printStackTrace()
             }
     }
 
