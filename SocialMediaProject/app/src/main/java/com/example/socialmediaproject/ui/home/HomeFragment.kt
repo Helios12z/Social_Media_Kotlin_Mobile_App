@@ -11,7 +11,6 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.OptIn
-import androidx.compose.material3.AlertDialog
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -220,8 +219,9 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onMoreOptionsClicked(position: Int, anchorView: View) {
-        val postId = homeviewmodel.postlist.value?.get(position)?.id ?: return
-        val uid    = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val post=homeviewmodel.postlist.value?.get(position)?:return
+        val postId = post.id
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         FirebaseFirestore.getInstance()
         .collection("Users")
         .document(uid)
@@ -232,6 +232,8 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             PopupMenu(requireContext(), anchorView).apply {
                 inflate(R.menu.post_management_menu)
                 menu.findItem(R.id.btnHideOrUnhidePost).title = if (isHidden) "Hủy ẩn bài đăng" else "Ẩn bài đăng"
+                menu.findItem(R.id.btnDeletePost).isVisible=(post.userId==uid || doc.getString("role").equals("Admin"))
+                menu.findItem(R.id.btnEditPost).isVisible=(post.userId==uid)
                 setOnMenuItemClickListener { item ->
                     when (item.itemId) {
                         R.id.btnDeletePost -> {
