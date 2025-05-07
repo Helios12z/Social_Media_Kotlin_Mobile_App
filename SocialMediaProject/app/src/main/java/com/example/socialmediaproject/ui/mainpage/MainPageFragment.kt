@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.mainpage
 
+import android.app.AlertDialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -14,6 +15,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
@@ -22,6 +26,7 @@ import com.example.socialmediaproject.dataclass.Friend
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
+import com.example.socialmediaproject.service.PostActionWorker
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
@@ -305,24 +310,70 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onMoreOptionsClicked(position: Int, anchorView: View) {
-        PopupMenu(requireContext(), anchorView).apply {
-            inflate(R.menu.post_management_menu)
-            setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.btnDeletePost->{
-                        true
+        val postId = viewModel.postlist.value?.get(position)?.id ?: return
+        val uid    = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance()
+            .collection("Users")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                val hidden = (doc.get("hiddenPosts") as? List<String>) ?: emptyList()
+                val isHidden = hidden.contains(postId)
+                PopupMenu(requireContext(), anchorView).apply {
+                    inflate(R.menu.post_management_menu)
+                    menu.findItem(R.id.btnHideOrUnhidePost).title = if (isHidden) "Hủy ẩn bài đăng" else "Ẩn bài đăng"
+                    setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.btnDeletePost -> {
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle("Xác nhận xóa")
+                                    .setMessage("Bạn có chắc chắn muốn xóa post này?")
+                                    .setPositiveButton("Có") { _, _ ->
+                                        val data = workDataOf(
+                                            "postId" to postId,
+                                            "action" to "delete"
+                                        )
+                                        WorkManager.getInstance(requireContext())
+                                            .enqueue(
+                                                OneTimeWorkRequestBuilder<PostActionWorker>()
+                                                    .setInputData(data)
+                                                    .build()
+                                            )
+                                    }
+                                    .setNegativeButton("Không", null)
+                                    .show()
+                                true
+                            }
+                            R.id.btnEditPost -> {
+                                findNavController().navigate(
+                                    R.id.navigation_editPost,
+                                    bundleOf("postId" to postId)
+                                )
+                                true
+                            }
+                            R.id.btnHideOrUnhidePost -> {
+                                val action = if (isHidden) "unhide" else "hide"
+                                val data = workDataOf(
+                                    "postId" to postId,
+                                    "action" to action
+                                )
+                                WorkManager.getInstance(requireContext())
+                                    .enqueue(
+                                        OneTimeWorkRequestBuilder<PostActionWorker>()
+                                            .setInputData(data)
+                                            .build()
+                                    )
+                                true
+                            }
+                            else -> false
+                        }
                     }
-                    R.id.btnEditPost->{
-                        true
-                    }
-                    R.id.btnHideOrUnhidePost->{
-                        true
-                    }
-                    else -> false
+                    show()
                 }
             }
-            show()
-        }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Lỗi", Toast.LENGTH_SHORT).show()
+            }
     }
 
     override fun onImageClicked(postPosition: Int, imagePosition: Int) {

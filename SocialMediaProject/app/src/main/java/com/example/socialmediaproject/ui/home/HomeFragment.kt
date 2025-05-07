@@ -262,7 +262,6 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                             true
                         }
                         R.id.btnHideOrUnhidePost -> {
-                            // Chọn action ngược lại so với isHidden
                             val action = if (isHidden) "unhide" else "hide"
                             val data = workDataOf(
                                 "postId" to postId,
