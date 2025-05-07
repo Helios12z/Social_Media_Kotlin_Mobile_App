@@ -220,42 +220,70 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onMoreOptionsClicked(position: Int, anchorView: View) {
-        PopupMenu(requireContext(), anchorView).apply {
-            inflate(R.menu.post_management_menu)
-            setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.btnDeletePost->{
-                        AlertDialog.Builder(requireContext()).setTitle("Xác nhận xóa")
-                            .setMessage("Bạn có chắc chắn muốn xóa post")
-                            .setPositiveButton("Có") {
-                                _, _->val data= workDataOf(
-                                "postId" to homeviewmodel.postlist.value?.get(position)?.id,
-                                "action" to "delete")
-                                WorkManager.getInstance(requireContext()).enqueue(
-                                    OneTimeWorkRequestBuilder<PostActionWorker>().setInputData(data).build()
+        val postId = homeviewmodel.postlist.value?.get(position)?.id ?: return
+        val uid    = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance()
+        .collection("Users")
+        .document(uid)
+        .get()
+        .addOnSuccessListener { doc ->
+            val hidden = (doc.get("hiddenPosts") as? List<String>) ?: emptyList()
+            val isHidden = hidden.contains(postId)
+            PopupMenu(requireContext(), anchorView).apply {
+                inflate(R.menu.post_management_menu)
+                menu.findItem(R.id.btnHideOrUnhidePost).title = if (isHidden) "Hủy ẩn bài đăng" else "Ẩn bài đăng"
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.btnDeletePost -> {
+                            AlertDialog.Builder(requireContext())
+                                .setTitle("Xác nhận xóa")
+                                .setMessage("Bạn có chắc chắn muốn xóa post này?")
+                                .setPositiveButton("Có") { _, _ ->
+                                    val data = workDataOf(
+                                        "postId" to postId,
+                                        "action" to "delete"
+                                    )
+                                    WorkManager.getInstance(requireContext())
+                                        .enqueue(
+                                            OneTimeWorkRequestBuilder<PostActionWorker>()
+                                                .setInputData(data)
+                                                .build()
+                                        )
+                                }
+                                .setNegativeButton("Không", null)
+                                .show()
+                            true
+                        }
+                        R.id.btnEditPost -> {
+                            findNavController().navigate(
+                                R.id.navigation_editPost,
+                                bundleOf("postId" to postId)
+                            )
+                            true
+                        }
+                        R.id.btnHideOrUnhidePost -> {
+                            // Chọn action ngược lại so với isHidden
+                            val action = if (isHidden) "unhide" else "hide"
+                            val data = workDataOf(
+                                "postId" to postId,
+                                "action" to action
+                            )
+                            WorkManager.getInstance(requireContext())
+                                .enqueue(
+                                    OneTimeWorkRequestBuilder<PostActionWorker>()
+                                        .setInputData(data)
+                                        .build()
                                 )
-                            }
-                            .setNegativeButton("Không", null)
-                            .show()
-                        true
+                            true
+                        }
+                        else -> false
                     }
-                    R.id.btnEditPost->{
-                        findNavController().navigate(R.id.navigation_editPost)
-                        true
-                    }
-                    R.id.btnHideOrUnhidePost->{
-                        val data= workDataOf(
-                            "postId" to homeviewmodel.postlist.value?.get(position)?.id,
-                            "action" to "hide")
-                        WorkManager.getInstance(requireContext()).enqueue(
-                            OneTimeWorkRequestBuilder<PostActionWorker>().setInputData(data).build()
-                        )
-                        true
-                    }
-                    else -> false
                 }
+                show()
             }
-            show()
+        }
+        .addOnFailureListener {
+            Toast.makeText(requireContext(), "Lỗi", Toast.LENGTH_SHORT).show()
         }
     }
 

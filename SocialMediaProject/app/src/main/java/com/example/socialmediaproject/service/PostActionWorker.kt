@@ -20,7 +20,7 @@ class PostActionWorker(context: Context, params: WorkerParameters): CoroutineWor
         val action=inputData.getString("action")?:return Result.failure()
         return try{
             when(action) {
-                "delete" -> deletePost(postId, applicationContext)
+                "delete" -> deletePost(postId)
                 "hide"->hidePost(postId)
                 "unhide"->unhidePost(postId)
                 else->{}
@@ -32,7 +32,7 @@ class PostActionWorker(context: Context, params: WorkerParameters): CoroutineWor
         }
     }
 
-    private fun deletePost(postId: String, context: Context) {
+    private fun deletePost(postId: String) {
         db.collection("Posts").document(postId).delete().addOnSuccessListener {
             realtimedb.getReference("PostStats").child(postId).removeValue()
             .addOnSuccessListener {
