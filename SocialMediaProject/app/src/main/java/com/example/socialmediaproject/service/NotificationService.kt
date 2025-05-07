@@ -3,7 +3,6 @@ package com.example.socialmediaproject.service
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
@@ -85,7 +84,6 @@ class NotificationService: Service() {
     }
 
     private fun updateNotification(content: String) {
-        // Với foreground service, bạn có thể gọi lại startForeground để cập nhật
         val n = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.uploadicon)
             .setContentTitle("Cập nhật tài khoản")
@@ -93,14 +91,5 @@ class NotificationService: Service() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
         startForeground(NOTIF_ID, n)
-    }
-
-    private fun CreateNotificationChannel()
-    {
-        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.O) {
-            val channel= NotificationChannel("Notifications", "Thông báo", NotificationManager.IMPORTANCE_HIGH)
-            val notificationmanager=getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationmanager.createNotificationChannel(channel)
-        }
     }
 }

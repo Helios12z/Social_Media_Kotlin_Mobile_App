@@ -7,13 +7,14 @@ import android.app.Service
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import android.util.Base64
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.socialmediaproject.R
 import com.google.firebase.Firebase
@@ -43,7 +44,7 @@ class PostingService : Service() {
         val postContent = intent?.getStringExtra("post_content") ?: ""
         val imageList = intent?.getParcelableArrayListExtra<Uri>("image_list") ?: arrayListOf()
         val privacy = intent?.getStringExtra("privacy") ?: "Công khai"
-        startForeground(1, createNotification("Đang đăng bài"))
+        notifyStatus(NotificationService.ACTION.START, "Đang đăng bài")
         uploadAllImages(imageList) {
             UploadPost(postContent, privacy)
         }
@@ -102,14 +103,15 @@ class PostingService : Service() {
     private fun UploadPost(content: String, privacy: String) {
         getCategories { categories ->
             if (categories.isEmpty()) {
-                updateNotification("Lỗi trong quá trình phân tích!")
+                notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi trong quá trình phân tích!")
+                notifyStatus(NotificationService.ACTION.STOP, "")
                 isposting = false
                 stopSelf()
                 return@getCategories
             }
             serviceScope.launch {
                 try {
-                    updateNotification("Đang phân tích nội dung...")
+                    notifyStatus(NotificationService.ACTION.UPDATE, "Đang phân tích nội dung...")
                     val response = AIService.classifyPost(content, categories) ?: ""
                     val categoryList = response.split(",")
                         .map { it.trim() }
@@ -144,43 +146,33 @@ class PostingService : Service() {
                         .addOnSuccessListener { docRef ->
                             val postId = docRef.id
                             savePostStatsToRealtimeDatabase(postId) {
-                                updateNotification("Đăng bài thành công!")
+                                notifyStatus(NotificationService.ACTION.UPDATE, "Đăng bài thành công!")
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    notifyStatus(NotificationService.ACTION.STOP, "")
+                                }, 1500)
                                 isposting = false
                                 stopSelf()
                             }
                         }
                         .addOnFailureListener {
-                            updateNotification("Đăng bài thất bại!")
+                            notifyStatus(NotificationService.ACTION.UPDATE, "Đăng bài thất bại!")
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                notifyStatus(NotificationService.ACTION.STOP, "")
+                            }, 1500)
                             isposting = false
                             stopSelf()
                         }
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    updateNotification("Lỗi khi xử lý bài đăng!")
+                    notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi khi xử lý bài đăng!")
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        notifyStatus(NotificationService.ACTION.STOP, "")
+                    }, 1500)
                     isposting = false
                     stopSelf()
                 }
             }
         }
-    }
-
-    private fun createNotification(content: String): Notification {
-        val channelId = "upload_post_channel"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Đang đăng bài", NotificationManager.IMPORTANCE_HIGH)
-            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
-        }
-        return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Thông báo")
-            .setContentText(content)
-            .setSmallIcon(R.drawable.uploadicon)
-            .build()
-    }
-
-    private fun updateNotification(content: String) {
-        val notification = createNotification(content)
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.notify(1, notification)
     }
 
     private fun uriToBase64(uri: Uri): String? {
@@ -225,12 +217,23 @@ class PostingService : Service() {
         )
         databaseRef.setValue(postStats)
         .addOnSuccessListener {
-            Log.d("RealtimeDB", "Thêm dữ liệu vào Realtime Database thành công!")
             callback()
         }
         .addOnFailureListener { e ->
             e.printStackTrace()
             callback()
+        }
+    }
+
+    private fun notifyStatus(action: NotificationService.ACTION, content: String) {
+        val intent = Intent(this, NotificationService::class.java).apply {
+            this.action = action.name
+            putExtra("content", content)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
         }
     }
 }
