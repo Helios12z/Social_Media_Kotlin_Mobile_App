@@ -150,12 +150,10 @@ class HomeViewModel : ViewModel() {
                 }
                 if (isInitialLoad) {
                     allLoadedPosts.clear()
+                    allLoadedPosts.addAll(sortedPagePosts)
                 }
-                allLoadedPosts.addAll(sortedPagePosts)
-                val allSortedPosts = allLoadedPosts.sortedByDescending { post ->
-                    calculatePostDisplayValue(post, userInterests)
-                }
-                _postlist.value = allSortedPosts
+                else allLoadedPosts.addAll(sortedPagePosts)
+                _postlist.value = allLoadedPosts.toList()
                 _isloading.value = false
                 isLoadingMore = false
             }
