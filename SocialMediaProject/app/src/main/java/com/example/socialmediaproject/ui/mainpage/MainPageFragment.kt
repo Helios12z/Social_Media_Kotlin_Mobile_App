@@ -310,8 +310,9 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     }
 
     override fun onMoreOptionsClicked(position: Int, anchorView: View) {
-        val postId = viewModel.postlist.value?.get(position)?.id ?: return
-        val uid    = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val post=viewModel.postlist.value?.get(position)?:return
+        val postId = post.id
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         FirebaseFirestore.getInstance()
             .collection("Users")
             .document(uid)
@@ -322,6 +323,8 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                 PopupMenu(requireContext(), anchorView).apply {
                     inflate(R.menu.post_management_menu)
                     menu.findItem(R.id.btnHideOrUnhidePost).title = if (isHidden) "Hủy ẩn bài đăng" else "Ẩn bài đăng"
+                    menu.findItem(R.id.btnDeletePost).isVisible=(post.userId==uid || doc.getString("role").equals("Admin"))
+                    menu.findItem(R.id.btnEditPost).isVisible=(post.userId==uid)
                     setOnMenuItemClickListener { item ->
                         when (item.itemId) {
                             R.id.btnDeletePost -> {
@@ -339,6 +342,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                                                     .setInputData(data)
                                                     .build()
                                             )
+                                        feedAdapter.removeAt(position)
                                     }
                                     .setNegativeButton("Không", null)
                                     .show()
@@ -363,6 +367,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                                             .setInputData(data)
                                             .build()
                                     )
+                                Toast.makeText(requireContext(), "Bài viết này sẽ không hiển thị trên bảng feed của bạn", Toast.LENGTH_SHORT).show()
                                 true
                             }
                             else -> false
