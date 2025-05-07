@@ -74,7 +74,8 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="More options"
                 android:src="@drawable/morebutton"
-                android:scaleType="centerInside"/>
+                android:scaleType="centerInside"
+                app:tint="@color/text_color" />
         </LinearLayout>
 
         <TextView

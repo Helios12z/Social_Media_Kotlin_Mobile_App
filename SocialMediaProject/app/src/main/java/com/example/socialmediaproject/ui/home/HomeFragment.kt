@@ -251,6 +251,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                                                 .setInputData(data)
                                                 .build()
                                         )
+                                    feedAdapter.removeAt(position)
                                 }
                                 .setNegativeButton("Không", null)
                                 .show()
@@ -275,6 +276,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                                         .setInputData(data)
                                         .build()
                                 )
+                            feedAdapter.removeAt(position)
                             true
                         }
                         else -> false

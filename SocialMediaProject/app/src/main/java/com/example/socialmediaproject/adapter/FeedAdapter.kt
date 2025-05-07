@@ -161,6 +161,11 @@ class FeedAdapter(
         notifyItemRangeInserted(positionStart, newPosts.size)
     }
 
+    fun removeAt(position: Int) {
+        postList.removeAt(position)
+        notifyItemRemoved(position)
+    }
+
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val imageViewUserAvatar: ShapeableImageView = itemView.findViewById(R.id.imageViewUserAvatar)
         val textViewUsername: TextView = itemView.findViewById(R.id.textViewUsername)
