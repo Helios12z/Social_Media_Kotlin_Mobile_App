@@ -367,7 +367,8 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                                             .setInputData(data)
                                             .build()
                                     )
-                                Toast.makeText(requireContext(), "Bài viết này sẽ không hiển thị trên bảng feed của bạn", Toast.LENGTH_SHORT).show()
+                                if (action=="hide") Toast.makeText(requireContext(), "Bài viết này sẽ không hiển thị trên bảng feed của bạn", Toast.LENGTH_SHORT).show()
+                                else Toast.makeText(requireContext(), "Đã hủy ẩn bài viết", Toast.LENGTH_SHORT).show()
                                 true
                             }
                             else -> false

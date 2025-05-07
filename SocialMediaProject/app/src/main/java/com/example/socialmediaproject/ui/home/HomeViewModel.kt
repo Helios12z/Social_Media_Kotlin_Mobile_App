@@ -36,6 +36,7 @@ class HomeViewModel : ViewModel() {
     private val postsPerPage = 10
     private var isLoadingMore = false
     private val allLoadedPosts = mutableListOf<PostViewModel>()
+    private var hiddenPostIds = emptyList<String>()
 
     init {
         loadInitialPosts()
@@ -47,15 +48,18 @@ class HomeViewModel : ViewModel() {
         currentUserId = userId
         getUserFriends(userId) { friends ->
             userFriends = friends
-            getUserInterests(userId) { userInterests ->
-                if (userInterests.isEmpty()) {
-                    _isloading.value = false
-                    _postlist.value = emptyList()
-                    _canLoadMore.value = false
-                    return@getUserInterests
+            getUserHiddenPosts(userId) {
+                hidden->hiddenPostIds=hidden
+                getUserInterests(userId) { userInterests ->
+                    if (userInterests.isEmpty()) {
+                        _isloading.value = false
+                        _postlist.value = emptyList()
+                        _canLoadMore.value = false
+                        return@getUserInterests
+                    }
+                    val cleanedUserInterests = userInterests.map { it.trim() }
+                    loadPagedPosts(cleanedUserInterests, true)
                 }
-                val cleanedUserInterests = userInterests.map { it.trim() }
-                loadPagedPosts(cleanedUserInterests, true)
             }
         }
     }
@@ -126,12 +130,14 @@ class HomeViewModel : ViewModel() {
                         isLiked = isliked,
                         privacy = doc.getString("privacy") ?: ""
                     )
-
                     pagePostList.add(post)
                 }
             }
             Tasks.whenAllComplete(tasks).addOnSuccessListener {
-                val filteredPosts = pagePostList.filter { post ->
+                val noHidden = pagePostList.filterNot { post ->
+                    hiddenPostIds.contains(post.id)
+                }
+                val filteredPosts = noHidden.filter { post ->
                     when(post.privacy) {
                         "Công khai" -> true
                         "Bạn bè" -> userFriends.contains(post.userId) || post.userId == currentUserId
@@ -154,7 +160,7 @@ class HomeViewModel : ViewModel() {
                 isLoadingMore = false
             }
         }.addOnFailureListener { exception ->
-            Log.e("HomeViewModel", "Error loading posts: ${exception.message}")
+            exception.printStackTrace()
             _isloading.value = false
             isLoadingMore = false
         }
@@ -294,5 +300,24 @@ class HomeViewModel : ViewModel() {
                 }
             }
         })
+    }
+
+    private fun getUserHiddenPosts(userId: String, callback: (List<String>) -> Unit) {
+        db.collection("Users")
+            .document(userId)
+            .get()
+            .addOnSuccessListener { doc ->
+                @Suppress("UNCHECKED_CAST")
+                val hidden = doc.get("hiddenPosts") as? List<String> ?: emptyList()
+                callback(hidden)
+            }
+            .addOnFailureListener {
+                callback(emptyList())
+            }
+    }
+
+    fun hidePostLocally(postId: String) {
+        allLoadedPosts.removeAll { it.id == postId }
+        _postlist.value = allLoadedPosts.toList()
     }
 }
