@@ -229,20 +229,33 @@ class ChatDetailFragment : Fragment() {
     }
 
     fun checkIfCanSendMessage(currentUserId: String, friendId: String) {
-        FirebaseFirestore.getInstance().collection("Users")
-        .document(currentUserId)
-        .get()
-        .addOnSuccessListener { doc ->
-            val friends = doc["friends"] as? List<String> ?: emptyList()
-            val canChat = friendId in friends
-            if (!canChat) {
-                binding.btnSend.visibility = View.GONE
-                binding.etMessage.apply {
-                    isEnabled = false
-                    hint = "2 người không còn là bạn bè"
-                    gravity = Gravity.CENTER
+        val db = FirebaseFirestore.getInstance()
+        val meRef = db.collection("Users").document(currentUserId)
+        val youRef = db.collection("Users").document(friendId)
+        meRef.get().addOnSuccessListener { meDoc ->
+            val friends = meDoc["friends"] as? List<String> ?: emptyList()
+            meRef.collection("BlockedUsers").document(friendId)
+            .get().addOnSuccessListener { blockByMe ->
+                youRef.collection("BlockedUsers").document(currentUserId)
+                .get().addOnSuccessListener { blockByYou ->
+                    val isFriend = friendId in friends
+                    val iBlockedYou = blockByMe.exists()
+                    val youBlockedMe = blockByYou.exists()
+                    val canChat = isFriend && !iBlockedYou && !youBlockedMe
+                    if (!canChat) {
+                        binding.btnSend.visibility = View.GONE
+                        binding.btnAttach.visibility = View.GONE
+                        binding.etMessage.apply {
+                            isEnabled = false
+                            gravity = Gravity.CENTER
+                            hint = when {
+                                iBlockedYou    -> "Bạn đã chặn người này"
+                                youBlockedMe   -> "Bạn đã bị chặn"
+                                else           -> "2 người không còn là bạn bè"
+                            }
+                        }
+                    }
                 }
-                binding.btnAttach.visibility=View.GONE
             }
         }
     }
