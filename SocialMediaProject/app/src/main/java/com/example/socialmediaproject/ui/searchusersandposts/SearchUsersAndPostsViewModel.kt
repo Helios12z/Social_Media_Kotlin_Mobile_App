@@ -32,11 +32,6 @@ class SearchUsersAndPostsViewModel : ViewModel() {
         }
     }
 
-    fun refresh() {
-        _postlist.postValue(emptyList())
-        _userlist.postValue(emptyList())
-    }
-
     suspend fun searchPost(query: String) {
         withContext(Dispatchers.IO) {
             val currentUserId = auth.currentUser?.uid.orEmpty()

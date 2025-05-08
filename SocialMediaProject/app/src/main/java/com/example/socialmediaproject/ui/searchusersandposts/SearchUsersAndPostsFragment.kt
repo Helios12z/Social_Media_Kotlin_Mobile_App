@@ -17,11 +17,15 @@ import com.example.socialmediaproject.adapter.SearchUserAdapter
 import com.example.socialmediaproject.databinding.FragmentSearchUsersAndPostsBinding
 import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.ConcatAdapter
+import com.example.socialmediaproject.dataclass.PostViewModel
+import com.example.socialmediaproject.dataclass.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class SearchUsersAndPostsFragment : Fragment() {
     private lateinit var viewModel: SearchUsersAndPostsViewModel
     private lateinit var binding: FragmentSearchUsersAndPostsBinding
+    private var lastUsers: List<User>? = null
+    private var lastPosts: List<PostViewModel>? = null
     private val userAdapter = SearchUserAdapter {
         val bundle = Bundle()
         bundle.putString("wall_user_id", it)
@@ -58,16 +62,21 @@ class SearchUsersAndPostsFragment : Fragment() {
             adapter = concat
         }
         viewModel.userlist.observe(viewLifecycleOwner) { users ->
+            lastUsers=users
             userAdapter.submitList(users)
-            toggleEmptyState()
+            updateEmptyState()
         }
         viewModel.postlist.observe(viewLifecycleOwner) { posts ->
+            lastPosts=posts
             postAdapter.submitList(posts)
-            toggleEmptyState()
+            updateEmptyState()
         }
         binding.searchViewFriends.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
+                    lastUsers = null
+                    lastPosts = null
+                    binding.searchProgress.isVisible = true
                     lifecycleScope.launch {
                         viewModel.setSearchQuery(it)
                     }
@@ -76,7 +85,9 @@ class SearchUsersAndPostsFragment : Fragment() {
             }
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText.isNullOrEmpty()) {
-                    viewModel.refresh()
+                    lifecycleScope.launch {
+                        viewModel.setSearchQuery("")
+                    }
                 }
                 return false
             }
@@ -88,13 +99,6 @@ class SearchUsersAndPostsFragment : Fragment() {
                 R.id.chip_posts -> binding.rvSearchResults.adapter = postAdapter
             }
         }
-    }
-
-    fun toggleEmptyState() {
-        val hasAny = userAdapter.itemCount + postAdapter.itemCount > 0
-        binding.emptyStateContainer.isVisible = !hasAny
-        binding.rvSearchResults.isVisible = hasAny
-        binding.searchProgress.isVisible = false
     }
 
     override fun onResume() {
@@ -109,5 +113,13 @@ class SearchUsersAndPostsFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(0f).setDuration(200).start()
         bottomnavbar.visibility=View.VISIBLE
+    }
+
+    private fun updateEmptyState() {
+        if (lastUsers == null || lastPosts == null) return
+        binding.searchProgress.isVisible = false
+        val hasAny = lastUsers!!.isNotEmpty() || lastPosts!!.isNotEmpty()
+        binding.emptyStateContainer.isVisible = !hasAny
+        binding.rvSearchResults.isVisible = hasAny
     }
 }
