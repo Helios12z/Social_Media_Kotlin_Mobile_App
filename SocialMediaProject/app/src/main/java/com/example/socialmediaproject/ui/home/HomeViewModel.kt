@@ -37,6 +37,7 @@ class HomeViewModel : ViewModel() {
     private var isLoadingMore = false
     private val allLoadedPosts = mutableListOf<PostViewModel>()
     private var hiddenPostIds = emptyList<String>()
+    private var blockedUserIds = listOf<String>()
 
     init {
         loadInitialPosts()
@@ -51,14 +52,17 @@ class HomeViewModel : ViewModel() {
             getUserHiddenPosts(userId) {
                 hidden->hiddenPostIds=hidden
                 getUserInterests(userId) { userInterests ->
-                    if (userInterests.isEmpty()) {
+                    val cleanedUserInterests = userInterests.map { it.trim() }
+                    if (cleanedUserInterests.isEmpty()) {
                         _isloading.value = false
                         _postlist.value = emptyList()
                         _canLoadMore.value = false
                         return@getUserInterests
                     }
-                    val cleanedUserInterests = userInterests.map { it.trim() }
-                    loadPagedPosts(cleanedUserInterests, true)
+                    getUserBlockedUsers(userId) {
+                        blocked->blockedUserIds=blocked
+                        loadPagedPosts(cleanedUserInterests, true)
+                    }
                 }
             }
         }
@@ -97,6 +101,7 @@ class HomeViewModel : ViewModel() {
             val tasks = mutableListOf<Task<*>>()
             for (doc in documents) {
                 val userid = doc.getString("userid") ?: ""
+                if (blockedUserIds.contains(userid)) continue
                 val userTask = db.collection("Users").document(userid).get()
                 val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
                 val likesTask = db.collection("Likes")
@@ -317,5 +322,16 @@ class HomeViewModel : ViewModel() {
     fun hidePostLocally(postId: String) {
         allLoadedPosts.removeAll { it.id == postId }
         _postlist.value = allLoadedPosts.toList()
+    }
+
+    private fun getUserBlockedUsers(userId: String, cb: (List<String>) -> Unit) {
+        db.collection("Users").document(userId)
+            .collection("BlockedUsers")
+            .get()
+            .addOnSuccessListener { snap ->
+                val blocked = snap.documents.map { it.id }
+                cb(blocked)
+            }
+            .addOnFailureListener { cb(emptyList()) }
     }
 }
