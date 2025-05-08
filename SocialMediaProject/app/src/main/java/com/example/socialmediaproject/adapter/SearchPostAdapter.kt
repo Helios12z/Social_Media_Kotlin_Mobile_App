@@ -1,8 +1,10 @@
 package com.example.socialmediaproject.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -17,7 +19,8 @@ class PostDiff : DiffUtil.ItemCallback<PostViewModel>() {
     override fun areContentsTheSame(a: PostViewModel, b: PostViewModel) = a == b
 }
 
-class SearchPostAdapter(private val onDetailClicked: (String)->Unit): ListAdapter<PostViewModel, SearchPostAdapter.PostVH>(PostDiff()) {
+class SearchPostAdapter(private val onDetailClicked: (String)->Unit,
+                        private val onImageClicked: (String)->Unit): ListAdapter<PostViewModel, SearchPostAdapter.PostVH>(PostDiff()) {
     inner class PostVH(val binding: ItemSearchPostBinding)
         : RecyclerView.ViewHolder(binding.root) {
         fun bind(p: PostViewModel) {
@@ -28,7 +31,23 @@ class SearchPostAdapter(private val onDetailClicked: (String)->Unit): ListAdapte
             binding.btnViewDetails.setOnClickListener {
                 onDetailClicked(p.id)
             }
+            if (p.imageUrls.isNotEmpty()) {
+                binding.ivPostImage.visibility = View.VISIBLE
+                setupImagesRecyclerView(binding.ivPostImage, p.imageUrls)
+            } else {
+                binding.ivPostImage.visibility = View.GONE
+            }
         }
+    }
+
+    private fun setupImagesRecyclerView(recyclerView: RecyclerView, imageUrls: List<String>) {
+        val imageAdapter = ImagePostAdapter(imageUrls) { imagePosition ->
+            onImageClicked(imageUrls[imagePosition])
+        }
+        recyclerView.layoutManager = LinearLayoutManager(recyclerView.context, LinearLayoutManager.HORIZONTAL, false)
+        recyclerView.setHasFixedSize(true)
+        recyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
+        recyclerView.adapter = imageAdapter
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = PostVH(ItemSearchPostBinding.inflate(LayoutInflater.from(parent.context), parent, false))

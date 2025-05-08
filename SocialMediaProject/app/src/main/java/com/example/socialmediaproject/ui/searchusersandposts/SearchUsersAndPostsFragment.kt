@@ -27,11 +27,16 @@ class SearchUsersAndPostsFragment : Fragment() {
         bundle.putString("wall_user_id", it)
         findNavController().navigate(R.id.navigation_mainpage, bundle)
     }
-    private val postAdapter = SearchPostAdapter {
+    private val postAdapter = SearchPostAdapter(onDetailClicked = {
         val bundle = Bundle()
         bundle.putString("post_id", it)
         findNavController().navigate(R.id.navigation_postWithComment, bundle)
-    }
+    },
+    onImageClicked = {
+        val bundle = Bundle()
+        bundle.putString("IMAGE_URL", it)
+        findNavController().navigate(R.id.viewingimagefragment, bundle)
+    })
     private val concat = ConcatAdapter(userAdapter, postAdapter)
 
     override fun onCreateView(
