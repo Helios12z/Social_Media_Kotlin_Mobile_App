@@ -13,7 +13,6 @@ import kotlinx.coroutines.withContext
 
 class SearchUsersAndPostsViewModel : ViewModel() {
     private val _searchQuery = MutableLiveData<String>()
-    val searchQuery: LiveData<String> = _searchQuery
     private val db=FirebaseFirestore.getInstance()
     private val auth=FirebaseAuth.getInstance()
     private val _postlist=MutableLiveData<List<PostViewModel>>()

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ItemSearchUserBinding
 import com.example.socialmediaproject.dataclass.User
 
@@ -23,6 +24,8 @@ class SearchUserAdapter(private val onDetailClicked: (String)->Unit): ListAdapte
             binding.tvUserBio.text = u.bio
             Glide.with(binding.ivUserAvatar)
                 .load(u.avatarurl)
+                .placeholder(R.drawable.avataricon)
+                .error(R.drawable.avataricon)
                 .into(binding.ivUserAvatar)
             binding.btnDetail.setOnClickListener {
                 onDetailClicked(u.userid)

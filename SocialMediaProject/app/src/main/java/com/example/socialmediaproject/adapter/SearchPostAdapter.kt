@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ItemSearchPostBinding
 import com.example.socialmediaproject.dataclass.PostViewModel
 import java.text.SimpleDateFormat
@@ -27,7 +28,11 @@ class SearchPostAdapter(private val onDetailClicked: (String)->Unit,
             binding.tvAuthorName.text = p.userName
             binding.tvPostTime.text = getTimeAgo(p.timestamp)
             binding.tvPostContent.text = p.content
-            Glide.with(binding.ivAuthorAvatar.context).load(p.userAvatarUrl).into(binding.ivAuthorAvatar)
+            Glide.with(binding.ivAuthorAvatar.context)
+                .load(p.userAvatarUrl)
+                .placeholder(R.drawable.avataricon)
+                .error(R.drawable.avataricon)
+                .into(binding.ivAuthorAvatar)
             binding.btnViewDetails.setOnClickListener {
                 onDetailClicked(p.id)
             }
@@ -37,6 +42,9 @@ class SearchPostAdapter(private val onDetailClicked: (String)->Unit,
             } else {
                 binding.ivPostImage.visibility = View.GONE
             }
+            if (p.privacy=="Công khai") binding.postPrivacy.setImageResource(R.drawable.icon_global)
+            else if (p.privacy=="Riêng tư") binding.postPrivacy.setImageResource(R.drawable.icon_private)
+            else binding.postPrivacy.setImageResource(R.drawable.iconfriends)
         }
     }
 
