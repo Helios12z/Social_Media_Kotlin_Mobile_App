@@ -34,13 +34,10 @@ class MainPageViewModel : ViewModel() {
     private val auth: FirebaseAuth=FirebaseAuth.getInstance()
     private val realtimedb = Firebase.database("https://vector-mega-default-rtdb.asia-southeast1.firebasedatabase.app/")
     var wallUserId = ""
-
     private val _postlist=MutableLiveData<List<PostViewModel>>()
     val postlist: LiveData<List<PostViewModel>> = _postlist
-
     private val _isloading= MutableLiveData<Boolean>()
     val isloading: LiveData<Boolean> = _isloading
-
     val userInfo = MutableLiveData<UserMainPageInfo>()
     val isFriend = MutableLiveData<Boolean>()
     val isCurrentUser = MutableLiveData<Boolean>()
@@ -48,6 +45,10 @@ class MainPageViewModel : ViewModel() {
     val isReceivingFriendRequest = MutableLiveData<Boolean>()
     val followersCount = MutableLiveData<Int>()
     val postsCount = MutableLiveData<Int>()
+    private val postsPerPage = 10L
+    private var lastVisibleSnapshot: DocumentSnapshot? = null
+    var isLoadingMore = false
+    var canLoadMore = true
 
     fun loadUserData(wallUserId: String) {
         val currentUserId = auth.currentUser?.uid ?: ""
@@ -95,198 +96,106 @@ class MainPageViewModel : ViewModel() {
         }
     }
 
-    fun loadPosts() {
-        _isloading.value=true
-        val currentUserId=auth.currentUser?.uid ?: ""
-        if (wallUserId==currentUserId) {
-            db.collection("Posts")
+    fun loadPosts(isInitialLoad: Boolean = true) {
+        if (isLoadingMore) return
+        if (!isInitialLoad && !canLoadMore) return
+        isLoadingMore = true
+        _isloading.value = true
+        if (isInitialLoad) {
+            lastVisibleSnapshot = null
+            canLoadMore = true
+            _postlist.value = emptyList()
+        }
+        val currentUserId = auth.currentUser?.uid ?: ""
+        val baseQuery = db.collection("Posts")
             .whereEqualTo("userid", wallUserId)
             .orderBy("timestamp", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener { documents ->
-                val finalPostList = mutableListOf<PostViewModel>()
-                val tasks = mutableListOf<Task<*>>()
-                for (doc in documents) {
-                    val userid = doc.getString("userid") ?: ""
-                    val userTask = db.collection("Users").document(userid).get()
-                    val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
-                    val likesTask = db.collection("Likes")
-                    .whereEqualTo("userid", currentUserId)
-                    .whereEqualTo("postid", doc.id)
-                    .get()
-                    tasks.add(userTask)
-                    tasks.add(postStatsTask)
-                    tasks.add(likesTask)
-                    Tasks.whenAllComplete(listOf(userTask, postStatsTask, likesTask)).addOnSuccessListener { results ->
-                        val userDoc = (results[0] as Task<DocumentSnapshot>).result
-                        val ref = (results[1] as Task<DataSnapshot>).result
-                        val likeResults = (results[2] as Task<QuerySnapshot>).result
-                        val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
-                        val sharecount = ref.child("sharecount").getValue(Int::class.java) ?: 0
-                        val commentcount = ref.child("commentcount").getValue(Int::class.java) ?: 0
-                        var isliked = false
-                        if (!likeResults.isEmpty) {
-                            for (result in likeResults) {
-                                isliked = result.getBoolean("status") ?: false
-                            }
-                        }
-                        val post = PostViewModel(
-                            id = doc.id,
-                            userId = userid,
-                            userName = userDoc.getString("name") ?: "",
-                            userAvatarUrl = userDoc.getString("avatarurl") ?: "",
-                            content = doc.getString("content") ?: "",
-                            category = doc.get("category") as? List<String> ?: emptyList(),
-                            imageUrls = doc.get("imageurl") as? List<String> ?: emptyList(),
-                            timestamp = doc.getLong("timestamp") ?: 0,
-                            likeCount = likecount,
-                            commentCount = commentcount,
-                            shareCount = sharecount,
-                            isLiked = isliked,
-                            privacy = doc.getString("privacy")?:""
-                        )
-                        finalPostList.add(post)
-                    }
-                }
-                Tasks.whenAllComplete(tasks).addOnSuccessListener {
-                    _postlist.value=finalPostList.sortedByDescending { it.timestamp }
-                    _isloading.value=false
-                }
-            }
+        if (wallUserId == currentUserId) {
+            fetchPage(baseQuery, currentUserId)
         }
         else {
-            db.collection("Users").document(wallUserId).get().addOnSuccessListener {
-                result->if (result.exists()) {
-                    val friends=result.get("friends") as? List<String>
-                    if (friends?.contains(currentUserId) == true) {
-                        db.collection("Posts")
-                        .whereEqualTo("userid", wallUserId)
-                        .whereIn("privacy", listOf("Công khai", "Bạn bè"))
-                        .orderBy("timestamp", Query.Direction.DESCENDING)
-                        .get()
-                        .addOnSuccessListener { documents ->
-                            val finalPostList = mutableListOf<PostViewModel>()
-                            val tasks = mutableListOf<Task<*>>()
-                            for (doc in documents) {
-                                val userid = doc.getString("userid") ?: ""
-                                val userTask = db.collection("Users").document(userid).get()
-                                val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
-                                val likesTask = db.collection("Likes")
-                                    .whereEqualTo("userid", currentUserId)
-                                    .whereEqualTo("postid", doc.id)
-                                    .get()
-                                tasks.add(userTask)
-                                tasks.add(postStatsTask)
-                                tasks.add(likesTask)
-                                Tasks.whenAllComplete(listOf(userTask, postStatsTask, likesTask)).addOnSuccessListener { results ->
-                                    val userDoc = (results[0] as Task<DocumentSnapshot>).result
-                                    val ref = (results[1] as Task<DataSnapshot>).result
-                                    val likeResults = (results[2] as Task<QuerySnapshot>).result
-
-                                    val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
-                                    val sharecount = ref.child("sharecount").getValue(Int::class.java) ?: 0
-                                    val commentcount = ref.child("commentcount").getValue(Int::class.java) ?: 0
-                                    var isliked = false
-                                    if (!likeResults.isEmpty) {
-                                        for (result in likeResults) {
-                                            isliked = result.getBoolean("status") ?: false
-                                        }
-                                    }
-                                    val post = PostViewModel(
-                                        id = doc.id,
-                                        userId = userid,
-                                        userName = userDoc.getString("name") ?: "",
-                                        userAvatarUrl = userDoc.getString("avatarurl") ?: "",
-                                        content = doc.getString("content") ?: "",
-                                        category = doc.get("category") as? List<String> ?: emptyList(),
-                                        imageUrls = doc.get("imageurl") as? List<String> ?: emptyList(),
-                                        timestamp = doc.getLong("timestamp") ?: 0,
-                                        likeCount = likecount,
-                                        commentCount = commentcount,
-                                        shareCount = sharecount,
-                                        isLiked = isliked,
-                                        privacy = doc.getString("privacy")?:""
-                                    )
-                                    finalPostList.add(post)
-                                }
-                            }
-                            Tasks.whenAllComplete(tasks).addOnSuccessListener {
-                                _postlist.value=finalPostList.sortedByDescending { it.timestamp }
-                                _isloading.value=false
-                            }
-                        }
-                        .addOnFailureListener {
-                            it.printStackTrace()
-                        }
-                    }
-                    else {
-                        db.collection("Posts")
-                        .whereEqualTo("userid", wallUserId)
-                        .whereEqualTo("privacy", "Công khai")
-                        .orderBy("timestamp", Query.Direction.DESCENDING)
-                        .get()
-                        .addOnSuccessListener { documents ->
-                            val finalPostList = mutableListOf<PostViewModel>()
-                            val tasks = mutableListOf<Task<*>>()
-                            for (doc in documents) {
-                                val userid = doc.getString("userid") ?: ""
-                                val userTask = db.collection("Users").document(userid).get()
-                                val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
-                                val likesTask = db.collection("Likes")
-                                    .whereEqualTo("userid", currentUserId)
-                                    .whereEqualTo("postid", doc.id)
-                                    .get()
-                                tasks.add(userTask)
-                                tasks.add(postStatsTask)
-                                tasks.add(likesTask)
-                                Tasks.whenAllComplete(listOf(userTask, postStatsTask, likesTask)).addOnSuccessListener { results ->
-                                    val userDoc = (results[0] as Task<DocumentSnapshot>).result
-                                    val ref = (results[1] as Task<DataSnapshot>).result
-                                    val likeResults = (results[2] as Task<QuerySnapshot>).result
-
-                                    val likecount = ref.child("likecount").getValue(Int::class.java) ?: 0
-                                    val sharecount = ref.child("sharecount").getValue(Int::class.java) ?: 0
-                                    val commentcount = ref.child("commentcount").getValue(Int::class.java) ?: 0
-                                    var isliked = false
-                                    if (!likeResults.isEmpty) {
-                                        for (result in likeResults) {
-                                            isliked = result.getBoolean("status") ?: false
-                                        }
-                                    }
-                                    val post = PostViewModel(
-                                        id = doc.id,
-                                        userId = userid,
-                                        userName = userDoc.getString("name") ?: "",
-                                        userAvatarUrl = userDoc.getString("avatarurl") ?: "",
-                                        content = doc.getString("content") ?: "",
-                                        category = doc.get("category") as? List<String> ?: emptyList(),
-                                        imageUrls = doc.get("imageurl") as? List<String> ?: emptyList(),
-                                        timestamp = doc.getLong("timestamp") ?: 0,
-                                        likeCount = likecount,
-                                        commentCount = commentcount,
-                                        shareCount = sharecount,
-                                        isLiked = isliked,
-                                        privacy = doc.getString("privacy")?:""
-                                    )
-                                    finalPostList.add(post)
-                                }
-                            }
-                            Tasks.whenAllComplete(tasks).addOnSuccessListener {
-                                _postlist.value=finalPostList.sortedByDescending { it.timestamp }
-                                _isloading.value=false
-                            }
-                        }
-                        .addOnFailureListener {
-                            it.printStackTrace()
-                        }
-                    }
+            db.collection("Users").document(wallUserId).get()
+            .addOnSuccessListener { userDoc ->
+                val friends = userDoc.get("friends") as? List<String> ?: emptyList()
+                val q = if (friends.contains(currentUserId)) {
+                    baseQuery.whereIn("privacy", listOf("Công khai", "Bạn bè"))
+                } else {
+                    baseQuery.whereEqualTo("privacy", "Công khai")
                 }
+                fetchPage(q, currentUserId)
+            }
+            .addOnFailureListener {
+                it.printStackTrace()
+                val q = baseQuery.whereEqualTo("privacy", "Công khai")
+                fetchPage(q, currentUserId)
             }
         }
     }
 
+    private fun fetchPage(query: Query, currentUserId: String) {
+        var paged = query.limit(postsPerPage)
+        lastVisibleSnapshot?.let { paged = paged.startAfter(it) }
+        paged.get()
+        .addOnSuccessListener { docs ->
+            val finalPostList = mutableListOf<PostViewModel>()
+            val tasks = mutableListOf<Task<*>>()
+            for (doc in docs) {
+                val uid = doc.getString("userid") ?: ""
+                val userTask  = db.collection("Users").document(uid).get()
+                val statsTask = realtimedb.getReference("PostStats").child(doc.id).get()
+                val likesTask = db.collection("Likes")
+                    .whereEqualTo("userid", currentUserId)
+                    .whereEqualTo("postid", doc.id)
+                    .get()
+                tasks += listOf(userTask, statsTask, likesTask)
+                Tasks.whenAllComplete(listOf(userTask, statsTask, likesTask))
+                    .addOnSuccessListener { results ->
+                        val uDoc = (results[0] as Task<DocumentSnapshot>).result
+                        val snap = (results[1] as Task<DataSnapshot>).result
+                        val likesQ = (results[2] as Task<QuerySnapshot>).result
+                        val likeC = snap.child("likecount").getValue(Int::class.java) ?: 0
+                        val shareC = snap.child("sharecount").getValue(Int::class.java) ?: 0
+                        val commC = snap.child("commentcount").getValue(Int::class.java) ?: 0
+                        val isLiked = likesQ.any { it.getBoolean("status") == true }
+                        finalPostList.add(
+                            PostViewModel(
+                                id = doc.id,
+                                userId = uid,
+                                userName = uDoc.getString("name")      ?: "",
+                                userAvatarUrl = uDoc.getString("avatarurl")?: "",
+                                content = doc.getString("content")   ?: "",
+                                category = doc.get("category") as? List<String> ?: emptyList(),
+                                imageUrls = doc.get("imageurl") as? List<String> ?: emptyList(),
+                                timestamp = doc.getLong("timestamp")   ?: 0L,
+                                likeCount = likeC,
+                                commentCount = commC,
+                                shareCount = shareC,
+                                isLiked = isLiked,
+                                privacy = doc.getString("privacy")   ?: ""
+                            )
+                        )
+                    }
+            }
+            Tasks.whenAllComplete(tasks).addOnSuccessListener {
+                val merged = (_postlist.value ?: emptyList()) + finalPostList
+                _postlist.value = merged.sortedByDescending { it.timestamp }
+                if (!docs.isEmpty) {
+                    lastVisibleSnapshot = docs.documents.last()
+                }
+                canLoadMore   = (docs.size().toLong() == postsPerPage)
+                isLoadingMore = false
+                _isloading.value = false
+            }
+        }
+        .addOnFailureListener {
+            it.printStackTrace()
+            isLoadingMore = false
+            _isloading.value = false
+        }
+    }
+
     fun refreshFeed() {
-        loadPosts()
+        loadPosts(true)
     }
 
     fun toggleLike(post: PostViewModel, position: Int) {

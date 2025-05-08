@@ -153,6 +153,20 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             bundle.putString("user_id", wallUserId)
             findNavController().navigate(R.id.navigation_friend_list, bundle)
         }
+        recyclerViewFeed.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                if (dy <= 0) return
+                val lm = rv.layoutManager as LinearLayoutManager
+                val visibleCount = lm.childCount
+                val totalCount = lm.itemCount
+                val firstPos = lm.findFirstVisibleItemPosition()
+                if (!viewModel.isLoadingMore
+                    && viewModel.canLoadMore
+                    && visibleCount + firstPos >= totalCount) {
+                    viewModel.loadPosts(isInitialLoad = false)
+                }
+            }
+        })
     }
 
     private fun showBottomSheet() {

@@ -114,7 +114,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                     val totalItemCount = layoutManager.itemCount
                     val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
                     if (!isLoading && !isLastPage) {
-                        if ((visibleItemCount + firstVisibleItemPosition + 5) >= totalItemCount
+                        if ((visibleItemCount + firstVisibleItemPosition + 1) >= totalItemCount
                             && firstVisibleItemPosition >= 0) {
                             loadMorePosts()
                         }
