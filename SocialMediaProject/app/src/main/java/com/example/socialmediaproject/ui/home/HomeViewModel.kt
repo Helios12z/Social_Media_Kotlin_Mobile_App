@@ -3,7 +3,6 @@ package com.example.socialmediaproject.ui.home
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import android.util.Log
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -59,8 +58,8 @@ class HomeViewModel : ViewModel() {
                         _canLoadMore.value = false
                         return@getUserInterests
                     }
-                    getUserBlockedUsers(userId) {
-                        blocked->blockedUserIds=blocked
+                    getExcludedUserIds(userId) {
+                        excluded->blockedUserIds=excluded
                         loadPagedPosts(cleanedUserInterests, true)
                     }
                 }
@@ -101,7 +100,7 @@ class HomeViewModel : ViewModel() {
             val tasks = mutableListOf<Task<*>>()
             for (doc in documents) {
                 val userid = doc.getString("userid") ?: ""
-                if (blockedUserIds.contains(userid)) continue
+                if (userid in blockedUserIds) continue
                 val userTask = db.collection("Users").document(userid).get()
                 val postStatsTask = realtimedb.getReference("PostStats").child(doc.id).get()
                 val likesTask = db.collection("Likes")
@@ -324,14 +323,27 @@ class HomeViewModel : ViewModel() {
         _postlist.value = allLoadedPosts.toList()
     }
 
-    private fun getUserBlockedUsers(userId: String, cb: (List<String>) -> Unit) {
-        db.collection("Users").document(userId)
+    private fun getExcludedUserIds(userId: String, cb: (List<String>) -> Unit) {
+        val myBlockedTask = db.collection("Users")
+            .document(userId)
             .collection("BlockedUsers")
             .get()
-            .addOnSuccessListener { snap ->
-                val blocked = snap.documents.map { it.id }
-                cb(blocked)
+
+        val blockedMeTask = db.collectionGroup("BlockedUsers")
+            .whereEqualTo("blockedUserId", userId)
+            .get()
+
+        Tasks.whenAllSuccess<QuerySnapshot>(listOf(myBlockedTask, blockedMeTask))
+            .addOnSuccessListener { results ->
+                val myBlocked = results[0].documents.map { it.id }
+                val blockedMe = results[1].documents.mapNotNull { doc ->
+                    doc.reference.parent.parent?.id
+                }
+                val excluded = (myBlocked + blockedMe).distinct()
+                cb(excluded)
             }
-            .addOnFailureListener { cb(emptyList()) }
+            .addOnFailureListener { e ->
+                cb(emptyList())
+            }
     }
 }
