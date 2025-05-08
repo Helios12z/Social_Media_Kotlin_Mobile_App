@@ -19,6 +19,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
@@ -46,6 +47,9 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private var isFriendFlag = false
     private var isSendingFriendRequest = false
     private var isReceivingFriendRequest = false
+    private var isBlockedUser = false
+    private var isBlockedByUser = false
+    private var loading : LoadingDialogFragment? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -69,6 +73,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             user-> if (user.userId!=wallUserId || viewModel.postlist.value.isNullOrEmpty()) {
                 viewModel.loadPosts()
             }
+            checkBlockStatus()
         }
         return binding.root
     }
@@ -267,6 +272,14 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         }
         viewModel.isloading.observe(viewLifecycleOwner) { isLoading ->
             swipeRefreshLayout.isRefreshing = isLoading
+            if (isLoading) {
+                loading=LoadingDialogFragment()
+                loading?.show(parentFragmentManager, "loading")
+            }
+            else {
+                loading?.dismiss()
+                loading=null
+            }
         }
     }
 
@@ -467,6 +480,48 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         }
         .addOnFailureListener { e ->
             onError?.invoke(e)
+        }
+    }
+
+    private fun checkBlockStatus() {
+        val db = FirebaseFirestore.getInstance()
+        val meId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val themId = viewModel.wallUserId
+        db.collection("Users").document(meId)
+        .collection("BlockedUsers").document(themId)
+        .get()
+        .addOnSuccessListener { doc ->
+            isBlockedUser = doc.exists()
+            db.collection("Users").document(themId)
+            .collection("BlockedUsers").document(meId)
+            .get()
+            .addOnSuccessListener { doc2 ->
+                isBlockedByUser = doc2.exists()
+                applyBlockUI()
+            }
+        }
+    }
+
+    private fun applyBlockUI() {
+        if (isBlockedByUser) {
+            binding.run {
+                informationContainer.visibility=View.GONE
+                buttonAddFriend.isEnabled=false
+                buttonAddFriend.text="Bạn đã bị chặn"
+                recyclerViewFeed.visibility = View.GONE
+                swipeRefreshLayout.visibility = View.GONE
+            }
+            return
+        }
+        if (isBlockedUser) {
+            binding.buttonAddFriend.apply {
+                isEnabled = false
+                text = "Bạn đã chặn người này"
+            }
+            binding.buttonChat.visibility = View.GONE
+        }
+        else {
+            updateFriendshipUI()
         }
     }
 }
