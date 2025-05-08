@@ -46,6 +46,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private val postList = mutableListOf<PostViewModel>()
     private lateinit var homeviewmodel: HomeViewModel
     private lateinit var chatbutton: ImageView
+    private lateinit var searchbutton: ImageView
     private lateinit var chatViewModel: ChatViewModel
     private lateinit var badge: BadgeDrawable
     private var isLoading = false
@@ -62,6 +63,10 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         chatbutton=view.findViewById(R.id.button_chat)
         chatbutton.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_chatFragment)
+        }
+        searchbutton=view.findViewById(R.id.button_search)
+        searchbutton.setOnClickListener {
+            findNavController().navigate(R.id.navigation_search_users_and_posts)
         }
         initViews(view)
         setupRecyclerView()

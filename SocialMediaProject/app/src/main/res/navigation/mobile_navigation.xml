@@ -127,4 +127,9 @@
         tools:layout="@layout/fragment_detail_information"
         android:label="DetailInformation">
     </fragment>
+
+    <fragment android:id="@+id/navigation_search_users_and_posts"
+        android:name="com.example.socialmediaproject.ui.searchusersandposts.SearchUsersAndPostsFragment"
+        android:label="SearchUsersAndPosts"
+        tools:layout="@layout/fragment_search_users_and_posts"/>
 </navigation>
