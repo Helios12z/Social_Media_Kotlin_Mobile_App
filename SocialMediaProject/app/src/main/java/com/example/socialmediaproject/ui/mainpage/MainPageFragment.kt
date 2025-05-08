@@ -167,6 +167,11 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                 }
             }
         })
+        binding.profileDetails.setOnClickListener {
+            val bundle=Bundle()
+            bundle.putString("userId", wallUserId)
+            findNavController().navigate(R.id.navigation_detail_information, bundle)
+        }
     }
 
     private fun showBottomSheet() {
@@ -457,11 +462,11 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             .document()
         val msgWithId = message.copy(id = msgRef.id)
         msgRef.set(msgWithId)
-            .addOnSuccessListener {
-                onSuccess?.invoke()
-            }
-            .addOnFailureListener { e ->
-                onError?.invoke(e)
-            }
+        .addOnSuccessListener {
+            onSuccess?.invoke()
+        }
+        .addOnFailureListener { e ->
+            onError?.invoke(e)
+        }
     }
 }

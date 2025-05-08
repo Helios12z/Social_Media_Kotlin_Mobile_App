@@ -121,4 +121,10 @@
         android:label="EditPost"
         tools:layout="@layout/fragment_edit_post">
     </fragment>
+
+    <fragment android:id="@+id/navigation_detail_information"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.DetailInformationFragment"
+        tools:layout="@layout/fragment_detail_information"
+        android:label="DetailInformation">
+    </fragment>
 </navigation>
