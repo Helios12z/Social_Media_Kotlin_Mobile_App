@@ -73,7 +73,7 @@ class DetailInformationFragment : Fragment() {
                     isBlocked = doc.exists()
                     updateBlockButtonText()
                 }
-                if (currentUserId==userId) binding.btnBlock.visibility=View.GONE
+                if (currentUserId==userId) binding.btnBlockContainer.visibility=View.GONE
                 binding.btnBlock.setOnClickListener {
                     val title = if (!isBlocked) "Chặn người dùng" else "Bỏ chặn người dùng"
                     val message = if (!isBlocked) "Bạn có chắc chắn muốn chặn người này không?"
