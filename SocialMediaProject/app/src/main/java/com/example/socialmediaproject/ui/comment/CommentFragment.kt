@@ -19,8 +19,11 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
 import com.example.socialmediaproject.databinding.FragmentCommentBinding
 import com.example.socialmediaproject.dataclass.Comment
+import com.google.android.gms.tasks.TaskCompletionSource
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -177,46 +180,75 @@ class CommentFragment : Fragment() {
             .show()
     }
 
-    fun deleteComment(commentId: String) {
-        val commentRef = db.collection("comments").document(commentId)
-        commentRef.get().addOnSuccessListener { doc ->
-            if (!doc.exists()) return@addOnSuccessListener
-            val parentId = doc.getString("parentId")
-            if (parentId == null) {
-                db.collection("comments")
-                .whereEqualTo("parentId", commentId)
-                .get()
-                .addOnSuccessListener { snap ->
-                    val batch = db.batch()
-                    for (child in snap.documents) {
-                        batch.delete(child.reference)
-                    }
-                    batch.delete(commentRef)
-                    batch.commit()
-                    .addOnSuccessListener {
-                        val idx = adapter.comments.indexOfFirst { it.id == commentId }
-                        if (idx != -1) {
-                            adapter.comments.removeAt(idx)
-                            adapter.notifyItemRemoved(idx)
-                        }
-                        Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
-                    }
-                }
+    fun deleteCommentRecursively(
+        commentRef: DocumentReference,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit) {
+        commentRef.firestore.collection("comments")
+        .whereEqualTo("parentId", commentRef.id)
+        .get()
+        .addOnSuccessListener { snap ->
+            val children = snap.documents
+            if (children.isEmpty()) {
+                commentRef.delete()
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
             }
             else {
-                commentRef.delete()
+                val tasks = children.map { childDoc ->
+                    val tcs = TaskCompletionSource<Void>()
+                    deleteCommentRecursively(
+                        childDoc.reference,
+                        { tcs.setResult(null) },
+                        { tcs.setException(it) }
+                    )
+                    tcs.task
+                }
+                Tasks.whenAll(tasks)
                 .addOnSuccessListener {
-                    for ((parentIdx, parent) in adapter.comments.withIndex()) {
-                        val replyIdx = parent.replies.indexOfFirst { it.id == commentId }
-                        if (replyIdx != -1) {
-                            parent.replies.removeAt(replyIdx)
-                            adapter.notifyItemChanged(parentIdx)
+                    commentRef.delete()
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener { onFailure(it) }
+                }
+                .addOnFailureListener { onFailure(it) }
+            }
+        }
+        .addOnFailureListener { onFailure(it) }
+    }
+
+    fun deleteComment(commentId: String) {
+        val commentRef = db.collection("comments").document(commentId)
+        commentRef.get()
+        .addOnSuccessListener { doc ->
+            if (!doc.exists()) return@addOnSuccessListener
+            val parentId = doc.getString("parentId")
+            val uiOnSuccess = {
+                if (parentId == null) {
+                    val idx = adapter.comments.indexOfFirst { it.id == commentId }
+                    if (idx != -1) {
+                        adapter.comments.removeAt(idx)
+                        adapter.notifyItemRemoved(idx)
+                    }
+                } else {
+                    for ((pIdx, parent) in adapter.comments.withIndex()) {
+                        val rIdx = parent.replies.indexOfFirst { it.id == commentId }
+                        if (rIdx != -1) {
+                            parent.replies.removeAt(rIdx)
+                            adapter.notifyItemChanged(pIdx)
                             break
                         }
                     }
-                    Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
                 }
+                Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
             }
+            deleteCommentRecursively(
+                commentRef,
+                onSuccess = uiOnSuccess,
+                onFailure = { e ->
+                    e.printStackTrace()
+                    Toast.makeText(requireContext(), "Xóa lỗi", Toast.LENGTH_LONG).show()
+                }
+            )
         }
         .addOnFailureListener {
             Toast.makeText(requireContext(), "Xóa thất bại", Toast.LENGTH_SHORT).show()
