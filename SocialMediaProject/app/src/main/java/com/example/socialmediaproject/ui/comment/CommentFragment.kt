@@ -184,6 +184,7 @@ class CommentFragment : Fragment() {
         commentRef: DocumentReference,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit) {
+        Toast.makeText(requireContext(), "Đang xóa...", Toast.LENGTH_SHORT).show()
         commentRef.firestore.collection("comments")
         .whereEqualTo("parentId", commentRef.id)
         .get()

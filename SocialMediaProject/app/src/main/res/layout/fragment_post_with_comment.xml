@@ -234,6 +234,13 @@
                 android:padding="8dp"
                 android:nestedScrollingEnabled="false"
                 tools:listitem="@layout/item_comment" />
+
+            <ProgressBar
+                android:id="@+id/comment_loading_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

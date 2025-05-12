@@ -248,6 +248,16 @@ class PostWithCommentFragment : Fragment() {
             }
             popup.show()
         }
+        commentViewModel.isLoadingLive.observe(viewLifecycleOwner) {
+            isLoading->if (isLoading) {
+                binding.commentLoadingProgress.visibility=View.VISIBLE
+                binding.noCommentsLayout.visibility=View.GONE
+            }
+            else {
+                binding.commentLoadingProgress.visibility=View.GONE
+                binding.noCommentsLayout.visibility=View.VISIBLE
+            }
+        }
     }
 
     private fun setupAdapter() {
