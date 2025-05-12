@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -41,12 +42,34 @@ class PostingService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         isposting =true
+        val action = intent?.getStringExtra("action") ?: "post"
         val postContent = intent?.getStringExtra("post_content") ?: ""
         val imageList = intent?.getParcelableArrayListExtra<Uri>("image_list") ?: arrayListOf()
         val privacy = intent?.getStringExtra("privacy") ?: "Công khai"
-        notifyStatus(NotificationService.ACTION.START, "Đang đăng bài")
+        if (action == "update") {
+            val notification = createNotification("Đang cập nhật bài...")
+            startForeground(1, notification)
+        }
+        notifyStatus(NotificationService.ACTION.START, if (action=="update") "Đang cập nhật bài…" else "Đang đăng bài…")
         uploadAllImages(imageList) {
-            UploadPost(postContent, privacy)
+            if (action == "update") {
+                val postId = intent?.getStringExtra("post_id")!!
+                db.collection("Posts").document(postId).get().addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val oldImageUrls = document.get("imageurl") as? List<String> ?: emptyList()
+                        val newImages =
+                            imageList.filter { !oldImageUrls.contains(it.toString()) }
+                        uploadAllImages(newImages) {
+                            uploadedImage.addAll(newImages.map { it.toString() })
+                            updatePost(postId, postContent, privacy)
+                        }
+                    } else {
+                        notifyStatus(NotificationService.ACTION.STOP, "Cập nhật thất bại")
+                    }
+                }
+            } else {
+                UploadPost(postContent, privacy)
+            }
         }
         return START_NOT_STICKY
     }
@@ -57,7 +80,6 @@ class PostingService : Service() {
             callback()
             return
         }
-
         for (uri in imageList) {
             uploadImageToImgbb(uri) { imageUrl ->
                 if (imageUrl != null) {
@@ -235,5 +257,47 @@ class PostingService : Service() {
         } else {
             startService(intent)
         }
+    }
+
+    private fun updatePost(postId: String, content: String, privacy: String) {
+        val data = hashMapOf<String, Any>(
+            "content" to content,
+            "privacy" to privacy,
+            "imageurl" to uploadedImage,
+            "isUpdatedAt" to System.currentTimeMillis()
+        )
+        db.collection("Posts").document(postId)
+            .update(data)
+            .addOnSuccessListener {
+                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật thành công!")
+                Handler(Looper.getMainLooper()).postDelayed({
+                    notifyStatus(NotificationService.ACTION.STOP, "")
+                    stopSelf()
+                }, 1500)
+                isposting = false
+            }
+            .addOnFailureListener {
+                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật thất bại!")
+                Handler(Looper.getMainLooper()).postDelayed({
+                    notifyStatus(NotificationService.ACTION.STOP, "")
+                    stopSelf()
+                }, 1500)
+                isposting = false
+            }
+    }
+
+    private fun createNotification(content: String): Notification {
+        val channelId = "posting_service_channel"
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "Vector", NotificationManager.IMPORTANCE_LOW)
+            notificationManager.createNotificationChannel(channel)
+        }
+        return NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Đang cập nhật...")
+            .setContentText(content)
+            .setSmallIcon(R.drawable.uploadicon)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
     }
 }

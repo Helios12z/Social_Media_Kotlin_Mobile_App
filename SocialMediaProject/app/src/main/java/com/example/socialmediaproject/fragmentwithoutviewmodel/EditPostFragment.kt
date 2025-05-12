@@ -54,27 +54,6 @@ class EditPostFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val listPrivacy= mutableListOf<String>()
-        db.collection("Privacies").get().addOnSuccessListener {
-            documents->if (documents!=null && !documents.isEmpty) {
-                for (document in documents) listPrivacy.add(document.getString("name") ?: "")
-                val adapter= ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listPrivacy)
-                privacySpinner.adapter=adapter
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                privacySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        if (parent != null) {
-                            privacy = parent.getItemAtPosition(position).toString()
-                        }
-                    }
-                    override fun onNothingSelected(parent: AdapterView<*>?) {}
-                }
-            }
-        }
         mediaadapter= MediaAdapter(imagelist, ::removeImage)
         rv_selected_media.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         rv_selected_media.adapter = mediaadapter
@@ -103,7 +82,28 @@ class EditPostFragment : Fragment() {
             }
             parentFragmentManager.popBackStack()
         }
-        if (postId!="") loadPostInfo(postId)
+        db.collection("Privacies").get().addOnSuccessListener {
+            documents->if (documents!=null && !documents.isEmpty) {
+                for (document in documents) listPrivacy.add(document.getString("name") ?: "")
+                val adapter= ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listPrivacy)
+                privacySpinner.adapter=adapter
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                privacySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        if (parent != null) {
+                            privacy = parent.getItemAtPosition(position).toString()
+                        }
+                    }
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+                }
+                if (postId!="") loadPostInfo(postId)
+            }
+        }
     }
 
     private fun loadPostInfo(postId: String) {
