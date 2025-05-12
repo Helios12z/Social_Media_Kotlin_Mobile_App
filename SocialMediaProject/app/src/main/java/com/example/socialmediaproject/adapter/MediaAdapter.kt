@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 
 class MediaAdapter(private val imageList: MutableList<Uri>, private val onRemoveClick: (Int) -> Unit): RecyclerView.Adapter<MediaAdapter.ViewHolder>() {
@@ -21,7 +22,12 @@ class MediaAdapter(private val imageList: MutableList<Uri>, private val onRemove
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.imageView.setImageURI(imageList[position])
+        val uri = imageList[position]
+        Glide.with(holder.imageView.context)
+            .load(uri)
+            .placeholder(R.drawable.imageicon)
+            .error(R.drawable.imageicon)
+            .into(holder.imageView)
         holder.removeButton.setOnClickListener {
             onRemoveClick(position)
         }
