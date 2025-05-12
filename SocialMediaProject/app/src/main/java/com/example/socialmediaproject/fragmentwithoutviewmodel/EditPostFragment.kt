@@ -3,6 +3,7 @@ package com.example.socialmediaproject.fragmentwithoutviewmodel
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.MediaAdapter
 import com.example.socialmediaproject.databinding.FragmentEditPostBinding
+import com.example.socialmediaproject.service.PostingService
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -53,7 +55,7 @@ class EditPostFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val listPrivacy= mutableListOf<String>()
         db.collection("Privacies").get().addOnSuccessListener {
-            documents->if (documents!=null) {
+            documents->if (documents!=null && !documents.isEmpty) {
                 for (document in documents) listPrivacy.add(document.getString("name") ?: "")
                 val adapter= ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, listPrivacy)
                 privacySpinner.adapter=adapter
@@ -78,6 +80,28 @@ class EditPostFragment : Fragment() {
         rv_selected_media.adapter = mediaadapter
         binding.btnAddPhotos.setOnClickListener {
             openGallery()
+        }
+        binding.btnCancel.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+        binding.btnSave.setOnClickListener {
+            if (binding.etPostContent.text.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Không thể lưu một bài trống không!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val intent = Intent(requireContext(), PostingService::class.java).apply {
+                putExtra("action", "update")
+                putExtra("post_id", postId)
+                putExtra("post_content", binding.etPostContent.text.toString())
+                putExtra("privacy", privacy)
+                putParcelableArrayListExtra("image_list", ArrayList(imagelist))
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                requireContext().startForegroundService(intent)
+            } else {
+                requireContext().startService(intent)
+            }
+            parentFragmentManager.popBackStack()
         }
         if (postId!="") loadPostInfo(postId)
     }
@@ -113,6 +137,20 @@ class EditPostFragment : Fragment() {
                 }
                 val timestamp=result.getLong("timestamp")?:0
                 binding.tvPostDate.setText("Đã đăng vào: ${getTimeAgo(timestamp)}")
+                val updateTimestamp=result.getLong("isUpdatedAt")?:0
+                if (updateTimestamp.toInt()!=0) {
+                    binding.tvPostUpdateDate.visibility=View.VISIBLE
+                    binding.tvPostUpdateDate.setText("Cập nhật vào: ${getTimeAgo(updateTimestamp)}")
+                }
+                val oldPrivacy = result.getString("privacy") ?: ""
+                if (oldPrivacy.isNotEmpty()) {
+                    val spinnerAdapter = privacySpinner.adapter as ArrayAdapter<String>
+                    val pos = spinnerAdapter.getPosition(oldPrivacy)
+                    if (pos >= 0) {
+                        privacySpinner.setSelection(pos)
+                        privacy = oldPrivacy
+                    }
+                }
             }
             else {
                 Toast.makeText(requireContext(), "Không tìm thấy bài đăng", Toast.LENGTH_SHORT).show()

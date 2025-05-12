@@ -124,8 +124,17 @@
                                 android:id="@+id/tv_post_date"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Đã đăng vào: 01/01/2025"
+                                android:text=""
                                 android:textColor="@color/text_color"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tv_post_update_date"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text=""
+                                android:textColor="@color/text_color"
+                                android:visibility="gone"
                                 android:textSize="12sp" />
 
                             <Spinner
