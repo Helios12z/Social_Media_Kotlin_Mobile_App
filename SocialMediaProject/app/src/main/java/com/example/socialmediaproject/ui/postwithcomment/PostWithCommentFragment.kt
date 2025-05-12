@@ -429,14 +429,14 @@ class PostWithCommentFragment : Fragment() {
             binding.btnCancelReply.visibility = View.GONE
         }
         db.collection("Users").document(auth.currentUser?.uid?:"").get().addOnSuccessListener {
-                result->if (result.exists()) {
-            if (result.getString("avatarurl")!="") {
-                Glide.with(requireContext())
-                    .load(result.getString("avatarurl"))
-                    .placeholder(R.drawable.avataricon)
-                    .error(R.drawable.avataricon)
-                    .into(binding.ivUserAvatar)
-            }
+            result->if (result.exists()) {
+                if (result.getString("avatarurl")!="") {
+                    Glide.with(requireContext())
+                        .load(result.getString("avatarurl"))
+                        .placeholder(R.drawable.avataricon)
+                        .error(R.drawable.avataricon)
+                        .into(binding.ivUserAvatar)
+                }
         }
         }
     }
