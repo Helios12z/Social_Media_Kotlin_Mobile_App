@@ -63,50 +63,31 @@ class PostUpdatingService: Service() {
 
     private fun updatePost(postId: String, content: String, privacy: String, imageUrls: List<String>) {
         db.collection("Posts").document(postId).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val oldImageUrls = document.get("imageurl") as? List<String> ?: emptyList()
-                    val oldContent = document.getString("content") ?: ""
-                    val newImageUrls = imageUrls.filterNot { oldImageUrls.contains(it) }
-                    if (oldContent != content) {
-                        getCategories { categories ->
-                            if (categories.isEmpty()) {
-                                notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi trong quá trình phân tích!")
-                                stopSelf()
-                                return@getCategories
-                            }
-                            serviceScope.launch {
-                                try {
-                                    val response = AIService.classifyPost(content, categories) ?: ""
-                                    val categoryList = response.split(",")
-                                        .map { it.trim() }
-                                        .filter { it.isNotEmpty() }
-                                    if (newImageUrls.isNotEmpty()) {
-                                        uploadAllImages(newImageUrls) {
-                                            val updatedImageUrls = oldImageUrls + newImageUrls
-                                            val data = hashMapOf<String, Any>(
-                                                "content" to content,
-                                                "privacy" to privacy,
-                                                "imageurl" to updatedImageUrls,
-                                                "category" to categoryList,
-                                                "isUpdatedAt" to System.currentTimeMillis()
-                                            )
-                                            db.collection("Posts").document(postId)
-                                                .update(data)
-                                                .addOnSuccessListener {
-                                                    notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
-                                                    stopSelf()
-                                                }
-                                                .addOnFailureListener {
-                                                    notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
-                                                    stopSelf()
-                                                }
-                                        }
-                                    } else {
+        .addOnSuccessListener { document ->
+            if (document.exists()) {
+                val oldImageUrls = document.get("imageurl") as? List<String> ?: emptyList()
+                val oldContent = document.getString("content") ?: ""
+                val newImageUrls = imageUrls.filterNot { oldImageUrls.contains(it) }
+                if (oldContent != content) {
+                    getCategories { categories ->
+                        if (categories.isEmpty()) {
+                            notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi trong quá trình phân tích!")
+                            stopSelf()
+                            return@getCategories
+                        }
+                        serviceScope.launch {
+                            try {
+                                val response = AIService.classifyPost(content, categories) ?: ""
+                                val categoryList = response.split(",")
+                                    .map { it.trim() }
+                                    .filter { it.isNotEmpty() }
+                                if (newImageUrls.isNotEmpty()) {
+                                    uploadAllImages(newImageUrls) {
+                                        val updatedImageUrls = oldImageUrls + uploadedImage
                                         val data = hashMapOf<String, Any>(
                                             "content" to content,
                                             "privacy" to privacy,
-                                            "imageurl" to oldImageUrls,
+                                            "imageurl" to updatedImageUrls,
                                             "category" to categoryList,
                                             "isUpdatedAt" to System.currentTimeMillis()
                                         )
@@ -121,63 +102,83 @@ class PostUpdatingService: Service() {
                                                 stopSelf()
                                             }
                                     }
+                                } else {
+                                    val data = hashMapOf<String, Any>(
+                                        "content" to content,
+                                        "privacy" to privacy,
+                                        "imageurl" to oldImageUrls,
+                                        "category" to categoryList,
+                                        "isUpdatedAt" to System.currentTimeMillis()
+                                    )
+                                    db.collection("Posts").document(postId)
+                                        .update(data)
+                                        .addOnSuccessListener {
+                                            notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                                            stopSelf()
+                                        }
+                                        .addOnFailureListener {
+                                            notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                                            stopSelf()
+                                        }
                                 }
-                                catch (e: Exception) {
-                                    e.printStackTrace()
-                                    notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi khi xử lý bài đăng!")
-                                    stopSelf()
-                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi khi xử lý bài đăng!")
+                                stopSelf()
                             }
-                        }
-                    } else {
-                        if (newImageUrls.isNotEmpty()) {
-                            uploadAllImages(newImageUrls) {
-                                val updatedImageUrls = oldImageUrls + newImageUrls
-                                val data = hashMapOf<String, Any>(
-                                    "content" to content,
-                                    "privacy" to privacy,
-                                    "imageurl" to updatedImageUrls,
-                                    "isUpdatedAt" to System.currentTimeMillis()
-                                )
-                                db.collection("Posts").document(postId)
-                                    .update(data)
-                                    .addOnSuccessListener {
-                                        notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
-                                        stopSelf()
-                                    }
-                                    .addOnFailureListener {
-                                        notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
-                                        stopSelf()
-                                    }
-                            }
-                        } else {
-                            val data = hashMapOf<String, Any>(
-                                "content" to content,
-                                "privacy" to privacy,
-                                "imageurl" to oldImageUrls,
-                                "isUpdatedAt" to System.currentTimeMillis()
-                            )
-                            db.collection("Posts").document(postId)
-                                .update(data)
-                                .addOnSuccessListener {
-                                    notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
-                                    stopSelf()
-                                }
-                                .addOnFailureListener {
-                                    notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
-                                    stopSelf()
-                                }
                         }
                     }
                 } else {
-                    notifyStatus(NotificationService.ACTION.UPDATE, "Không tìm thấy bài viết để cập nhật!")
-                    stopSelf()
+                    if (newImageUrls.isNotEmpty()) {
+                        uploadAllImages(newImageUrls) {
+                            val updatedImageUrls = oldImageUrls + uploadedImage
+                            val data = hashMapOf<String, Any>(
+                                "content" to content,
+                                "privacy" to privacy,
+                                "imageurl" to updatedImageUrls,
+                                "isUpdatedAt" to System.currentTimeMillis()
+                            )
+                            db.collection("Posts").document(postId)
+                            .update(data)
+                            .addOnSuccessListener {
+                                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                                stopSelf()
+                            }
+                            .addOnFailureListener {
+                                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                                stopSelf()
+                            }
+                        }
+                    }
+                    else {
+                        val data = hashMapOf<String, Any>(
+                            "content" to content,
+                            "privacy" to privacy,
+                            "imageurl" to oldImageUrls,
+                            "isUpdatedAt" to System.currentTimeMillis()
+                        )
+                        db.collection("Posts").document(postId)
+                        .update(data)
+                        .addOnSuccessListener {
+                            notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                            stopSelf()
+                        }
+                        .addOnFailureListener {
+                            notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                            stopSelf()
+                        }
+                    }
                 }
             }
-            .addOnFailureListener {
-                notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi khi lấy bài viết!")
+            else {
+                notifyStatus(NotificationService.ACTION.UPDATE, "Không tìm thấy bài viết để cập nhật!")
                 stopSelf()
             }
+        }
+        .addOnFailureListener {
+            notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi khi lấy bài viết!")
+            stopSelf()
+        }
     }
 
     private fun notifyStatus(action: NotificationService.ACTION, content: String) {
