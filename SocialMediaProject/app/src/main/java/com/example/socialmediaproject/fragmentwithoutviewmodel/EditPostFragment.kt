@@ -1,12 +1,12 @@
 package com.example.socialmediaproject.fragmentwithoutviewmodel
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -15,15 +15,17 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
-import androidx.compose.ui.platform.LocalGraphicsContext
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.MediaAdapter
 import com.example.socialmediaproject.databinding.FragmentEditPostBinding
 import com.example.socialmediaproject.service.PostUpdatingService
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.ArrayList
@@ -41,6 +43,7 @@ class EditPostFragment : Fragment() {
     private lateinit var mediaadapter: MediaAdapter
     private var imagelist= mutableListOf<Uri>()
     private lateinit var rv_selected_media: RecyclerView
+    private lateinit var oldContent: String
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,20 +54,22 @@ class EditPostFragment : Fragment() {
         postId=arguments?.getString("postId")?:""
         rv_selected_media=binding.rvPostMedia
         privacySpinner = binding.postprivacy
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val loading=LoadingDialogFragment()
+        loading.show(childFragmentManager, "loading")
         val listPrivacy= mutableListOf<String>()
         mediaadapter= MediaAdapter(imagelist, ::removeImage)
         rv_selected_media.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         rv_selected_media.adapter = mediaadapter
         binding.btnAddPhotos.setOnClickListener {
             openGallery()
-        }
-        binding.btnCancel.setOnClickListener {
-            parentFragmentManager.popBackStack()
         }
         binding.btnSave.setOnClickListener {
             if (binding.etPostContent.text.isNullOrEmpty()) {
@@ -108,14 +113,46 @@ class EditPostFragment : Fragment() {
                     override fun onNothingSelected(parent: AdapterView<*>?) {}
                 }
                 if (postId!="") loadPostInfo(postId)
+                loading.dismiss()
             }
         }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (oldContent!=binding.etPostContent.text.toString()) {
+                    val builder=AlertDialog.Builder(requireContext())
+                    builder.setTitle("Xác nhận")
+                    builder.setMessage("Bạn có thay đổi chưa lưu, nếu rời đi sẽ bị xóa hết")
+                    builder.setPositiveButton("Có") { dialog, which ->
+                        parentFragmentManager.popBackStack()
+                    }
+                    builder.setNegativeButton("Không") {
+                            dialog, which->
+                    }
+                    builder.show()
+                }
+            }
+        })
     }
 
     private fun loadPostInfo(postId: String) {
         db.collection("Posts").document(postId).get().addOnSuccessListener {
             result->if (result.exists()) {
                 binding.etPostContent.setText(result.getString("content"))
+                oldContent=result.getString("content")?:""
+                binding.btnCancel.setOnClickListener {
+                    if (oldContent!=binding.etPostContent.text.toString()) {
+                        val builder=AlertDialog.Builder(requireContext())
+                        builder.setTitle("Xác nhận")
+                        builder.setMessage("Bạn có thay đổi chưa lưu, nếu rời đi sẽ bị xóa hết")
+                        builder.setPositiveButton("Có") { dialog, which ->
+                            parentFragmentManager.popBackStack()
+                        }
+                        builder.setNegativeButton("Không") {
+                                dialog, which->
+                        }
+                        builder.show()
+                    }
+                }
                 val imageUrls=result.get("imageurl") as? List<String> ?: emptyList()
                 if (imageUrls.isNotEmpty()) {
                     binding.rvPostMedia.visibility=View.VISIBLE
@@ -213,5 +250,19 @@ class EditPostFragment : Fragment() {
                 rv_selected_media.visibility = View.VISIBLE
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(0f).setDuration(200).start()
+        bottomnavbar.visibility=View.VISIBLE
     }
 }
