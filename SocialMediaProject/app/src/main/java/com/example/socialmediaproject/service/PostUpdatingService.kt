@@ -83,7 +83,7 @@ class PostUpdatingService: Service() {
                                     .filter { it.isNotEmpty() }
                                 if (newImageUrls.isNotEmpty()) {
                                     uploadAllImages(newImageUrls) {
-                                        val updatedImageUrls = oldImageUrls + uploadedImage
+                                        val updatedImageUrls = (imageUrls.intersect(oldImageUrls) + uploadedImage).toList()
                                         val data = hashMapOf<String, Any>(
                                             "content" to content,
                                             "privacy" to privacy,
@@ -102,11 +102,12 @@ class PostUpdatingService: Service() {
                                                 stopSelf()
                                             }
                                     }
-                                } else {
+                                }
+                                else {
                                     val data = hashMapOf<String, Any>(
                                         "content" to content,
                                         "privacy" to privacy,
-                                        "imageurl" to oldImageUrls,
+                                        "imageurl" to (oldImageUrls.intersect(imageUrls)).toList(),
                                         "category" to categoryList,
                                         "isUpdatedAt" to System.currentTimeMillis()
                                     )
@@ -128,10 +129,11 @@ class PostUpdatingService: Service() {
                             }
                         }
                     }
-                } else {
+                }
+                else {
                     if (newImageUrls.isNotEmpty()) {
                         uploadAllImages(newImageUrls) {
-                            val updatedImageUrls = oldImageUrls + uploadedImage
+                            val updatedImageUrls = (oldImageUrls.intersect(imageUrls) + uploadedImage).toList()
                             val data = hashMapOf<String, Any>(
                                 "content" to content,
                                 "privacy" to privacy,
@@ -154,7 +156,7 @@ class PostUpdatingService: Service() {
                         val data = hashMapOf<String, Any>(
                             "content" to content,
                             "privacy" to privacy,
-                            "imageurl" to oldImageUrls,
+                            "imageurl" to (oldImageUrls.intersect(imageUrls)).toList(),
                             "isUpdatedAt" to System.currentTimeMillis()
                         )
                         db.collection("Posts").document(postId)
