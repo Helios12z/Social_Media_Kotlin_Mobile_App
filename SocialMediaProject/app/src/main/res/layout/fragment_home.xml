@@ -59,7 +59,8 @@
                 app:layout_constraintEnd_toStartOf="@id/chat_icon_container"
                 app:layout_constraintTop_toTopOf="@id/logoApp"
                 app:layout_constraintBottom_toBottomOf="@id/logoApp"
-                android:layout_marginEnd="12dp" />
+                android:layout_marginEnd="12dp"
+                app:tint="@color/text_color" />
 
             <FrameLayout
                 android:id="@+id/chat_icon_container"
@@ -76,7 +77,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/chatbutton"
-                    android:contentDescription="Chat" />
+                    android:contentDescription="Chat"
+                    app:tint="@color/text_color" />
             </FrameLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
