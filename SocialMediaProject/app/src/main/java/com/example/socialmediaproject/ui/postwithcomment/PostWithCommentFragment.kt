@@ -2,7 +2,6 @@ package com.example.socialmediaproject.ui.postwithcomment
 
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuInflater
@@ -183,20 +182,20 @@ class PostWithCommentFragment : Fragment() {
                     else
                         "${receiverId}_$senderId"
                     val message = Message(
-                        senderId   = senderId,
+                        senderId = senderId,
                         receiverId = receiverId,
-                        text       = shareLink,
-                        timestamp  = Timestamp.now(),
+                        text = shareLink,
+                        timestamp = Timestamp.now(),
                         link = true,
                         postId = post.id
                     )
                     sendMessage(
-                        chatId    = chatId,
-                        message   = message,
+                        chatId = chatId,
+                        message = message,
                         onSuccess = {
                             Toast.makeText(requireContext(), "Chia sẻ thành công!", Toast.LENGTH_SHORT).show()
                         },
-                        onError   = { e -> e.printStackTrace()
+                        onError = { e -> e.printStackTrace()
                             Toast.makeText(requireContext(), "Share thất bại", Toast.LENGTH_SHORT).show()
                         }
                     )

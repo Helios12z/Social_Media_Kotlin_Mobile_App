@@ -32,11 +32,13 @@ class PostWithCommentViewModel: ViewModel() {
         .addOnSuccessListener { post ->
             postData.postValue(post)
             val userId = post.getString("userid") ?: ""
+            if (userId!="")
             db.collection("Users").document(userId).get()
             .addOnSuccessListener { user ->
                 postUser.postValue(user)
             }
             .addOnFailureListener { errorMessage.postValue("Không tải được người dùng") }
+            else return@addOnSuccessListener
         }
         .addOnFailureListener { errorMessage.postValue("Không tải được bài viết") }
     }
