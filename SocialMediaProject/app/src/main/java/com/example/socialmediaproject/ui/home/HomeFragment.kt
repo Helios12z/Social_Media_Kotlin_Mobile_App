@@ -28,6 +28,7 @@ import com.example.socialmediaproject.dataclass.Friend
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
 import com.example.socialmediaproject.service.PostActionWorker
+import com.example.socialmediaproject.service.PostUpdatingService
 import com.example.socialmediaproject.ui.chat.ChatViewModel
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
 import com.google.android.material.badge.BadgeDrawable
@@ -263,10 +264,12 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                             true
                         }
                         R.id.btnEditPost -> {
+                            if (!PostUpdatingService.isUpdating)
                             findNavController().navigate(
                                 R.id.navigation_editPost,
                                 bundleOf("postId" to postId)
                             )
+                            else Toast.makeText(requireContext(), "Vui lòng đợi bài trước cập nhật xong!", Toast.LENGTH_SHORT).show()
                             true
                         }
                         R.id.btnHideOrUnhidePost -> {

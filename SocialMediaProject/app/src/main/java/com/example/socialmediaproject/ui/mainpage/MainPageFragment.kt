@@ -28,6 +28,7 @@ import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
 import com.example.socialmediaproject.service.PostActionWorker
+import com.example.socialmediaproject.service.PostUpdatingService
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
@@ -381,10 +382,12 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                                 true
                             }
                             R.id.btnEditPost -> {
+                                if (!PostUpdatingService.isUpdating)
                                 findNavController().navigate(
                                     R.id.navigation_editPost,
                                     bundleOf("postId" to postId)
                                 )
+                                else Toast.makeText(requireContext(), "Vui lòng đợi bài trước cập nhật xong!", Toast.LENGTH_SHORT).show()
                                 true
                             }
                             R.id.btnHideOrUnhidePost -> {

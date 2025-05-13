@@ -28,9 +28,13 @@ class PostUpdatingService: Service() {
     private val db = FirebaseFirestore.getInstance()
     private val uploadedImage = arrayListOf<String>()
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var isUpdating=false
+
+    companion object {
+        var isUpdating=false
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        isUpdating=true
         val postId = intent?.getStringExtra("post_id") ?: ""
         val postContent = intent?.getStringExtra("post_content") ?: ""
         val privacy = intent?.getStringExtra("privacy") ?: "Công khai"
@@ -56,6 +60,7 @@ class PostUpdatingService: Service() {
         }
         else {
             notifyStatus(NotificationService.ACTION.UPDATE, "Không tìm thấy bài viết để cập nhật!")
+            isUpdating=false
             stopSelf()
         }
         return START_NOT_STICKY
@@ -72,6 +77,7 @@ class PostUpdatingService: Service() {
                     getCategories { categories ->
                         if (categories.isEmpty()) {
                             notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi trong quá trình phân tích!")
+                            isUpdating=false
                             stopSelf()
                             return@getCategories
                         }
@@ -92,15 +98,17 @@ class PostUpdatingService: Service() {
                                             "isUpdatedAt" to System.currentTimeMillis()
                                         )
                                         db.collection("Posts").document(postId)
-                                            .update(data)
-                                            .addOnSuccessListener {
-                                                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
-                                                stopSelf()
-                                            }
-                                            .addOnFailureListener {
-                                                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
-                                                stopSelf()
-                                            }
+                                        .update(data)
+                                        .addOnSuccessListener {
+                                            notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                                            isUpdating=false
+                                            stopSelf()
+                                        }
+                                        .addOnFailureListener {
+                                            notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                                            isUpdating=false
+                                            stopSelf()
+                                        }
                                     }
                                 }
                                 else {
@@ -112,19 +120,22 @@ class PostUpdatingService: Service() {
                                         "isUpdatedAt" to System.currentTimeMillis()
                                     )
                                     db.collection("Posts").document(postId)
-                                        .update(data)
-                                        .addOnSuccessListener {
-                                            notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
-                                            stopSelf()
-                                        }
-                                        .addOnFailureListener {
-                                            notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
-                                            stopSelf()
-                                        }
+                                    .update(data)
+                                    .addOnSuccessListener {
+                                        notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                                        isUpdating=false
+                                        stopSelf()
+                                    }
+                                    .addOnFailureListener {
+                                        notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                                        isUpdating=false
+                                        stopSelf()
+                                    }
                                 }
                             } catch (e: Exception) {
                                 e.printStackTrace()
                                 notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi khi xử lý bài đăng!")
+                                isUpdating=false
                                 stopSelf()
                             }
                         }
@@ -144,10 +155,12 @@ class PostUpdatingService: Service() {
                             .update(data)
                             .addOnSuccessListener {
                                 notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                                isUpdating=false
                                 stopSelf()
                             }
                             .addOnFailureListener {
                                 notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                                isUpdating=false
                                 stopSelf()
                             }
                         }
@@ -163,10 +176,12 @@ class PostUpdatingService: Service() {
                         .update(data)
                         .addOnSuccessListener {
                             notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                            isUpdating=false
                             stopSelf()
                         }
                         .addOnFailureListener {
                             notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                            isUpdating=false
                             stopSelf()
                         }
                     }
@@ -174,11 +189,13 @@ class PostUpdatingService: Service() {
             }
             else {
                 notifyStatus(NotificationService.ACTION.UPDATE, "Không tìm thấy bài viết để cập nhật!")
+                isUpdating=false
                 stopSelf()
             }
         }
         .addOnFailureListener {
             notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi khi lấy bài viết!")
+            isUpdating=false
             stopSelf()
         }
     }
@@ -235,7 +252,6 @@ class PostUpdatingService: Service() {
                     .url("https://api.imgbb.com/1/upload")
                     .post(requestBody)
                     .build()
-
                 client.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) {
                         callback(null)

@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.fragmentwithoutviewmodel
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 
 class PostViewModel: ViewModel() {

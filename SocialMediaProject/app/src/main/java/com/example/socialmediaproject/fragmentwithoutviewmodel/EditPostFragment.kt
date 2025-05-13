@@ -130,6 +130,7 @@ class EditPostFragment : Fragment() {
                     }
                     builder.show()
                 }
+                else parentFragmentManager.popBackStack()
             }
         })
     }
@@ -152,6 +153,7 @@ class EditPostFragment : Fragment() {
                         }
                         builder.show()
                     }
+                    else parentFragmentManager.popBackStack()
                 }
                 val imageUrls=result.get("imageurl") as? List<String> ?: emptyList()
                 if (imageUrls.isNotEmpty()) {
