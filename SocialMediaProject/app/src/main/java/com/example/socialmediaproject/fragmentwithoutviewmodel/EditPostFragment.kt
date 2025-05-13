@@ -15,6 +15,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.compose.ui.platform.LocalGraphicsContext
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,9 +24,9 @@ import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.MediaAdapter
 import com.example.socialmediaproject.databinding.FragmentEditPostBinding
 import com.example.socialmediaproject.service.PostUpdatingService
-import com.example.socialmediaproject.service.PostingService
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
+import java.util.ArrayList
 import java.util.Date
 import java.util.Locale
 
@@ -70,8 +71,15 @@ class EditPostFragment : Fragment() {
                 Toast.makeText(requireContext(), "Không thể lưu một bài trống không!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            val imageUris = ArrayList<String>()
+            for (uri in imagelist) {
+                imageUris.add(uri.toString())
+            }
             val intent = Intent(requireContext(), PostUpdatingService::class.java).apply {
-
+                putExtra("post_id", postId)
+                putExtra("post_content", binding.etPostContent.text.toString())
+                putExtra("privacy", privacy)
+                putStringArrayListExtra("image_urls", ArrayList(imageUris))
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 requireContext().startForegroundService(intent)

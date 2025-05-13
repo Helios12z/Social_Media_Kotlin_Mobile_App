@@ -13,7 +13,7 @@ import com.example.socialmediaproject.R
 class NotificationService: Service() {
     companion object {
         const val CHANNEL_ID = "account_update_channel"
-        const val NOTIF_ID   = 1001
+        const val NOTIF_ID = 1001
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -25,10 +25,10 @@ class NotificationService: Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val chan = NotificationChannel(
                 CHANNEL_ID,
-                "Cập nhật tài khoản",
+                "Thông báo",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Thông báo kết quả cập nhật tài khoản"
+                description = "Thông báo kết quả"
             }
             val mgr = getSystemService(NotificationManager::class.java)
             mgr.createNotificationChannel(chan)
@@ -37,7 +37,6 @@ class NotificationService: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent ?: return START_NOT_STICKY
-
         when (intent.action) {
             ACTION.START.name -> {
                 val content = intent.getStringExtra("content") ?: "Bắt đầu..."
@@ -65,9 +64,9 @@ class NotificationService: Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val chan = NotificationChannel(
                 CHANNEL_ID,
-                "Cập nhật tài khoản",
+                "Thông báo",
                 NotificationManager.IMPORTANCE_HIGH
-            ).apply { description = "Thông báo kết quả cập nhật" }
+            ).apply { description = "Thông báo kết quả" }
             getSystemService<NotificationManager>()?.createNotificationChannel(chan)
         }
     }
@@ -76,7 +75,7 @@ class NotificationService: Service() {
         ensureChannel()
         val n = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.uploadicon)
-            .setContentTitle("Cập nhật tài khoản")
+            .setContentTitle("Thông báo")
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
@@ -86,7 +85,7 @@ class NotificationService: Service() {
     private fun updateNotification(content: String) {
         val n = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.uploadicon)
-            .setContentTitle("Cập nhật tài khoản")
+            .setContentTitle("Thông báo")
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
