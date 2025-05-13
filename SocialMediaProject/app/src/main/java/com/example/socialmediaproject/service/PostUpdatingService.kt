@@ -41,20 +41,56 @@ class PostUpdatingService: Service() {
     }
 
     private fun updatePost(postId: String, content: String, privacy: String, imageUrls: List<String>) {
-        val data = hashMapOf<String, Any>(
-            "content" to content,
-            "privacy" to privacy,
-            "imageurl" to imageUrls,
-            "isUpdatedAt" to System.currentTimeMillis()
-        )
-        db.collection("Posts").document(postId)
-            .update(data)
-            .addOnSuccessListener {
-                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
-                stopSelf()
+        db.collection("Posts").document(postId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val oldImageUrls = document.get("imageurl") as? List<String> ?: emptyList()
+                    val newImageUrls = imageUrls.filterNot { oldImageUrls.contains(it) }
+                    if (newImageUrls.isNotEmpty()) {
+                        uploadAllImages(newImageUrls) {
+                            val updatedImageUrls = oldImageUrls + newImageUrls
+                            val data = hashMapOf<String, Any>(
+                                "content" to content,
+                                "privacy" to privacy,
+                                "imageurl" to updatedImageUrls,
+                                "isUpdatedAt" to System.currentTimeMillis()
+                            )
+                            db.collection("Posts").document(postId)
+                                .update(data)
+                                .addOnSuccessListener {
+                                    notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                                    stopSelf()
+                                }
+                                .addOnFailureListener {
+                                    notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                                    stopSelf()
+                                }
+                        }
+                    } else {
+                        val data = hashMapOf<String, Any>(
+                            "content" to content,
+                            "privacy" to privacy,
+                            "imageurl" to oldImageUrls,
+                            "isUpdatedAt" to System.currentTimeMillis()
+                        )
+                        db.collection("Posts").document(postId)
+                            .update(data)
+                            .addOnSuccessListener {
+                                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thành công!")
+                                stopSelf()
+                            }
+                            .addOnFailureListener {
+                                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                                stopSelf()
+                            }
+                    }
+                } else {
+                    notifyStatus(NotificationService.ACTION.UPDATE, "Không tìm thấy bài viết để cập nhật!")
+                    stopSelf()
+                }
             }
             .addOnFailureListener {
-                notifyStatus(NotificationService.ACTION.UPDATE, "Cập nhật bài viết thất bại!")
+                notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi khi lấy bài viết!")
                 stopSelf()
             }
     }
@@ -75,13 +111,17 @@ class PostUpdatingService: Service() {
         return null
     }
 
-    private fun uploadAllImages(imageList: List<Uri>, callback: () -> Unit) {
+    private fun uploadAllImages(imageList: List<String>, callback: () -> Unit) {
         var uploadedCount = 0
         if (imageList.isEmpty()) {
             callback()
             return
         }
         for (uri in imageList) {
+            if (uri.startsWith("http")) {
+                uploadedCount++
+                continue
+            }
             uploadImageToImgbb(uri) { imageUrl ->
                 if (imageUrl != null) {
                     uploadedImage.add(imageUrl)
@@ -94,10 +134,10 @@ class PostUpdatingService: Service() {
         }
     }
 
-    private fun uploadImageToImgbb(imageUri: Uri, callback: (String?) -> Unit) {
+    private fun uploadImageToImgbb(imageUri: String, callback: (String?) -> Unit) {
         Thread {
             try {
-                val base64Image = uriToBase64(imageUri) ?: return@Thread callback(null)
+                val base64Image = uriToBase64(Uri.parse(imageUri)) ?: return@Thread callback(null)
                 val client = OkHttpClient()
                 val requestBody = FormBody.Builder()
                     .add("key", API_KEY)
@@ -107,6 +147,7 @@ class PostUpdatingService: Service() {
                     .url("https://api.imgbb.com/1/upload")
                     .post(requestBody)
                     .build()
+
                 client.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) {
                         callback(null)
@@ -153,13 +194,19 @@ class PostUpdatingService: Service() {
         }
     }
 
-    private fun updatePostWithCategories(postId: String, oldContent: String, newContent: String, content: String, privacy: String, imageUrls: List<String>) {
+    private fun updatePostWithCategories(
+        postId: String,
+        oldContent: String,
+        newContent: String,
+        content: String,
+        privacy: String,
+        imageUrls: List<String>) {
         if (oldContent != newContent) {
             getCategories { categories ->
                 if (categories.isEmpty()) {
                     notifyStatus(NotificationService.ACTION.UPDATE, "Lỗi trong quá trình phân tích!")
                     notifyStatus(NotificationService.ACTION.STOP, "")
-                    isUpdating=false
+                    isUpdating = false
                     stopSelf()
                     return@getCategories
                 }
@@ -196,7 +243,8 @@ class PostUpdatingService: Service() {
                     }
                 }
             }
-        } else {
+        }
+        else {
             val data = hashMapOf<String, Any>(
                 "content" to content,
                 "privacy" to privacy,
