@@ -61,18 +61,27 @@ class PostWithCommentFragment : Fragment() {
     ): View? {
         binding=FragmentPostWithCommentBinding.inflate(inflater, container, false)
         postId=arguments?.getString("post_id")?:""
-        commentId=arguments?.getString("comment_id")?:""
         viewModel=ViewModelProvider(requireActivity())[PostWithCommentViewModel::class.java]
-        commentViewModel.postId=postId
         homeViewModel=ViewModelProvider(requireActivity())[HomeViewModel::class.java]
-        viewModel.postId=postId
+        db.collection("Posts").document(postId).get().addOnSuccessListener {
+            result->if (result.exists()) {
+                commentId=arguments?.getString("comment_id")?:""
+                commentViewModel.postId=postId
+                viewModel.postId=postId
+                viewModel.fetchPost()
+                viewModel.listenToStats()
+                viewModel.fetchCurrentUserAvatar()
+                viewModel.listenToLikeState()
+            }
+            else {
+                binding.totalContainer.visibility=View.GONE
+                binding.commentInputLayout.visibility=View.GONE
+                binding.textViewPostDeleted.visibility=View.VISIBLE
+            }
+        }
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
-        viewModel.fetchPost()
-        viewModel.listenToStats()
-        viewModel.fetchCurrentUserAvatar()
-        viewModel.listenToLikeState()
         return binding.root
     }
 
