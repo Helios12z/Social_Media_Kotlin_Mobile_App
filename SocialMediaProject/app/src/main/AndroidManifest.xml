@@ -40,27 +40,35 @@
             android:name=".activity.AfterFirstCheckActivity"
             android:screenOrientation="portrait"
             android:exported="false" />
+
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
         <activity
             android:name=".activity.FirstCheckActivity"
             android:screenOrientation="portrait"
             android:exported="false" />
+
         <activity
             android:name=".activity.SignUpActivity"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
+
         <activity
             android:name=".activity.MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait"
             android:exported="false" />
+
         <activity
             android:name=".activity.LoginActivity"
             android:screenOrientation="portrait"
             android:exported="true"
             android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.App.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
