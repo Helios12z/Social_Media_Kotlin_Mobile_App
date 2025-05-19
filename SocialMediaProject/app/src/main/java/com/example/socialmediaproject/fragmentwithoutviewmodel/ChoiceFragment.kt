@@ -80,6 +80,11 @@ class ChoiceFragment : Fragment() {
                 gotofragment.arguments=bundle
                 findNavController().navigate(R.id.action_choiceFragment_to_mainPageFragment, bundle)
             }
+            binding.cardSettings.setOnClickListener {
+                val bundle=Bundle()
+                bundle.putString("userId", auth.currentUser?.uid)
+                findNavController().navigate(R.id.navigation_settings, bundle)
+            }
         }
         .addOnFailureListener {
             loading.dismiss()
