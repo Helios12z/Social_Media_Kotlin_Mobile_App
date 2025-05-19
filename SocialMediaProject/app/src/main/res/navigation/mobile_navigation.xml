@@ -137,4 +137,9 @@
         android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.SettingFragment"
         android:label="Settings"
         tools:layout="@layout/fragment_setting"/>
+
+    <fragment android:id="@+id/navigation_update_password"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.UpdatePasswordFragment"
+        android:label="UpdatePassword"
+        tools:layout="@layout/fragment_update_password"/>
 </navigation>
