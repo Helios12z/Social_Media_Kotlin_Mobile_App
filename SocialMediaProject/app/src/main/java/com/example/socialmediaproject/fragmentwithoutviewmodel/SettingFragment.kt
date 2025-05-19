@@ -69,5 +69,8 @@ class SettingFragment : Fragment() {
         binding.cardChangePassword.setOnClickListener {
             findNavController().navigate(R.id.navigation_update_password)
         }
+        binding.cardForgotPassword.setOnClickListener {
+            findNavController().navigate(R.id.navigation_forgot_password)
+        }
     }
 }
