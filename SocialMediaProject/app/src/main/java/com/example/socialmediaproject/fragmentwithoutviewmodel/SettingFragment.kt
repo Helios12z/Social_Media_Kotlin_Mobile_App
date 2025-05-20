@@ -78,8 +78,4 @@ class SettingFragment : Fragment() {
             deleteFragment.show(parentFragmentManager, "deleteFragment")
         }
     }
-
-    private fun deleteAccount() {
-
-    }
 }
