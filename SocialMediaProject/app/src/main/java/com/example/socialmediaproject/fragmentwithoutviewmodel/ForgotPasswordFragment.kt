@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 class ForgotPasswordFragment : Fragment() {
     private lateinit var binding: FragmentForgotPasswordBinding
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,6 +25,7 @@ class ForgotPasswordFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+        auth=FirebaseAuth.getInstance()
         return binding.root
     }
 
@@ -35,7 +37,12 @@ class ForgotPasswordFragment : Fragment() {
                 Toast.makeText(requireContext(), "Vui lòng nhập email", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            FirebaseAuth.getInstance().sendPasswordResetEmail(binding.etEmail.text.toString()).addOnCompleteListener {
+            if (auth.currentUser?.email!=binding.etEmail.text.toString())
+            {
+                Toast.makeText(requireContext(), "Email không đúng", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            auth.sendPasswordResetEmail(binding.etEmail.text.toString()).addOnCompleteListener {
                 Toast.makeText(requireContext(), "Vui lòng kiểm tra email", Toast.LENGTH_LONG).show()
                 val intent = Intent(requireContext(), LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

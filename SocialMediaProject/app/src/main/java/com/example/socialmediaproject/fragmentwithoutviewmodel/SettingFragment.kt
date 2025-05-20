@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.fragment.findNavController
 import com.example.socialmediaproject.R
@@ -72,5 +73,13 @@ class SettingFragment : Fragment() {
         binding.cardForgotPassword.setOnClickListener {
             findNavController().navigate(R.id.navigation_forgot_password)
         }
+        binding.cardDeleteAccount.setOnClickListener {
+            val deleteFragment=FragmentConfirmDeleteAccount()
+            deleteFragment.show(parentFragmentManager, "deleteFragment")
+        }
+    }
+
+    private fun deleteAccount() {
+
     }
 }

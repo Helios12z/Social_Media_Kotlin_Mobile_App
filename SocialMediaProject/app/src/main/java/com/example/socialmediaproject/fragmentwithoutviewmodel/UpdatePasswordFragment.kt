@@ -113,10 +113,12 @@ class UpdatePasswordFragment : Fragment() {
         })
         binding.btnUpdatePassword.setOnClickListener {
             binding.btnUpdatePassword.isEnabled=false
+            binding.progressBar.visibility=View.VISIBLE
             if (binding.etCurrentPassword.text.toString().isNullOrEmpty() || binding.etNewPassword.text.toString().isNullOrEmpty() || binding.etConfirmPassword.text.toString().isNullOrEmpty())
             {
                 Toast.makeText(requireContext(), "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show()
                 binding.btnUpdatePassword.isEnabled=true
+                binding.progressBar.visibility=View.GONE
                 return@setOnClickListener
             }
             val credential=EmailAuthProvider.getCredential(email!!, binding.etCurrentPassword.text.toString())
@@ -130,11 +132,13 @@ class UpdatePasswordFragment : Fragment() {
                                 binding.etNewPassword.setText("")
                                 binding.etConfirmPassword.setText("")
                                 binding.btnUpdatePassword.isEnabled=true
+                                binding.progressBar.visibility=View.GONE
                             }
                             else
                             {
                                 Toast.makeText(requireContext(), "Cập nhật mật khẩu mới không thành công", Toast.LENGTH_SHORT).show()
                                 binding.btnUpdatePassword.isEnabled=true
+                                binding.progressBar.visibility=View.GONE
                             }
                         }
                     }
@@ -142,10 +146,13 @@ class UpdatePasswordFragment : Fragment() {
                     {
                         Toast.makeText(requireContext(), "Mật khẩu nhập lại không khớp", Toast.LENGTH_SHORT).show()
                         binding.btnUpdatePassword.isEnabled=true
+                        binding.progressBar.visibility=View.GONE
                     }
                 }
                 else {
-                    Toast.makeText(requireContext(), "Mật khẩu cũ nhập không đúng", Toast.LENGTH_SHORT)
+                    Toast.makeText(requireContext(), "Mật khẩu cũ nhập không đúng", Toast.LENGTH_SHORT).show()
+                    binding.btnUpdatePassword.isEnabled=true
+                    binding.progressBar.visibility=View.GONE
                     return@addOnCompleteListener
                 }
             }
