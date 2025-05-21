@@ -19,4 +19,5 @@
     <color name="text_color">@color/black</color>
     <color name="highlight_color">#FFF9C4</color>
     <color name="normal_comment_background">#F5F5F5</color>
+    <color name="surface_translucent">#CCFFFFFF</color>
 </resources>

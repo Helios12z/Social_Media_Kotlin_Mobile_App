@@ -43,7 +43,6 @@ class LoginActivity : AppCompatActivity() {
         }
         setContentView(R.layout.login)
         title=findViewById(R.id.title)
-        SetTitleGradientColor(title)
         signuptext=findViewById(R.id.signUpText)
         signuptext.setOnClickListener { OnSignUpClicked() }
         loginbutton=findViewById(R.id.loginButton)
@@ -90,19 +89,6 @@ class LoginActivity : AppCompatActivity() {
                 loginbutton.isEnabled=true
             }
         }
-    }
-
-    private fun SetTitleGradientColor(title: TextView)
-    {
-        val paint = title.paint
-        val width = title.paint.measureText(title.text.toString())
-        val shader = LinearGradient(
-            0f, 0f, width, 0f,
-            intArrayOf(0xFF000000.toInt(), 0xFF800080.toInt()),
-            null,
-            Shader.TileMode.CLAMP
-        )
-        paint.shader = shader
     }
 
     private fun OnSignUpClicked()

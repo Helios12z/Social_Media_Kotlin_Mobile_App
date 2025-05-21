@@ -47,7 +47,6 @@ class SignUpActivity : AppCompatActivity() {
         logintext=binding.loginText
         logintext.setOnClickListener { OnLoginTextClikec() }
         title=binding.title
-        SetTitleGradientColor(title)
         signupbutton=binding.signUpButton
         firebaseauth=FirebaseAuth.getInstance()
         signupbutton.setOnClickListener {
@@ -113,19 +112,6 @@ class SignUpActivity : AppCompatActivity() {
     private fun OnLoginTextClikec()
     {
         finish();
-    }
-
-    private fun SetTitleGradientColor(title: TextView)
-    {
-        val paint = title.paint
-        val width = title.paint.measureText(title.text.toString())
-        val shader = LinearGradient(
-            0f, 0f, width, 0f,
-            intArrayOf(0xFF000000.toInt(), 0xFF800080.toInt()),
-            null,
-            Shader.TileMode.CLAMP
-        )
-        paint.shader = shader
     }
 
     private fun AddNewUserToDb(name: String, userid: String, email: String)
