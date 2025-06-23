@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.ui.chatdetail
 
+import android.Manifest
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -18,6 +19,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,17 +30,20 @@ import androidx.work.workDataOf
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.Constant
 import com.example.socialmediaproject.R
+import com.example.socialmediaproject.activity.IncomingCallActivity
 import com.example.socialmediaproject.adapter.MessageAdapter
 import com.example.socialmediaproject.databinding.FragmentChatDetailBinding
 import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.service.AIService
+import com.example.socialmediaproject.service.OneSignalHelper
 import com.example.socialmediaproject.service.UploadChatImgeWorker
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,9 +56,11 @@ class ChatDetailFragment : Fragment() {
     private val viewModel: ChatDetailViewModel by viewModels()
     private lateinit var chatUser: ChatUser
     private val auth=FirebaseAuth.getInstance()
+    private val db=FirebaseFirestore.getInstance()
     private var hasInitialLoaded = false
     private var isLink: Boolean=false
     private var selectedImageUri: Uri? = null
+    private var incomingCallListener: ListenerRegistration? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -64,6 +71,7 @@ class ChatDetailFragment : Fragment() {
         bottomnavbar.visibility=View.GONE
         binding=FragmentChatDetailBinding.inflate(inflater, container, false)
         chatUser = arguments?.getParcelable("chatUser") ?: ChatUser()
+        askForPermission()
         return binding.root
     }
 
@@ -209,8 +217,54 @@ class ChatDetailFragment : Fragment() {
             cancelImagePreview()
         }
         if (chatUser.id!=Constant.ChatConstants.VECTOR_AI_ID) checkIfCanSendMessage(auth.currentUser?.uid?:"", chatUser.id)
-        else binding.btnAttach.visibility=View.GONE
+        else
+        {
+            binding.btnAttach.visibility=View.GONE
+            binding.btnVoiceCall.visibility=View.GONE
+        }
         listenUserActivity(chatUser.id)
+        binding.btnVoiceCall.setOnClickListener {
+            val callerId=auth.currentUser?.uid
+            val roomId = "${callerId}_${chatUser.id}_${System.currentTimeMillis()}"
+            val callData = hashMapOf(
+                "callerId" to callerId,
+                "receiverId" to chatUser.id,
+                "status" to "calling",
+                "timestamp" to System.currentTimeMillis()
+            )
+            db.collection("calls")
+                .document(roomId)
+                .set(callData).addOnSuccessListener {
+                    db.collection("Users").document(auth.currentUser?.uid?:"").get().addOnSuccessListener {
+                        result->if (result.exists()) {
+                            val currentUserName=result.getString("name")
+
+                            OneSignalHelper.sendCallNotification(
+                                userId = chatUser.id,
+                                message = "Cuộc gọi đến từ bạn ${currentUserName}",
+                                callerId = callerId ?: "",
+                                roomId = roomId
+                            )
+
+                            val bundle = Bundle().apply {
+                                putString("user_id", chatUser.id)
+                                putString("room_id", roomId)
+                            }
+                            findNavController().navigate(R.id.navigation_calling, bundle)
+                        }
+                        else {
+                            Toast.makeText(requireContext(), "Có lỗi khi thực hiện cuộc gọi", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), "Có lỗi khi thực hiện cuộc gọi", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Không thể tạo cuộc gọi", Toast.LENGTH_SHORT).show()
+                }
+        }
+        listenForIncomingCall(chatUser.id)
     }
 
     override fun onResume() {
@@ -226,6 +280,7 @@ class ChatDetailFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(0f).setDuration(200).start()
         bottomnavbar.visibility=View.VISIBLE
+        incomingCallListener?.remove()
     }
 
     fun checkIfCanSendMessage(currentUserId: String, friendId: String) {
@@ -438,5 +493,34 @@ class ChatDetailFragment : Fragment() {
         binding.btnCancelImage.visibility = View.GONE
         binding.etMessage.visibility = View.VISIBLE
         selectedImageUri = null
+    }
+
+    private fun askForPermission() {
+        val permissions = arrayOf(
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.CAMERA
+        )
+        ActivityCompat.requestPermissions(requireActivity(), permissions, 1)
+    }
+
+    private fun listenForIncomingCall(fromUserId: String) {
+        val myUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        incomingCallListener = FirebaseFirestore.getInstance()
+            .collection("calls")
+            .whereEqualTo("receiverId", myUserId)
+            .whereEqualTo("callerId", fromUserId)
+            .whereEqualTo("status", "calling")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null || snapshot.isEmpty) return@addSnapshotListener
+
+                val callDoc = snapshot.documents.first()
+                val roomId = callDoc.id
+                val intent = Intent(requireContext(), IncomingCallActivity::class.java).apply {
+                    putExtra("callerId", fromUserId)
+                    putExtra("roomId", roomId)
+                }
+                startActivity(intent)
+            }
     }
 }

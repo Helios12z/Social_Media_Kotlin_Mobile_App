@@ -93,4 +93,28 @@ object OneSignalHelper {
             e.printStackTrace()
         }
     }
+
+    fun sendCallNotification(userId: String, message: String, callerId: String, roomId: String) {
+        val payload = NotificationPayload(
+            appId = "e354e0b8-a22b-4662-8696-6d2431f7191c",
+            includedExternalUserIds = listOf(userId),
+            contents = NotificationContent(en = message, vie = message),
+            data = mapOf(
+                "type" to "voice_call",
+                "callerId" to callerId,
+                "roomId" to roomId
+            )
+        )
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = service.sendNotification(payload)
+                if (!response.isSuccessful) {
+                    //TODO: log the errors out
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }

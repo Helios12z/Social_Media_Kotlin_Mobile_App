@@ -197,4 +197,34 @@ class MainActivity : AppCompatActivity() {
             auth.signOut()
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        val navigateTo = intent.getStringExtra("navigate_to")
+
+        if (navigateTo == "incoming_call") {
+            val callerId = intent.getStringExtra("callerId")
+            val roomId = intent.getStringExtra("roomId")
+
+            val callIntent = Intent(this, IncomingCallActivity::class.java).apply {
+                putExtra("callerId", callerId)
+                putExtra("roomId", roomId)
+            }
+            startActivity(callIntent)
+        }
+
+        else if (navigateTo == "calling") {
+            val userId = intent.getStringExtra("user_id")
+            val roomId = intent.getStringExtra("room_id")
+
+            val bundle = Bundle().apply {
+                putString("user_id", userId)
+                putString("room_id", roomId)
+            }
+
+            val navController = findNavController(R.id.nav_host_fragment_activity_main)
+            navController.navigate(R.id.navigation_calling, bundle)
+        }
+    }
 }

@@ -147,4 +147,9 @@
         android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.ForgotPasswordFragment"
         android:label="ForgotPassword"
         tools:layout="@layout/fragment_forgot_password"/>
+
+    <fragment android:id="@+id/navigation_calling"
+        android:name="com.example.socialmediaproject.ui.voicecall.VoiceCallFragment"
+        android:label="VoiceCall"
+        tools:layout="@layout/fragment_voice_call"/>
 </navigation>

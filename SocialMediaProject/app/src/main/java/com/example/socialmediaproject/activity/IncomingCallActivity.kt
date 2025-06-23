@@ -1,0 +1,64 @@
+package com.example.socialmediaproject.activity
+
+import android.content.Intent
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
+import com.example.socialmediaproject.R
+import com.example.socialmediaproject.databinding.ActivityIncomingBinding
+import com.google.firebase.firestore.FirebaseFirestore
+
+class IncomingCallActivity : AppCompatActivity() {
+    private lateinit var db: FirebaseFirestore
+    private lateinit var callerId: String
+    private lateinit var roomId: String
+    private lateinit var binding: ActivityIncomingBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivityIncomingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        db = FirebaseFirestore.getInstance()
+        callerId = intent.getStringExtra("callerId") ?: ""
+        roomId = intent.getStringExtra("roomId") ?: ""
+
+        db.collection("Users").document(callerId).get().addOnSuccessListener { doc ->
+            if (doc.exists()) {
+                binding.txtCallerName.text = doc.getString("name")
+                Glide.with(this)
+                    .load(doc.getString("avatarurl"))
+                    .placeholder(R.drawable.avataricon)
+                    .error(R.drawable.avataricon)
+                    .into(binding.imgCallerAvatar)
+            }
+        }
+
+        binding.btnAccept.setOnClickListener {
+            db.collection("calls").document(roomId).update("status", "accepted")
+
+            val intent = Intent(this, MainActivity::class.java).apply {
+                putExtra("user_id", callerId)
+                putExtra("room_id", roomId)
+                putExtra("navigate_to", "calling")
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            startActivity(intent)
+            finish()
+        }
+
+        binding.btnDecline.setOnClickListener {
+            db.collection("calls").document(roomId).update("status", "declined")
+            finish()
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.incomingCallLayout) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+    }
+}

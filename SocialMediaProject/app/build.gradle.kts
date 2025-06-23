@@ -82,4 +82,5 @@ dependencies {
     implementation ("com.github.chrisbanes:PhotoView:2.3.0")
     implementation ("com.google.android.material:material:1.11.0")
     implementation ("androidx.recyclerview:recyclerview:1.3.0")
+    implementation ("com.infobip:google-webrtc:1.0.0035529")
 }
