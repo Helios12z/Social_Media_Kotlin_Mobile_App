@@ -251,4 +251,16 @@ class VoiceCallViewModel : ViewModel() {
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
+
+    fun endCall() {
+        try {
+            peerConnection.close()
+            localAudioTrack.dispose()
+            localAudioSource.dispose()
+            callStatus.postValue("ended")
+            Log.d("VOICE_CALL", "PeerConnection and audio tracks closed")
+        } catch (e: Exception) {
+            Log.e("VOICE_CALL", "Error ending call: ${e.message}")
+        }
+    }
 }
