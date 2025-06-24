@@ -62,12 +62,10 @@ class VoiceCallFragment : Fragment() {
                         if (!viewModel.isCaller) {
                             viewModel.listenForOffer()
                             viewModel.listenForCallerCandidates()
-                            Log.d("CALL_FLOW", "Callee: listenForOffer + listenForCallerCandidates")
                         } else {
                             viewModel.startCall()
                             viewModel.listenForAnswer()
                             viewModel.listenForCalleeCandidates()
-                            Log.d("CALL_FLOW", "Caller: startCall + listenForAnswer + listenForCalleeCandidates")
                         }
                     }
                     "declined" -> {

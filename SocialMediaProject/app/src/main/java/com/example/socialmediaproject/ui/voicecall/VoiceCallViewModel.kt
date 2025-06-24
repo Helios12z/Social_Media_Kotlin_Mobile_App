@@ -100,33 +100,24 @@ class VoiceCallViewModel : ViewModel() {
                     override fun onSetSuccess() {}
                     override fun onSetFailure(p0: String?) {
 
-                        Log.e("CALL_ERROR", "setLocalDescription failed: $p0")
-
                     }
                     override fun onCreateSuccess(p0: SessionDescription?) {
-
-                        Log.e("CALL_ERROR", "createOffer/Answer failed: $p0")
 
                     }
                     override fun onCreateFailure(p0: String?) {}
                 }, sdp)
-
                 val offer = mapOf(
                     "sdp" to sdp.description,
                     "type" to sdp.type.canonicalForm()
                 )
                 database.child("calls/$roomId/offer").setValue(offer)
-
                 Log.d("CALL_FLOW", "Caller: Offer created -> SDP: ${sdp.description}")
-
             }
 
             override fun onSetSuccess() {}
             override fun onSetFailure(p0: String?) {}
             override fun onCreateFailure(p0: String?) {}
         }, mediaConstraints)
-
-        Log.d("CALL_FLOW", "Caller startCall - Local audio enabled: ${localAudioTrack.enabled()}")
     }
 
     fun listenForOffer() {
@@ -148,11 +139,7 @@ class VoiceCallViewModel : ViewModel() {
                             override fun onCreateFailure(p0: String?) {}
                         }, offer)
                     }
-
-                    Log.d("CALL_FLOW", "Callee: Offer received from Firebase")
-
                 }
-
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
@@ -188,9 +175,6 @@ class VoiceCallViewModel : ViewModel() {
             "sdpMLineIndex" to candidate.sdpMLineIndex
         )
         val candidatePath = if (isCaller) "callerCandidates" else "calleeCandidates"
-
-        Log.d("CALL_FLOW", "Sending ICE (${if (isCaller) "caller" else "callee"}): $candidateData")
-
         database.child("calls/$roomId/$candidatePath").push().setValue(candidateData)
     }
 
@@ -205,8 +189,6 @@ class VoiceCallViewModel : ViewModel() {
                     if (sdp != null && sdpMid != null && sdpMLineIndex != null) {
                         val candidate = IceCandidate(sdpMid, sdpMLineIndex, sdp)
                         peerConnection.addIceCandidate(candidate)
-
-                        Log.d("CALL_FLOW", "Received remote ICE (${if (isCaller) "callee" else "caller"}): sdp=$sdp")
                     }
                 }
 
@@ -232,9 +214,6 @@ class VoiceCallViewModel : ViewModel() {
                             override fun onCreateSuccess(p0: SessionDescription?) {}
                             override fun onCreateFailure(p0: String?) {}
                         }, answer)
-
-                        Log.d("CALL_FLOW", "Caller: Answer received from Firebase")
-
                     }
                 }
 
