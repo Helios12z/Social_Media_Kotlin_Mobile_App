@@ -2,11 +2,14 @@ package com.example.socialmediaproject
 
 import android.app.Activity
 import android.app.Application
+import android.content.Intent
 import android.os.Bundle
 import com.example.socialmediaproject.activity.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.onesignal.OneSignal
 import com.onesignal.debug.LogLevel
+import com.onesignal.notifications.INotificationClickEvent
+import com.onesignal.notifications.INotificationClickListener
 
 class MyApplication: Application(), Application.ActivityLifecycleCallbacks {
     override fun onCreate() {
@@ -14,6 +17,27 @@ class MyApplication: Application(), Application.ActivityLifecycleCallbacks {
         OneSignal.Debug.logLevel=LogLevel.VERBOSE
         OneSignal.initWithContext(this, "e354e0b8-a22b-4662-8696-6d2431f7191c")
         registerActivityLifecycleCallbacks(this)
+        clickToSourceNotificationHandler()
+    }
+
+    private fun clickToSourceNotificationHandler() {
+        OneSignal.Notifications.addClickListener(object : INotificationClickListener {
+            override fun onClick(result: INotificationClickEvent) {
+                val data = result.notification.additionalData
+                val type = data?.optString("type")
+                val callerId = data?.optString("callerId")
+
+                if (type == "voice_call" && callerId != null) {
+                    val context = this@MyApplication
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra("navigateTo", "chat")
+                        putExtra("senderId", callerId)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    }
+                    context.startActivity(intent)
+                }
+            }
+        })
     }
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {

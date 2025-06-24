@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -19,6 +20,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivityMainBinding
+import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.service.OneSignalHelper
 import com.example.socialmediaproject.ui.notification.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -121,6 +123,7 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+        handleIntent(intent)
     }
 
     private fun askForPermissions() {
@@ -200,31 +203,61 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        handleIntent(intent)
+    }
 
-        val navigateTo = intent.getStringExtra("navigate_to")
+    private fun handleIntent(intent: Intent?) {
+        val navigateTo = intent?.getStringExtra("navigateTo")
 
-        if (navigateTo == "incoming_call") {
-            val callerId = intent.getStringExtra("callerId")
-            val roomId = intent.getStringExtra("roomId")
-
-            val callIntent = Intent(this, IncomingCallActivity::class.java).apply {
-                putExtra("callerId", callerId)
-                putExtra("roomId", roomId)
+        when (navigateTo) {
+            "chat" -> {
+                val senderId = intent.getStringExtra("senderId")
+                if (senderId != null) {
+                    openChatDetailWithUser(senderId)
+                }
             }
-            startActivity(callIntent)
+
+            "incoming_call" -> {
+                val callerId = intent.getStringExtra("callerId")
+                val roomId = intent.getStringExtra("roomId")
+                val callIntent = Intent(this, IncomingCallActivity::class.java).apply {
+                    putExtra("callerId", callerId)
+                    putExtra("roomId", roomId)
+                }
+                startActivity(callIntent)
+            }
+
+            "calling" -> {
+                val userId = intent.getStringExtra("user_id")
+                val roomId = intent.getStringExtra("room_id")
+                val bundle = Bundle().apply {
+                    putString("user_id", userId)
+                    putString("room_id", roomId)
+                }
+                val navController = findNavController(R.id.nav_host_fragment_activity_main)
+                navController.navigate(R.id.navigation_calling, bundle)
+            }
         }
+    }
 
-        else if (navigateTo == "calling") {
-            val userId = intent.getStringExtra("user_id")
-            val roomId = intent.getStringExtra("room_id")
-
-            val bundle = Bundle().apply {
-                putString("user_id", userId)
-                putString("room_id", roomId)
+    private fun openChatDetailWithUser(senderId: String) {
+        db.collection("Users").document(senderId).get().addOnSuccessListener {
+            result->if (result.exists()) {
+                val selectedUser=ChatUser(
+                    id=senderId,
+                    username=result.getString("name")?:"",
+                    avatarUrl=result.getString("avatarurl")
+                )
+                val bundle = Bundle().apply {
+                    putParcelable("chatUser", selectedUser)
+                }
+                val navController = findNavController(R.id.nav_host_fragment_activity_main)
+                navController.navigate(R.id.navigation_chatdetail, bundle)
             }
-
-            val navController = findNavController(R.id.nav_host_fragment_activity_main)
-            navController.navigate(R.id.navigation_calling, bundle)
+            else Toast.makeText(this, "Người gọi không tồn tại", Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener {
+            Toast.makeText(this, "Có lỗi xảy ra", Toast.LENGTH_SHORT).show()
         }
     }
 }
