@@ -1,6 +1,9 @@
 package com.example.socialmediaproject.ui.voicecall
 
+import android.content.Context
+import android.media.AudioManager
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +30,7 @@ class VoiceCallFragment : Fragment() {
     ): View {
         binding=FragmentVoiceCallBinding.inflate(layoutInflater, container, false)
         viewModel= ViewModelProvider(requireActivity())[VoiceCallViewModel::class.java]
+        viewModel.isCaller = arguments?.getBoolean("isCaller") == true
         db= FirebaseFirestore.getInstance()
         chatUserId=arguments?.getString("user_id")?:""
         if (!chatUserId.isNullOrEmpty())
@@ -55,9 +59,16 @@ class VoiceCallFragment : Fragment() {
 
                 when (status) {
                     "accepted" -> {
-                        viewModel.isCaller = true
-                        viewModel.startCall()
-                        viewModel.listenForAnswer()
+                        if (!viewModel.isCaller) {
+                            viewModel.listenForOffer()
+                            viewModel.listenForCallerCandidates()
+                            Log.d("CALL_FLOW", "Callee: listenForOffer + listenForCallerCandidates")
+                        } else {
+                            viewModel.startCall()
+                            viewModel.listenForAnswer()
+                            viewModel.listenForCalleeCandidates()
+                            Log.d("CALL_FLOW", "Caller: startCall + listenForAnswer + listenForCalleeCandidates")
+                        }
                     }
                     "declined" -> {
                         Toast.makeText(requireContext(), "Cuộc gọi bị từ chối", Toast.LENGTH_SHORT).show()
@@ -76,6 +87,10 @@ class VoiceCallFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
+
+        val audioManager = requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        audioManager.isSpeakerphoneOn = true
     }
 
     override fun onDestroyView() {

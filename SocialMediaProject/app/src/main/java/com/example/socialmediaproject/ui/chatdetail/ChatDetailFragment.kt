@@ -249,6 +249,7 @@ class ChatDetailFragment : Fragment() {
                             val bundle = Bundle().apply {
                                 putString("user_id", chatUser.id)
                                 putString("room_id", roomId)
+                                putBoolean("isCaller", true)
                             }
                             findNavController().navigate(R.id.navigation_calling, bundle)
                         }

@@ -1,6 +1,7 @@
 package com.example.socialmediaproject.ui.voicecall
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.ChildEventListener
@@ -34,7 +35,11 @@ class VoiceCallViewModel : ViewModel() {
     var roomId: String = ""
 
     private val iceServers = listOf(
-        PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer()
+        PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
+        PeerConnection.IceServer.builder("turn:openrelay.metered.ca:80")
+            .setUsername("openrelayproject")
+            .setPassword("openrelayproject")
+            .createIceServer()
     )
 
     fun initPeerConnection() {
@@ -61,9 +66,14 @@ class VoiceCallViewModel : ViewModel() {
             override fun onTrack(transceiver: RtpTransceiver) {
                 val remoteAudioTrack = transceiver.receiver.track() as? org.webrtc.AudioTrack
                 remoteAudioTrack?.setEnabled(true)
+                remoteAudioTrack?.setVolume(10.0)
             }
 
-            override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {}
+            override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
+
+                Log.d("CALL_FLOW", "ICE connection state changed: $p0")
+
+            }
             override fun onIceConnectionReceivingChange(p0: Boolean) {}
             override fun onIceGatheringChange(p0: PeerConnection.IceGatheringState?) {}
             override fun onSignalingChange(p0: PeerConnection.SignalingState?) {}
@@ -89,6 +99,8 @@ class VoiceCallViewModel : ViewModel() {
             audioTrack,
             RtpTransceiver.RtpTransceiverInit(RtpTransceiver.RtpTransceiverDirection.SEND_ONLY)
         )
+
+        Log.d("CALL_FLOW", "PeerConnection initialized")
     }
 
     fun startCall() {
@@ -97,8 +109,16 @@ class VoiceCallViewModel : ViewModel() {
             override fun onCreateSuccess(sdp: SessionDescription) {
                 peerConnection.setLocalDescription(object : SdpObserver {
                     override fun onSetSuccess() {}
-                    override fun onSetFailure(p0: String?) {}
-                    override fun onCreateSuccess(p0: SessionDescription?) {}
+                    override fun onSetFailure(p0: String?) {
+
+                        Log.e("CALL_ERROR", "setLocalDescription failed: $p0")
+
+                    }
+                    override fun onCreateSuccess(p0: SessionDescription?) {
+
+                        Log.e("CALL_ERROR", "createOffer/Answer failed: $p0")
+
+                    }
                     override fun onCreateFailure(p0: String?) {}
                 }, sdp)
 
@@ -107,12 +127,17 @@ class VoiceCallViewModel : ViewModel() {
                     "type" to sdp.type.canonicalForm()
                 )
                 database.child("calls/$roomId/offer").setValue(offer)
+
+                Log.d("CALL_FLOW", "Caller: Offer created -> SDP: ${sdp.description}")
+
             }
 
             override fun onSetSuccess() {}
             override fun onSetFailure(p0: String?) {}
             override fun onCreateFailure(p0: String?) {}
         }, mediaConstraints)
+
+        Log.d("CALL_FLOW", "Caller startCall - Local audio enabled: ${localAudioTrack.enabled()}")
     }
 
     fun listenForOffer() {
@@ -134,6 +159,9 @@ class VoiceCallViewModel : ViewModel() {
                             override fun onCreateFailure(p0: String?) {}
                         }, offer)
                     }
+
+                    Log.d("CALL_FLOW", "Callee: Offer received from Firebase")
+
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
@@ -171,6 +199,9 @@ class VoiceCallViewModel : ViewModel() {
             "sdpMLineIndex" to candidate.sdpMLineIndex
         )
         val candidatePath = if (isCaller) "callerCandidates" else "calleeCandidates"
+
+        Log.d("CALL_FLOW", "Sending ICE (${if (isCaller) "caller" else "callee"}): $candidateData")
+
         database.child("calls/$roomId/$candidatePath").push().setValue(candidateData)
     }
 
@@ -185,6 +216,8 @@ class VoiceCallViewModel : ViewModel() {
                     if (sdp != null && sdpMid != null && sdpMLineIndex != null) {
                         val candidate = IceCandidate(sdpMid, sdpMLineIndex, sdp)
                         peerConnection.addIceCandidate(candidate)
+
+                        Log.d("CALL_FLOW", "Received remote ICE (${if (isCaller) "callee" else "caller"}): sdp=$sdp")
                     }
                 }
 
@@ -210,6 +243,9 @@ class VoiceCallViewModel : ViewModel() {
                             override fun onCreateSuccess(p0: SessionDescription?) {}
                             override fun onCreateFailure(p0: String?) {}
                         }, answer)
+
+                        Log.d("CALL_FLOW", "Caller: Answer received from Firebase")
+
                     }
                 }
 
@@ -225,5 +261,26 @@ class VoiceCallViewModel : ViewModel() {
 
         peerConnectionFactory = PeerConnectionFactory.builder()
             .createPeerConnectionFactory()
+    }
+
+    fun listenForCalleeCandidates() {
+        database.child("calls/$roomId/calleeCandidates")
+            .addChildEventListener(object : ChildEventListener {
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    val sdp = snapshot.child("candidate").getValue(String::class.java)
+                    val sdpMid = snapshot.child("sdpMid").getValue(String::class.java)
+                    val sdpMLineIndex = snapshot.child("sdpMLineIndex").getValue(Int::class.java)
+
+                    if (sdp != null && sdpMid != null && sdpMLineIndex != null) {
+                        val candidate = IceCandidate(sdpMid, sdpMLineIndex, sdp)
+                        peerConnection.addIceCandidate(candidate)
+                    }
+                }
+
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+                override fun onChildRemoved(snapshot: DataSnapshot) {}
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+                override fun onCancelled(error: DatabaseError) {}
+            })
     }
 }
