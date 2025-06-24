@@ -69,11 +69,7 @@ class VoiceCallViewModel : ViewModel() {
                 remoteAudioTrack?.setVolume(10.0)
             }
 
-            override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {
-
-                Log.d("CALL_FLOW", "ICE connection state changed: $p0")
-
-            }
+            override fun onIceConnectionChange(p0: PeerConnection.IceConnectionState?) {}
             override fun onIceConnectionReceivingChange(p0: Boolean) {}
             override fun onIceGatheringChange(p0: PeerConnection.IceGatheringState?) {}
             override fun onSignalingChange(p0: PeerConnection.SignalingState?) {}
@@ -93,14 +89,7 @@ class VoiceCallViewModel : ViewModel() {
         }
         localAudioSource = peerConnectionFactory.createAudioSource(audioConstraints)
         localAudioTrack = peerConnectionFactory.createAudioTrack("101", localAudioSource)
-
-        val audioTrack = localAudioTrack
-        val audioSender = peerConnection.addTransceiver(
-            audioTrack,
-            RtpTransceiver.RtpTransceiverInit(RtpTransceiver.RtpTransceiverDirection.SEND_ONLY)
-        )
-
-        Log.d("CALL_FLOW", "PeerConnection initialized")
+        peerConnection.addTrack(localAudioTrack)
     }
 
     fun startCall() {
