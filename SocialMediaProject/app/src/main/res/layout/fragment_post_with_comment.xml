@@ -94,7 +94,8 @@
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="More options"
                             android:src="@drawable/morebutton"
-                            android:scaleType="centerInside"/>
+                            android:scaleType="centerInside"
+                            app:tint="@color/text_color" />
                     </LinearLayout>
 
                     <TextView
@@ -279,6 +280,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:shapeAppearanceOverlay="@style/CircleImageView"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMentionSuggestions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:background="@color/background_color"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/etCommentInput"
+            app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
+            app:layout_constraintEnd_toStartOf="@id/btnSendComment"
+            tools:listitem="@layout/item_user_suggestion"/>
 
         <EditText
             android:id="@+id/etCommentInput"

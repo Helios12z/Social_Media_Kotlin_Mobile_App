@@ -1,7 +1,13 @@
 package com.example.socialmediaproject.ui.postwithcomment
 
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Parcelable
+import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuInflater
@@ -20,6 +26,7 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
 import com.example.socialmediaproject.adapter.ImagePostAdapter
+import com.example.socialmediaproject.adapter.MentionSuggestionAdapter
 import com.example.socialmediaproject.databinding.FragmentPostWithCommentBinding
 import com.example.socialmediaproject.dataclass.Comment
 import com.example.socialmediaproject.dataclass.Friend
@@ -28,11 +35,15 @@ import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialogFragment
 import com.example.socialmediaproject.fragmentwithoutviewmodel.ViewingImageFragment
 import com.example.socialmediaproject.ui.comment.CommentViewModel
+import com.example.socialmediaproject.ui.comment.FriendInfo
 import com.example.socialmediaproject.ui.home.HomeViewModel
 import com.example.socialmediaproject.ui.mainpage.MainPageFragment
+import com.google.android.gms.tasks.TaskCompletionSource
+import com.google.android.gms.tasks.Tasks
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import java.text.SimpleDateFormat
@@ -54,6 +65,8 @@ class PostWithCommentFragment : Fragment() {
     private val expandedCommentIds = mutableSetOf<String>()
     private lateinit var post: PostViewModel
     private var hasLoadedComments = false
+    private lateinit var mentionAdapter: MentionSuggestionAdapter
+    private val allFriends = mutableListOf<FriendInfo>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -105,7 +118,11 @@ class PostWithCommentFragment : Fragment() {
         setupUI()
         observeComments()
         if (!hasLoadedComments) {
-            commentViewModel.loadInitialComments()
+            if (commentViewModel.postId != postId) {
+                commentViewModel.resetComments()
+                commentViewModel.postId = postId
+                commentViewModel.loadInitialComments()
+            }
             hasLoadedComments=true 
         }
         setupLoadMore()
@@ -259,13 +276,61 @@ class PostWithCommentFragment : Fragment() {
         commentViewModel.isLoadingLive.observe(viewLifecycleOwner) {
             isLoading->if (isLoading) {
                 binding.commentLoadingProgress.visibility=View.VISIBLE
-                binding.noCommentsLayout.visibility=View.GONE
             }
             else {
                 binding.commentLoadingProgress.visibility=View.GONE
-                binding.noCommentsLayout.visibility=View.VISIBLE
             }
         }
+        mentionAdapter = MentionSuggestionAdapter { id, name ->
+            insertMention(name, id)
+            binding.rvMentionSuggestions.visibility = View.GONE
+        }
+        binding.rvMentionSuggestions.adapter = mentionAdapter
+        binding.rvMentionSuggestions.layoutManager = LinearLayoutManager(requireContext())
+
+        loadUserFriends { friends ->
+            allFriends.clear()
+            allFriends.addAll(friends)
+        }
+
+        binding.etCommentInput.addTextChangedListener(object : TextWatcher {
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s.isNullOrBlank()) {
+                    binding.rvMentionSuggestions.visibility = View.GONE
+                    return
+                }
+
+                val cursorPos = binding.etCommentInput.selectionStart
+                val textBeforeCursor = s.substring(0, cursorPos)
+
+                val atIndex = textBeforeCursor.lastIndexOf('@')
+                if (atIndex == -1 || (atIndex > 0 && textBeforeCursor[atIndex - 1] != ' ' && textBeforeCursor[atIndex - 1] != '\n')) {
+                    binding.rvMentionSuggestions.visibility = View.GONE
+                    return
+                }
+
+                val keyword = textBeforeCursor.substring(atIndex + 1)
+
+                if (keyword.contains(" ") || keyword.isEmpty()) {
+                    binding.rvMentionSuggestions.visibility = View.GONE
+                    return
+                }
+
+                val filtered = allFriends.filter {
+                    it.name.startsWith(keyword, ignoreCase = true)
+                }
+
+                if (filtered.isNotEmpty()) {
+                    mentionAdapter.submitList(filtered)
+                    binding.rvMentionSuggestions.visibility = View.VISIBLE
+                } else {
+                    binding.rvMentionSuggestions.visibility = View.GONE
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: Editable?) {}
+        })
     }
 
     private fun setupAdapter() {
@@ -278,7 +343,11 @@ class PostWithCommentFragment : Fragment() {
                 binding.btnCancelReply.visibility = View.VISIBLE
                 binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
                 if (binding.etCommentInput.text.toString().isBlank()) {
-                    binding.etCommentInput.setText("@${comment.username} ")
+                    val mention = SpannableString("@${comment.username} ")
+                    val yellowSpan = ForegroundColorSpan(Color.parseColor("#FFD700"))
+                    mention.setSpan(yellowSpan, 0, mention.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    binding.etCommentInput.setText(mention)
+                    binding.etCommentInput.setSelection(mention.length)
                 }
             },
             onLikeClicked = { comment ->
@@ -321,6 +390,24 @@ class PostWithCommentFragment : Fragment() {
         binding.rvComments.layoutManager = LinearLayoutManager(requireContext())
     }
 
+    private fun insertMention(name: String, userId: String) {
+        val fullText = binding.etCommentInput.text ?: return
+        val cursorPos = binding.etCommentInput.selectionStart
+        val textBeforeCursor = fullText.substring(0, cursorPos)
+
+        val match = Regex("@(\\w{1,20})$").find(textBeforeCursor) ?: return
+        val start = match.range.first
+        val end = match.range.last + 1
+
+        fullText.delete(start, end)
+
+        val mention = SpannableString("@$name ")
+        val colorSpan = ForegroundColorSpan(Color.parseColor("#FFD700"))
+        mention.setSpan(colorSpan, 0, mention.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        fullText.insert(start, mention)
+    }
+
     private fun confirmDeleteComment(commentId: String) {
         AlertDialog.Builder(requireContext())
             .setTitle("Xác nhận xóa")
@@ -332,50 +419,65 @@ class PostWithCommentFragment : Fragment() {
             .show()
     }
 
+    fun deleteCommentRecursively(
+        commentRef: DocumentReference,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit) {
+        Toast.makeText(requireContext(), "Đang xóa...", Toast.LENGTH_SHORT).show()
+        commentRef.firestore.collection("comments")
+            .whereEqualTo("parentId", commentRef.id)
+            .get()
+            .addOnSuccessListener { snap ->
+                val children = snap.documents
+                if (children.isEmpty()) {
+                    commentRef.delete()
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener { onFailure(it) }
+                }
+                else {
+                    val tasks = children.map { childDoc ->
+                        val tcs = TaskCompletionSource<Void>()
+                        deleteCommentRecursively(
+                            childDoc.reference,
+                            { tcs.setResult(null) },
+                            { tcs.setException(it) }
+                        )
+                        tcs.task
+                    }
+                    Tasks.whenAll(tasks)
+                        .addOnSuccessListener {
+                            commentRef.delete()
+                                .addOnSuccessListener { onSuccess() }
+                                .addOnFailureListener { onFailure(it) }
+                        }
+                        .addOnFailureListener { onFailure(it) }
+                }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
     fun deleteComment(commentId: String) {
         val commentRef = db.collection("comments").document(commentId)
-        commentRef.get().addOnSuccessListener { doc ->
-            if (!doc.exists()) return@addOnSuccessListener
-            val parentId = doc.getString("parentId")
-            if (parentId == null) {
-                db.collection("comments")
-                .whereEqualTo("parentId", commentId)
-                .get()
-                .addOnSuccessListener { snap ->
-                    val batch = db.batch()
-                    for (child in snap.documents) {
-                        batch.delete(child.reference)
-                    }
-                    batch.delete(commentRef)
-                    batch.commit()
-                    .addOnSuccessListener {
-                        val idx = adapter.comments.indexOfFirst { it.id == commentId }
-                        if (idx != -1) {
-                            adapter.comments.removeAt(idx)
-                            adapter.notifyItemRemoved(idx)
-                        }
-                        Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-            else {
-                commentRef.delete()
-                .addOnSuccessListener {
-                    for ((parentIdx, parent) in adapter.comments.withIndex()) {
-                        val replyIdx = parent.replies.indexOfFirst { it.id == commentId }
-                        if (replyIdx != -1) {
-                            parent.replies.removeAt(replyIdx)
-                            adapter.notifyItemChanged(parentIdx)
-                            break
-                        }
-                    }
+        commentRef.get()
+            .addOnSuccessListener { doc ->
+                if (!doc.exists()) return@addOnSuccessListener
+                val parentId = doc.getString("parentId")
+                val uiOnSuccess = {
+                    commentViewModel.removeCommentLocally(commentId)
                     Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
                 }
+                deleteCommentRecursively(
+                    commentRef,
+                    onSuccess = uiOnSuccess,
+                    onFailure = { e ->
+                        e.printStackTrace()
+                        Toast.makeText(requireContext(), "Xóa lỗi", Toast.LENGTH_LONG).show()
+                    }
+                )
             }
-        }
-        .addOnFailureListener {
-            Toast.makeText(requireContext(), "Xóa thất bại", Toast.LENGTH_SHORT).show()
-        }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Xóa thất bại", Toast.LENGTH_SHORT).show()
+            }
     }
 
     fun editComment(comment: Comment) {
@@ -496,6 +598,53 @@ class PostWithCommentFragment : Fragment() {
             }
             .addOnFailureListener { e ->
                 onError?.invoke(e)
+            }
+    }
+
+    private fun loadUserFriends(onLoaded: (List<FriendInfo>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        db.collection("Users").document(currentUid).get()
+            .addOnSuccessListener { currentDoc ->
+                val friendIds = (currentDoc.get("friends") as? List<String>) ?: emptyList()
+
+                if (friendIds.isEmpty()) {
+                    onLoaded(emptyList())
+                    return@addOnSuccessListener
+                }
+
+                val batches = friendIds.chunked(10)
+                val friendList = mutableListOf<FriendInfo>()
+                var completed = 0
+
+                for (batch in batches) {
+                    db.collection("Users")
+                        .whereIn("userid", batch)
+                        .get()
+                        .addOnSuccessListener { snap ->
+                            for (doc in snap.documents) {
+                                val id = doc.getString("userid") ?: continue
+                                val name = doc.getString("name") ?: continue
+                                val avatar = doc.getString("avatarurl") ?: ""
+                                friendList.add(FriendInfo(id, name, avatar))
+                            }
+                            completed++
+                            if (completed == batches.size) {
+                                onLoaded(friendList)
+                            }
+                        }
+                        .addOnFailureListener {
+                            completed++
+                            if (completed == batches.size) {
+                                onLoaded(friendList)
+                            }
+                        }
+                }
+            }
+            .addOnFailureListener {
+                it.printStackTrace()
+                onLoaded(emptyList())
             }
     }
 }
