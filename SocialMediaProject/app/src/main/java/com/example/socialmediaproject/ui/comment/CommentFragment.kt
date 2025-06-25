@@ -1,7 +1,13 @@
 package com.example.socialmediaproject.ui.comment
 
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Parcelable
+import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +23,7 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
+import com.example.socialmediaproject.adapter.MentionSuggestionAdapter
 import com.example.socialmediaproject.databinding.FragmentCommentBinding
 import com.example.socialmediaproject.dataclass.Comment
 import com.google.android.gms.tasks.TaskCompletionSource
@@ -39,6 +46,8 @@ class CommentFragment : Fragment() {
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private var recyclerViewState: Parcelable? = null
     private val expandedCommentIds = mutableSetOf<String>()
+    private lateinit var mentionAdapter: MentionSuggestionAdapter
+    private val allFriends = mutableListOf<FriendInfo>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -119,6 +128,74 @@ class CommentFragment : Fragment() {
                 }
             }
         }
+        mentionAdapter = MentionSuggestionAdapter { id, name ->
+            insertMention(name, id)
+            binding.rvMentionSuggestions.visibility = View.GONE
+        }
+        binding.rvMentionSuggestions.adapter = mentionAdapter
+        binding.rvMentionSuggestions.layoutManager = LinearLayoutManager(requireContext())
+
+        loadUserFriends { friends ->
+            allFriends.clear()
+            allFriends.addAll(friends)
+        }
+
+        binding.etCommentInput.addTextChangedListener(object : TextWatcher {
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s.isNullOrBlank()) {
+                    binding.rvMentionSuggestions.visibility = View.GONE
+                    return
+                }
+
+                val cursorPos = binding.etCommentInput.selectionStart
+                val textBeforeCursor = s.substring(0, cursorPos)
+
+                val atIndex = textBeforeCursor.lastIndexOf('@')
+                if (atIndex == -1 || (atIndex > 0 && textBeforeCursor[atIndex - 1] != ' ' && textBeforeCursor[atIndex - 1] != '\n')) {
+                    binding.rvMentionSuggestions.visibility = View.GONE
+                    return
+                }
+
+                val keyword = textBeforeCursor.substring(atIndex + 1)
+
+                if (keyword.contains(" ") || keyword.isEmpty()) {
+                    binding.rvMentionSuggestions.visibility = View.GONE
+                    return
+                }
+
+                val filtered = allFriends.filter {
+                    it.name.startsWith(keyword, ignoreCase = true)
+                }
+
+                if (filtered.isNotEmpty()) {
+                    mentionAdapter.submitList(filtered)
+                    binding.rvMentionSuggestions.visibility = View.VISIBLE
+                } else {
+                    binding.rvMentionSuggestions.visibility = View.GONE
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: Editable?) {}
+        })
+    }
+
+    private fun insertMention(name: String, userId: String) {
+        val fullText = binding.etCommentInput.text ?: return
+        val cursorPos = binding.etCommentInput.selectionStart
+        val textBeforeCursor = fullText.substring(0, cursorPos)
+
+        val match = Regex("@(\\w{1,20})$").find(textBeforeCursor) ?: return
+        val start = match.range.first
+        val end = match.range.last + 1
+
+        fullText.delete(start, end)
+
+        val mention = SpannableString("@$name ")
+        val colorSpan = ForegroundColorSpan(Color.parseColor("#FFD700"))
+        mention.setSpan(colorSpan, 0, mention.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        fullText.insert(start, mention)
     }
 
     private fun setupAdapter() {
@@ -340,4 +417,57 @@ class CommentFragment : Fragment() {
         super.onPause()
         recyclerViewState = binding.rvComments.layoutManager?.onSaveInstanceState()
     }
+
+    private fun loadUserFriends(onLoaded: (List<FriendInfo>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val currentUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        db.collection("Users").document(currentUid).get()
+        .addOnSuccessListener { currentDoc ->
+            val friendIds = (currentDoc.get("friends") as? List<String>) ?: emptyList()
+
+            if (friendIds.isEmpty()) {
+                onLoaded(emptyList())
+                return@addOnSuccessListener
+            }
+
+            val batches = friendIds.chunked(10)
+            val friendList = mutableListOf<FriendInfo>()
+            var completed = 0
+
+            for (batch in batches) {
+                db.collection("Users")
+                    .whereIn("userid", batch)
+                    .get()
+                    .addOnSuccessListener { snap ->
+                        for (doc in snap.documents) {
+                            val id = doc.getString("userid") ?: continue
+                            val name = doc.getString("name") ?: continue
+                            val avatar = doc.getString("avatarurl") ?: ""
+                            friendList.add(FriendInfo(id, name, avatar))
+                        }
+                        completed++
+                        if (completed == batches.size) {
+                            onLoaded(friendList)
+                        }
+                    }
+                    .addOnFailureListener {
+                        completed++
+                        if (completed == batches.size) {
+                            onLoaded(friendList)
+                        }
+                    }
+            }
+        }
+        .addOnFailureListener {
+            it.printStackTrace()
+            onLoaded(emptyList())
+        }
+    }
 }
+
+data class FriendInfo(
+    val id: String,
+    val name: String,
+    val avatarUrl: String
+)
