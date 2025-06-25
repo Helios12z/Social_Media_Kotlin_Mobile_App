@@ -224,22 +224,7 @@ class CommentFragment : Fragment() {
             if (!doc.exists()) return@addOnSuccessListener
             val parentId = doc.getString("parentId")
             val uiOnSuccess = {
-                if (parentId == null) {
-                    val idx = adapter.comments.indexOfFirst { it.id == commentId }
-                    if (idx != -1) {
-                        adapter.comments.removeAt(idx)
-                        adapter.notifyItemRemoved(idx)
-                    }
-                } else {
-                    for ((pIdx, parent) in adapter.comments.withIndex()) {
-                        val rIdx = parent.replies.indexOfFirst { it.id == commentId }
-                        if (rIdx != -1) {
-                            parent.replies.removeAt(rIdx)
-                            adapter.notifyItemChanged(pIdx)
-                            break
-                        }
-                    }
-                }
+                viewModel.removeCommentLocally(commentId)
                 Toast.makeText(requireContext(), "Xóa thành công", Toast.LENGTH_SHORT).show()
             }
             deleteCommentRecursively(
@@ -329,14 +314,19 @@ class CommentFragment : Fragment() {
 
     private fun observeComments() {
         viewModel.comments.observe(viewLifecycleOwner) { newComments ->
-            if (newComments.isEmpty()) {
-                binding.rvComments.isVisible = false
-                binding.noCommentsLayout.isVisible = true
+            if (newComments != null) {
+                if (newComments.isEmpty()) {
+                    binding.rvComments.isVisible = false
+                    binding.noCommentsLayout.isVisible = true
+                } else {
+                    binding.rvComments.isVisible = true
+                    binding.noCommentsLayout.isVisible = false
+                    adapter.updateFullComments(newComments)
+                }
             }
             else {
-                binding.rvComments.isVisible = true
-                binding.noCommentsLayout.isVisible = false
-                adapter.updateFullComments(newComments)
+                binding.rvComments.isVisible = false
+                binding.noCommentsLayout.isVisible = true
             }
         }
     }

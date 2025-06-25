@@ -17,8 +17,8 @@ import java.util.regex.Pattern
 class CommentViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
-    private val _comments = MutableLiveData<MutableList<Comment>>(mutableListOf())
-    val comments: LiveData<MutableList<Comment>> = _comments
+    private val _comments = MutableLiveData<MutableList<Comment>?>(mutableListOf())
+    val comments: MutableLiveData<MutableList<Comment>?> = _comments
     private var lastVisibleComment: DocumentSnapshot? = null
     private var isLoading = false
     private val pageSize = 6
@@ -344,5 +344,17 @@ class CommentViewModel : ViewModel() {
             }
         }
         _comments.postValue(current)
+    }
+
+    fun removeCommentLocally(commentId: String) {
+        val updatedList = _comments.value?.mapNotNull { parent ->
+            if (parent.id == commentId) {
+                null
+            } else {
+                val newReplies = parent.replies.filterNot { it.id == commentId }.toMutableList()
+                parent.copy(replies = newReplies)
+            }
+        }?.toMutableList()
+        _comments.postValue(updatedList)
     }
 }

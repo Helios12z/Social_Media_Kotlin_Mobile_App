@@ -451,14 +451,19 @@ class PostWithCommentFragment : Fragment() {
 
     private fun observeComments() {
         commentViewModel.comments.observe(viewLifecycleOwner) { newComments ->
-            if (newComments.isEmpty()) {
-                binding.rvComments.isVisible = false
-                binding.noCommentsLayout.isVisible = true
+            if (newComments != null) {
+                if (newComments.isEmpty()) {
+                    binding.rvComments.isVisible = false
+                    binding.noCommentsLayout.isVisible = true
+                } else {
+                    binding.rvComments.isVisible = true
+                    binding.noCommentsLayout.isVisible = false
+                    adapter.updateFullComments(newComments)
+                }
             }
             else {
-                binding.rvComments.isVisible = true
-                binding.noCommentsLayout.isVisible = false
-                adapter.updateFullComments(newComments)
+                binding.rvComments.isVisible = false
+                binding.noCommentsLayout.isVisible = true
             }
         }
     }
