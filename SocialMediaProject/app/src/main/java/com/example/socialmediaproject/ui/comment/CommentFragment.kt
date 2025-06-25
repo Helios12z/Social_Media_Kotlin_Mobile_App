@@ -50,7 +50,6 @@ class CommentFragment : Fragment() {
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
         postId = arguments?.getString("post_id") ?: ""
-        viewModel.postId = postId
         return binding.root
     }
 
@@ -66,7 +65,9 @@ class CommentFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.resetComments()
+        //this can be considered a good way to reload the comments, but after hours of thinking I discarded it
+        //viewModel.resetComments()
+        //viewModel.postId=""
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(0f).setDuration(200).start()
         bottomnavbar.visibility=View.VISIBLE
@@ -92,7 +93,11 @@ class CommentFragment : Fragment() {
         setupAdapter()
         setupUI()
         observeComments()
-        viewModel.loadInitialComments()
+        if (viewModel.postId != postId) {
+            viewModel.resetComments()
+            viewModel.postId = postId
+            viewModel.loadInitialComments()
+        }
         setupLoadMore()
         parentFragmentManager.setFragmentResultListener(
             "editCommentRequest",
