@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -254,24 +255,77 @@ class PostWithCommentFragment : Fragment() {
             }
         }
         binding.buttonMore.setOnClickListener {
-            val popup= PopupMenu(requireContext(), binding.buttonMore)
-            val menuInflater: MenuInflater = popup.menuInflater
-            menuInflater.inflate(R.menu.post_management_menu, popup.menu)
-            popup.setOnMenuItemClickListener {
-                item->when (item.itemId) {
-                    R.id.btnEditPost->{
-                        true
+            val uid = auth.currentUser?.uid ?: return@setOnClickListener
+            val postId = post.id
+
+            FirebaseFirestore.getInstance()
+                .collection("Users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener { doc ->
+                    val hidden = (doc.get("hiddenPosts") as? List<String>) ?: emptyList()
+                    val isHidden = hidden.contains(postId)
+
+                    val popup = PopupMenu(requireContext(), binding.buttonMore)
+                    popup.menuInflater.inflate(R.menu.post_management_menu, popup.menu)
+
+                    popup.menu.findItem(R.id.btnHideOrUnhidePost).title = if (isHidden) "Hủy ẩn bài đăng" else "Ẩn bài đăng"
+                    popup.menu.findItem(R.id.btnDeletePost).isVisible = (post.userId == uid || doc.getString("role") == "Admin")
+                    popup.menu.findItem(R.id.btnEditPost).isVisible = (post.userId == uid)
+
+                    popup.setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.btnDeletePost -> {
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle("Xác nhận xóa")
+                                    .setMessage("Bạn có chắc chắn muốn xóa bài viết này không?")
+                                    .setPositiveButton("Có") { _, _ ->
+                                        FirebaseFirestore.getInstance()
+                                            .collection("Posts")
+                                            .document(postId)
+                                            .delete()
+                                            .addOnSuccessListener {
+                                                Toast.makeText(requireContext(), "Đã xóa bài viết", Toast.LENGTH_SHORT).show()
+                                                findNavController().popBackStack()
+                                            }
+                                            .addOnFailureListener {
+                                                Toast.makeText(requireContext(), "Lỗi khi xóa", Toast.LENGTH_SHORT).show()
+                                            }
+                                    }
+                                    .setNegativeButton("Không", null)
+                                    .show()
+                                true
+                            }
+                            R.id.btnEditPost -> {
+                                findNavController().navigate(
+                                    R.id.navigation_editPost,
+                                    bundleOf("postId" to postId)
+                                )
+                                true
+                            }
+                            R.id.btnHideOrUnhidePost -> {
+                                val newHidden = if (isHidden) hidden - postId else hidden + postId
+                                FirebaseFirestore.getInstance()
+                                    .collection("Users")
+                                    .document(uid)
+                                    .update("hiddenPosts", newHidden)
+                                    .addOnSuccessListener {
+                                        Toast.makeText(requireContext(), if (isHidden) "Đã hủy ẩn" else "Đã ẩn bài viết", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .addOnFailureListener {
+                                        Toast.makeText(requireContext(), "Không thể cập nhật ẩn bài viết", Toast.LENGTH_SHORT).show()
+                                    }
+                                true
+                            }
+                            else -> false
+                        }
                     }
-                    R.id.btnDeletePost->{
-                        true
-                    }
-                    R.id.btnHideOrUnhidePost->{
-                        true
-                    }
-                    else->false
+
+                    popup.show()
                 }
-            }
-            popup.show()
+                .addOnFailureListener {
+                    Toast.makeText(requireContext(), "Có lỗi xảy ra", Toast.LENGTH_SHORT).show()
+                }
         }
         commentViewModel.isLoadingLive.observe(viewLifecycleOwner) {
             isLoading->if (isLoading) {
