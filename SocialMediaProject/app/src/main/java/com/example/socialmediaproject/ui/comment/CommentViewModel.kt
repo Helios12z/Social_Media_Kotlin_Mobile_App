@@ -272,49 +272,56 @@ class CommentViewModel : ViewModel() {
         while (matcher.find()) {
             mentionedUsernames.add(matcher.group(1))
         }
+
         if (mentionedUsernames.isEmpty()) return
-        db.collection("Users").document(auth.currentUser?.uid ?: "").get()
-        .addOnSuccessListener { result ->
-            if (result.exists()) {
+
+        val currentUserId = auth.currentUser?.uid ?: return
+
+        db.collection("Users").document(currentUserId).get()
+            .addOnSuccessListener { result ->
+                if (!result.exists()) return@addOnSuccessListener
                 val sendername = result.getString("name") ?: "Ai đó"
+
                 db.collection("Users")
-                .whereIn("name", mentionedUsernames.toList())
-                .get()
-                .addOnSuccessListener { snapshot ->
-                    val mentionedUserIds = mutableListOf<String>()
-                    for (doc in snapshot.documents) {
-                        val userId = doc.getString("userid") ?: continue
-                        mentionedUserIds.add(userId)
-                        OneSignalHelper.sendMentionNotification(
-                            userId = userId,
-                            message = "$sendername đã nhắc đến bạn trong một bình luận",
-                            commentId = commentId,
-                            postId = postId
-                        )
-                        val notification = hashMapOf(
-                            "receiverId" to userId,
-                            "senderId" to auth.currentUser?.uid,
-                            "type" to "mention",
-                            "message" to "$sendername đã nhắc đến bạn trong một bình luận",
-                            "timestamp" to Timestamp.now(),
-                            "relatedPostId" to postId,
-                            "relatedCommentId" to commentId,
-                            "read" to false
-                        )
-                        db.collection("notifications").add(notification)
-                    }
-                    if (mentionedUserIds.isNotEmpty()) {
-                        db.collection("comments")
-                        .document(commentId)
-                        .update(
-                            mapOf(
-                                "mentionedUserIds" to mentionedUserIds
+                    .whereIn("name", mentionedUsernames.toList())
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        val mentionedUserIds = mutableSetOf<String>()
+
+                        for (doc in snapshot.documents) {
+                            val userId = doc.getString("userid") ?: continue
+                            if (userId == currentUserId) continue
+                            mentionedUserIds.add(userId)
+                        }
+
+                        if (mentionedUserIds.isEmpty()) return@addOnSuccessListener
+
+                        for (userId in mentionedUserIds) {
+                            OneSignalHelper.sendMentionNotification(
+                                userId = userId,
+                                message = "$sendername đã nhắc đến bạn trong một bình luận",
+                                commentId = commentId,
+                                postId = postId
                             )
-                        )
+
+                            val notification = hashMapOf(
+                                "receiverId" to userId,
+                                "senderId" to currentUserId,
+                                "type" to "mention",
+                                "message" to "$sendername đã nhắc đến bạn trong một bình luận",
+                                "timestamp" to Timestamp.now(),
+                                "relatedPostId" to postId,
+                                "relatedCommentId" to commentId,
+                                "read" to false
+                            )
+                            db.collection("notifications").add(notification)
+                        }
+
+                        db.collection("comments")
+                            .document(commentId)
+                            .update("mentionedUserIds", mentionedUserIds.toList())
                     }
-                }
             }
-        }
     }
 
     private fun updateCommentCount(postId: String) {

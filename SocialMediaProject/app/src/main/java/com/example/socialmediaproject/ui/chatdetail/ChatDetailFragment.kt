@@ -241,7 +241,7 @@ class ChatDetailFragment : Fragment() {
 
                             OneSignalHelper.sendCallNotification(
                                 userId = chatUser.id,
-                                message = "Cuộc gọi đến từ bạn ${currentUserName}",
+                                message = "Cuộc gọi đến từ ${currentUserName}",
                                 callerId = callerId ?: "",
                                 roomId = roomId
                             )

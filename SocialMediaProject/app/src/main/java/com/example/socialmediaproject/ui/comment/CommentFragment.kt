@@ -208,7 +208,11 @@ class CommentFragment : Fragment() {
                 binding.btnCancelReply.visibility = View.VISIBLE
                 binding.tvReplyingTo.text = "Đang trả lời: ${comment.username}"
                 if (binding.etCommentInput.text.toString().isBlank()) {
-                    binding.etCommentInput.setText("@${comment.username} ")
+                    val mention = SpannableString("@${comment.username} ")
+                    val yellowSpan = ForegroundColorSpan(Color.parseColor("#FFD700"))
+                    mention.setSpan(yellowSpan, 0, mention.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    binding.etCommentInput.setText(mention)
+                    binding.etCommentInput.setSelection(mention.length)
                 }
             },
             onLikeClicked = { comment ->
