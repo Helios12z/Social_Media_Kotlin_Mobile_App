@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.socialmediaproject.LoadingDialogFragment
+import com.example.socialmediaproject.NotificationNavigationCache
 import com.example.socialmediaproject.R
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
@@ -60,8 +61,12 @@ class LoginActivity : AppCompatActivity() {
                 firebaseauth.signInWithEmailAndPassword(email.text.toString(), password.text.toString())
                 .addOnCompleteListener {
                     task-> if (task.isSuccessful) {
+                    if (!loading.isStateSaved) {
                         loading.dismiss()
-                        Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        loading.dismissAllowingStateLoss()
+                    }
+                    Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
                         if (rememberme.isChecked) {
                             sharedPreferences.edit()
                             .putBoolean("rememberMe", true)
@@ -72,13 +77,15 @@ class LoginActivity : AppCompatActivity() {
                             sharedPreferences.edit().clear().apply()
                         }
                         OneSignal.login(firebaseauth.currentUser?.uid?:"")
-                        intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                        finish()
+                        navigateToMainActivity()
                     }
                     else
                     {
-                        loading.dismiss()
+                        if (!loading.isStateSaved) {
+                            loading.dismiss()
+                        } else {
+                            loading.dismissAllowingStateLoss()
+                        }
                         Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
                         loginbutton.isEnabled=true
                     }
@@ -104,15 +111,36 @@ class LoginActivity : AppCompatActivity() {
         firebaseauth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                loading.dismiss()
+                if (!loading.isStateSaved) {
+                    loading.dismiss()
+                } else {
+                    loading.dismissAllowingStateLoss()
+                }
                 OneSignal.login(firebaseauth.currentUser?.uid?:"")
-                startActivity(Intent(this, MainActivity::class.java))
-                finish()
+                navigateToMainActivity()
             } else {
                 sharedPreferences.edit().clear().apply()
-                loading.dismiss()
+                if (!loading.isStateSaved) {
+                    loading.dismiss()
+                } else {
+                    loading.dismissAllowingStateLoss()
+                }
                 Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun navigateToMainActivity() {
+        val pendingIntent = NotificationNavigationCache.pendingIntent
+        if (pendingIntent != null) {
+            pendingIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(pendingIntent)
+            NotificationNavigationCache.pendingIntent = null
+        } else {
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
+        finish()
     }
 }

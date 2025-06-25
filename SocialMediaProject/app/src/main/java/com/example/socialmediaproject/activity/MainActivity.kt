@@ -1,14 +1,17 @@
 package com.example.socialmediaproject.activity
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -17,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import com.example.socialmediaproject.NotificationNavigationCache
 import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivityMainBinding
@@ -41,10 +45,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        askForPermissions()
         auth= FirebaseAuth.getInstance()
-        checkFriendRequestsOnLogin(this)
-        checkMentionsOnLogin()
+        if (auth.currentUser == null) {
+            val loginIntent = Intent(this, LoginActivity::class.java)
+            loginIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(loginIntent)
+            finish()
+            return
+        }
         val userid=auth.currentUser?.uid
         val usersref=db.collection("Users")
         usersref.whereEqualTo("userid", userid).get().addOnSuccessListener {
@@ -76,11 +84,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navigation_home
-            )
-        )
         navView.setupWithNavController(navController)
         navView.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -124,6 +127,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         handleIntent(intent)
+        askForPermissions()
+        checkFriendRequestsOnLogin(this)
+        checkMentionsOnLogin()
     }
 
     private fun askForPermissions() {
@@ -150,7 +156,9 @@ class MainActivity : AppCompatActivity() {
                     .await()
                 val count = snapshots.size()
                 if (count > 0) {
-                    OneSignalHelper.sendPushNotification(currentUserId, "Bạn có $count lời mời kết bạn mới!")
+                    OneSignalHelper.sendAddFriendNotification(currentUserId,
+                        "Bạn có $count lời mời kết bạn mới!",
+                        "all")
                     val batch = db.batch()
                     for (doc in snapshots.documents) {
                         batch.update(doc.reference, "notified", true)
@@ -177,7 +185,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 val count = unnotified.size
                 if (count > 0) {
-                    OneSignalHelper.sendPushNotification(currentUserId, "Bạn có $count lượt nhắc trong bình luận mới!")
+                    OneSignalHelper.sendMentionNotification(currentUserId,
+                        "Bạn có $count lượt nhắc trong bình luận mới!",
+                        "all",
+                        "all")
                     val batch = db.batch()
                     for (doc in unnotified) {
                         batch.update(doc.reference, "notifiedUserIds", FieldValue.arrayUnion(currentUserId))
@@ -206,8 +217,10 @@ class MainActivity : AppCompatActivity() {
         handleIntent(intent)
     }
 
+    //handle when the users click push notifications
     private fun handleIntent(intent: Intent?) {
         val navigateTo = intent?.getStringExtra("navigateTo")
+        val navController = findNavController(R.id.nav_host_fragment_activity_main)
 
         when (navigateTo) {
             "chat" -> {
@@ -234,8 +247,29 @@ class MainActivity : AppCompatActivity() {
                     putString("user_id", userId)
                     putString("room_id", roomId)
                 }
-                val navController = findNavController(R.id.nav_host_fragment_activity_main)
                 navController.navigate(R.id.navigation_calling, bundle)
+            }
+
+            "notificationPage" -> {
+                navController.navigate(R.id.navigation_notification)
+            }
+
+            "postFullPage" -> {
+                val postId=intent.getStringExtra("postId")
+                val commentId=intent.getStringExtra("commentId")
+                val bundle=Bundle().apply {
+                    putString("post_id", postId)
+                    putString("comment_id", commentId)
+                }
+                navController.navigate(R.id.navigation_postWithComment, bundle)
+            }
+
+            "mainPage" -> {
+                val wallUserId=intent.getStringExtra("wall_user_id")
+                val bundle=Bundle().apply {
+                    putString("wall_user_id", wallUserId)
+                }
+                navController.navigate(R.id.navigation_mainpage, bundle)
             }
         }
     }
@@ -258,6 +292,14 @@ class MainActivity : AppCompatActivity() {
         }
         .addOnFailureListener {
             Toast.makeText(this, "Có lỗi xảy ra", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        NotificationNavigationCache.pendingIntent?.let { pendingIntent ->
+            handleIntent(pendingIntent)
+            NotificationNavigationCache.pendingIntent = null
         }
     }
 }

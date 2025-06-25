@@ -37,6 +37,14 @@ class IncomingCallActivity : AppCompatActivity() {
             }
         }
 
+        db.collection("calls").document(roomId)
+            .addSnapshotListener { snapshot, _ ->
+                val status = snapshot?.getString("status") ?: return@addSnapshotListener
+                if (status == "ended" || status == "rejected" || status == "declined") {
+                    finish()
+                }
+            }
+
         binding.btnAccept.setOnClickListener {
             db.collection("calls").document(roomId).update("status", "accepted")
 

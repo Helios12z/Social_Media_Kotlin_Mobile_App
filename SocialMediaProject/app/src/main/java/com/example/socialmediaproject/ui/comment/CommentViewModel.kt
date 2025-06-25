@@ -288,7 +288,8 @@ class CommentViewModel : ViewModel() {
                         OneSignalHelper.sendMentionNotification(
                             userId = userId,
                             message = "$sendername đã nhắc đến bạn trong một bình luận",
-                            commentId = commentId
+                            commentId = commentId,
+                            postId = postId
                         )
                         val notification = hashMapOf(
                             "receiverId" to userId,

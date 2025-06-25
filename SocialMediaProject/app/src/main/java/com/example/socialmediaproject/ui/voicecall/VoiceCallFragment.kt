@@ -120,19 +120,37 @@ class VoiceCallFragment : Fragment() {
                 "${receiverId}_${senderId}"
             }
 
-            val message = Message(
-                senderId = senderId,
-                receiverId = receiverId,
-                text = "Cuộc gọi thoại ($durationText)",
-                timestamp = Timestamp.now(),
-                link = false
-            )
-            sendMessage(chatId, message)
-            db.collection("calls").document(roomId).update("status", "ended").addOnSuccessListener {
-                viewModel.endCall()
+            db.collection("calls").document(roomId).get().addOnSuccessListener {
+                result->if (result.exists()) {
+                    val status=result.getString("status") ?: "calling"
+                    val messageText = if (status == "calling") {
+                        "Cuộc gọi nhỡ"
+                    } else {
+                        val durationMillis = SystemClock.elapsedRealtime() - binding.callTimer.base
+                        val durationText = formatDuration(durationMillis)
+                        "Cuộc gọi thoại ($durationText)"
+                    }
+                    val message = Message(
+                        senderId = senderId,
+                        receiverId = receiverId,
+                        text = messageText,
+                        timestamp = Timestamp.now(),
+                        link = false
+                    )
+                    sendMessage(chatId, message)
+                    db.collection("calls").document(roomId).update("status", "ended").addOnSuccessListener {
+                        viewModel.endCall()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(requireContext(), "Cuộc gọi không thể kết thúc", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                else {
+                    Toast.makeText(requireContext(), "Có lỗi xảy ra", Toast.LENGTH_SHORT).show()
+                }
             }
             .addOnFailureListener {
-                Toast.makeText(requireContext(), "Cuộc gọi không thể kết thúc", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Có lỗi xảy ra", Toast.LENGTH_SHORT).show()
             }
         }
     }

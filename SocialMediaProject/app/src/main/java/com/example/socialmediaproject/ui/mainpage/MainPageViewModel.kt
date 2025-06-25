@@ -415,9 +415,9 @@ class MainPageViewModel : ViewModel() {
                     requestRef.set(newRequest).await()
                     db.collection("Users").document(senderId).get().addOnSuccessListener {
                         result->if (result.exists()) {
-                            OneSignalHelper.sendPushNotification(
+                            OneSignalHelper.sendAddFriendNotification(
                                 receiverId,
-                                "${result.getString("name")} đã gửi cho bạn lời mời kết bạn"
+                                "${result.getString("name")} đã gửi cho bạn lời mời kết bạn", senderId
                             )
                             val notification = hashMapOf(
                                 "receiverId" to receiverId,

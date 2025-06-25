@@ -24,28 +24,34 @@ object OneSignalHelper {
         retrofit.create(OneSignalService::class.java)
     }
 
-    fun sendMentionNotification(userId: String, message: String, commentId: String) {
+    fun sendMentionNotification(userId: String, message: String, commentId: String, postId: String) {
         val payload = NotificationPayload(
             appId = "e354e0b8-a22b-4662-8696-6d2431f7191c",
             includedExternalUserIds = listOf(userId),
-            contents = NotificationContent(en = message, vie=message)
+            contents = NotificationContent(en = message, vie = message),
+            data = mapOf(
+                "type" to "mention",
+                "commentId" to commentId,
+                "postId" to postId
+            )
         )
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = service.sendNotification(payload)
                 if (response.isSuccessful) {
                     val db = FirebaseFirestore.getInstance()
                     db.collection("comments")
-                    .document(commentId)
-                    .update("notifiedUserIds", FieldValue.arrayUnion(userId))
-                    .addOnSuccessListener {
-                        //success
-                    }
-                    .addOnFailureListener {e->
-                        e.printStackTrace()
-                    }
+                        .document(commentId)
+                        .update("notifiedUserIds", FieldValue.arrayUnion(userId))
+                        .addOnSuccessListener {
+
+                        }
+                        .addOnFailureListener { e ->
+                            e.printStackTrace()
+                        }
                 } else {
-                    //error
+                    //log error
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -53,19 +59,25 @@ object OneSignalHelper {
         }
     }
 
-    fun sendPushNotification(userId: String, message: String) {
+
+    fun sendAddFriendNotification(userId: String, message: String, senderId: String) {
         val payload = NotificationPayload(
             appId = "e354e0b8-a22b-4662-8696-6d2431f7191c",
             includedExternalUserIds = listOf(userId),
-            contents = NotificationContent(en = message, vie = message)
+            contents = NotificationContent(en = message, vie = message),
+            data = mapOf(
+                "type" to "add_friend",
+                "senderId" to senderId
+            )
         )
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = service.sendNotification(payload)
                 if (response.isSuccessful) {
                     updateNotifiedStatusIfNeeded(userId)
                 } else {
-                    //Log error
+                    //log error if needed
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
