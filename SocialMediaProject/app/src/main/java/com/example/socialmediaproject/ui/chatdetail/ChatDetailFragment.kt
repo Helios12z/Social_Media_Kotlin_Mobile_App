@@ -364,9 +364,7 @@ class ChatDetailFragment : Fragment() {
     private fun askVectorAI(chatId: String, userPrompt: String) {
         lifecycleScope.launch {
             try {
-                val template = getVectorAIPromptTemplate(requireContext())
-                val truePrompt = template.replace("{{user_input}}", userPrompt)
-                val aiResponse = AIService.chatWithAI(truePrompt)
+                val aiResponse = AIService.chatWithAI(userPrompt)
                 val aiMessage = Message(
                     senderId = "Ordinary_VectorAI",
                     receiverId = auth.currentUser?.uid ?: "",
@@ -389,6 +387,7 @@ class ChatDetailFragment : Fragment() {
         }
     }
 
+    //DUE TO SEARCH ENGINE ADDED FOR AI, WE CAN'T USE THIS METHOD ANYMORE
     private fun getVectorAIPromptTemplate(context: Context): String {
         return context.assets.open("VectorAI_Data.txt")
             .bufferedReader()
@@ -406,9 +405,7 @@ class ChatDetailFragment : Fragment() {
         viewModel.sendMessage(chatId, userMessage)
         lifecycleScope.launch {
             try {
-                val template   = getVectorAIPromptTemplate(requireContext())
-                val truePrompt = template.replace("{{user_input}}", userText)
-                val aiResponse = AIService.chatWithAI(truePrompt)
+                val aiResponse = AIService.chatWithAI(userText)
                 val aiMessage = Message(
                     senderId   = Constant.ChatConstants.VECTOR_AI_ID,
                     receiverId = auth.currentUser?.uid ?: "",

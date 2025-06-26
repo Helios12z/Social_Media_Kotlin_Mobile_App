@@ -67,10 +67,23 @@ object AIService {
         }
     }
 
-    suspend fun chatWithAI(prompt: String): String {
+    suspend fun chatWithAI(rawPrompt: String, fromWeb: Boolean = false): String {
+        val systemPrefix = """
+            Bạn là trợ lý ảo thông minh VectorAI trong ứng dụng mạng xã hội Vector. 
+            Bạn và Vector được tạo ra bởi lập trình viên Nguyễn Minh Quang.
+            Bạn có nhiệm vụ hỗ trợ người dùng trả lời các câu hỏi, trò chuyện thân thiện, hành xử như một người bạn đáng tin cậy. 
+            Luôn trả lời một cách ngắn gọn, dễ hiểu và có ngữ điệu thân thiện, không cần quá trang trọng.
+            
+            **Với những câu hỏi liên quan đến tin tức, hoặc những thông tin mà bạn nghĩ là đã cũ, không chắc chắn hoặc bạn không biết rõ, luôn luôn trả lời: "Tôi không biết".**
+            
+            Người dùng có thể trò chuyện với bạn trong đoạn chat với các người dùng khác bằng cách gõ: @VectorAI [nội dung chat], trong đoạn chat trực tiếp với bạn thì không cần làm vậy.
+        """.trimIndent()
+        val modifiedPrompt = "$systemPrefix\n\nCâu hỏi: $rawPrompt"
+        Log.d("ChatWithAI", "[Modified Prompt]\n$modifiedPrompt")
+
         val contentJson = JSONObject().apply {
             put("role", "user")
-            put("parts", JSONArray().put(JSONObject().put("text", prompt)))
+            put("parts", JSONArray().put(JSONObject().put("text", modifiedPrompt)))
         }
         val requestJson = JSONObject().apply {
             put("contents", JSONArray().put(contentJson))
@@ -86,38 +99,44 @@ object AIService {
         val request = Request.Builder().url(API_URL).post(requestBody).build()
 
         return withContext(Dispatchers.IO) {
-            OkHttpClient().newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    return@withContext "Xin lỗi, tôi gặp lỗi!"
-                }
-                val body = response.body?.string() ?: return@withContext "Không nhận được phản hồi"
+            OkHttpClient().newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) return@withContext "Xin lỗi, tôi gặp lỗi!"
+                val body = resp.body?.string() ?: return@withContext "Không nhận được phản hồi"
                 try {
-                    val jsonObject = JSONObject(body)
-                    val candidates = jsonObject.getJSONArray("candidates")
-                    if (candidates.length() > 0) {
-                        val content = candidates.getJSONObject(0).getJSONObject("content")
-                        val parts = content.getJSONArray("parts")
-                        if (parts.length() > 0) {
-                            val answer = parts.getJSONObject(0).getString("text")
+                    val json  = JSONObject(body)
+                    val cand  = json.getJSONArray("candidates")
+                    if (cand.length()>0) {
+                        val ans = cand.getJSONObject(0)
+                            .getJSONObject("content")
+                            .getJSONArray("parts")
+                            .getJSONObject(0)
+                            .getString("text")
 
-                            if (answer.contains("không biết", true) ||
-                                answer.contains("không hiểu", true)) {
+                        if (!fromWeb && ans.contains("không biết", true)) {
+                            val questionOnly = extractQuestionFromPrompt(modifiedPrompt)
+                            Log.d("ChatWithAI", "[Search Prompt] $questionOnly")
 
-                                val webInfo = searchWeb(prompt)
-                                return@withContext if (webInfo.isNotEmpty()) {
-                                    val newPrompt = "Dựa trên thông tin sau, hãy trả lời câu hỏi:\n$webInfo\n\nCâu hỏi: $prompt"
-                                    Log.d("ChatWithAI", "Kết quả web:\n$webInfo")
-                                    chatWithAI(newPrompt)
-                                } else {
-                                    "Tôi không tìm thấy thông tin phù hợp trên Internet."
-                                }
+                            val webInfo = searchWeb(questionOnly)
+                            Log.d("ChatWithAI", "[Web Results]\n$webInfo")
+
+                            return@withContext if (webInfo.isNotEmpty()) {
+                                val newPrompt = """
+                                    Dựa trên thông tin sau, hãy trả lời câu hỏi:
+                                    
+                                    $webInfo
+                                    
+                                    Câu hỏi: $questionOnly
+                                """.trimIndent()
+                                chatWithAI(newPrompt, fromWeb = true)
+                            } else {
+                                "Tôi không tìm thấy thông tin phù hợp trên Internet."
                             }
-
-                            return@withContext answer
                         }
+
+                        return@withContext ans
                     }
                     return@withContext "Xin lỗi, tôi không hiểu câu hỏi."
-                } catch (e: Exception) {
+                } catch(e: Exception) {
                     e.printStackTrace()
                     return@withContext "Xin lỗi, tôi gặp lỗi khi xử lý phản hồi!"
                 }
@@ -127,6 +146,7 @@ object AIService {
 
     suspend fun searchWeb(query: String): String {
         val apiKey = "3bcdd496d4969450f76377582487e95260f0cc0cc5cc83a0ef6d03b77ed242a4"
+
         val url = "https://serpapi.com/search.json?q=${URLEncoder.encode(query, "UTF-8")}&hl=vi&gl=vn&api_key=$apiKey"
 
         return withContext(Dispatchers.IO) {
@@ -150,5 +170,11 @@ object AIService {
                 return@withContext topResults.toString().trim()
             }
         }
+    }
+
+    fun extractQuestionFromPrompt(text: String): String {
+        val regex = Regex("(?i)Câu hỏi\\s*[:：]\\s*(.+)")
+        val m = regex.find(text)
+        return m?.groupValues?.get(1)?.trim() ?: text.trim()
     }
 }
