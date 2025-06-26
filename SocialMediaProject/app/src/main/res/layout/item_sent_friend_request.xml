@@ -17,7 +17,6 @@
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imageViewAvatar"
             android:layout_width="60dp"
-            android:tint="@color/text_color"
             android:layout_height="60dp"
             android:src="@drawable/avataricon"
             app:shapeAppearanceOverlay="@style/CircleImageView"

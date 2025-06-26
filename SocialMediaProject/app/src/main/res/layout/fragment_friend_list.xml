@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@color/background_color"
     android:padding="16dp">
 
     <com.google.android.material.card.MaterialCardView
@@ -14,18 +14,20 @@
         app:cardElevation="8dp"
         app:cardUseCompatPadding="true"
         android:clipToPadding="false"
+        android:background="@color/background_color"
         android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/background_color"
             android:orientation="vertical">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbarFriends"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/transparent"
+                android:background="@color/background_color"
                 android:title="Bạn bè"
                 android:titleTextColor="@color/black"
                 app:titleTextAppearance="@style/TextAppearance.AppCompat.Large"/>
@@ -37,11 +39,13 @@
                 android:layout_marginTop="8dp"
                 android:queryHint="Tìm kiếm bạn bè..."
                 app:iconifiedByDefault="false"
+                android:background="@color/background_color"
                 app:layout_constraintTop_toBottomOf="@id/toolbarFriends" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewFriends"
                 android:layout_width="match_parent"
+                android:background="@color/background_color"
                 android:layout_height="0dp"
                 android:layout_marginTop="12dp"
                 android:layout_weight="1"

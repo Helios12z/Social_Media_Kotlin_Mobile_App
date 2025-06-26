@@ -22,8 +22,6 @@
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:src="@color/background_color"
-                app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="2dp"
                 app:shapeAppearanceOverlay="@style/RoundedImageView" />
         </FrameLayout>
 
@@ -40,9 +38,7 @@
                 android:layout_gravity="center"
                 android:src="@drawable/avataricon"
                 android:scaleType="centerCrop"
-                app:shapeAppearanceOverlay="@style/CircleImageView"
-                app:strokeColor="@color/background_color"
-                app:strokeWidth="3dp" />
+                app:shapeAppearanceOverlay="@style/CircleImageView" />
         </FrameLayout>
 
         <LinearLayout

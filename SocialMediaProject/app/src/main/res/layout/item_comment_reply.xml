@@ -10,7 +10,6 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:src="@drawable/avataricon"
-        android:tint="@color/text_color"
         app:shapeAppearanceOverlay="@style/CircleImageView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
