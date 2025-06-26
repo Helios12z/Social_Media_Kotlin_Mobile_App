@@ -37,16 +37,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
-                        <com.google.android.material.button.MaterialButton
+                        <ImageView
                             android:id="@+id/btn_back"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
                             android:layout_alignParentStart="true"
                             android:layout_centerVertical="true"
-                            android:backgroundTint="@color/purple_500"
-                            android:text="Quay lại"
-                            android:textAllCaps="false"
-                            android:textColor="@color/white"
+                            android:src="@drawable/back_button"
+                            app:tint="@color/text_color"
                             app:cornerRadius="20dp" />
 
                         <TextView
@@ -203,7 +201,7 @@
                                         android:layout_height="80dp"
                                         android:layout_marginEnd="12dp"
                                         android:foreground="?attr/selectableItemBackground"
-                                        app:cardBackgroundColor="?attr/colorPrimary"
+                                        app:cardBackgroundColor="@color/background_color"
                                         app:cardCornerRadius="8dp"
                                         app:cardElevation="0dp">
 
@@ -217,6 +215,7 @@
                                                 android:layout_width="32dp"
                                                 android:layout_height="32dp"
                                                 android:contentDescription="Ảnh"
+                                                app:tint="@color/text_color"
                                                 android:src="@drawable/imageicon" />
 
                                             <TextView
@@ -224,7 +223,7 @@
                                                 android:layout_height="wrap_content"
                                                 android:layout_marginTop="4dp"
                                                 android:text="Ảnh"
-                                                android:textColor="@color/black"
+                                                android:textColor="@color/text_color"
                                                 android:textSize="12sp" />
                                         </LinearLayout>
                                     </com.google.android.material.card.MaterialCardView>

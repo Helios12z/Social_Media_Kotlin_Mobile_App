@@ -38,7 +38,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardBackgroundColor="@color/background_color"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="2dp"
                 app:contentPadding="12dp">
@@ -59,6 +59,7 @@
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:scaleType="centerCrop"
+                            android:tint="@color/text_color"
                             app:shapeAppearanceOverlay="@style/CircleImageView"
                             android:src="@drawable/avataricon" />
 
@@ -139,6 +140,7 @@
                                 android:id="@+id/imageViewLike"
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
+                                app:tint="@color/text_color"
                                 android:contentDescription="Like button"
                                 android:src="@drawable/smallhearticon" />
 
@@ -279,6 +281,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:shapeAppearanceOverlay="@style/CircleImageView"
+            android:tint="@color/text_color"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -316,9 +319,11 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Gửi bình luận"
-            android:src="@drawable/sendicon"
+            android:src="@drawable/send_button"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            android:scaleType="fitXY"
+            app:tint="@color/text_color"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView

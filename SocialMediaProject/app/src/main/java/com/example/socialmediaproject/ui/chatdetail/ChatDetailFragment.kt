@@ -266,6 +266,9 @@ class ChatDetailFragment : Fragment() {
                 }
         }
         listenForIncomingCall(chatUser.id)
+        binding.btnBack.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
     }
 
     override fun onResume() {

@@ -10,6 +10,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:src="@drawable/avataricon"
+        android:tint="@color/text_color"
         app:shapeAppearanceOverlay="@style/CircleImageView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -44,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
-        app:cardBackgroundColor="?attr/colorSurface"
+        app:cardBackgroundColor="@color/background_color"
         app:cardCornerRadius="12dp"
         app:cardElevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -88,6 +89,7 @@
             android:drawablePadding="4dp"
             android:padding="4dp"
             android:text="Thích"
+            android:drawableTint="@color/text_color"
             android:textColor="@color/text_color"
             android:textSize="10sp" />
 

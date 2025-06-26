@@ -14,7 +14,7 @@
     <item
         android:id="@+id/navigation_plus"
         android:icon="@drawable/plus"
-        android:title="Đăng" />
+        android:title="Đăng bài" />
 
     <item
         android:id="@+id/navigation_notification"

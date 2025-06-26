@@ -104,8 +104,8 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             }
             Glide.with(requireContext())
                 .load(user.wallUrl)
-                .placeholder(R.color.background_color)
-                .error(R.color.background_color)
+                .placeholder(R.color.surface_color)
+                .error(R.color.surface_color)
                 .into(binding.wallImage)
             binding.profileAvatar.setOnClickListener {
                 if (user.avatarUrl.isNotEmpty()) {

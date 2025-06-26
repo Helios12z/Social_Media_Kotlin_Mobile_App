@@ -27,6 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:background="@color/background_color"
                 android:padding="16dp">
 
                 <View
@@ -113,6 +114,7 @@
         app:cardElevation="8dp">
 
         <LinearLayout
+            android:background="@color/background_color"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"

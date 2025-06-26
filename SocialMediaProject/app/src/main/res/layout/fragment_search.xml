@@ -6,26 +6,26 @@
     android:fitsSystemWindows="true"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardToolbar"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_margin="8dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/cardToolbar"
+        android:background="?attr/colorSurface"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:elevation="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <TextView
             android:id="@+id/toolbarFriendRecommend"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="?attr/colorSurface"
-            app:title="KHÁM PHÁ"
-            app:titleCentered="true"
-            app:titleTextColor="@color/text_color" />
-    </com.google.android.material.card.MaterialCardView>
+            android:layout_height="wrap_content"
+            android:text="Thông báo"
+            android:gravity="center"
+            android:padding="16dp"
+            android:textSize="20dp"
+            android:textStyle="bold" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardSpinner"
