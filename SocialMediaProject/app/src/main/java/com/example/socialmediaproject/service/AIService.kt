@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.service
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -8,6 +9,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.net.URLEncoder
 
 object AIService {
     private const val API_KEY = "AIzaSyBf0xyHSQW2A4Y2Tf6d-0R0GD_8XRz0WcE"
@@ -82,6 +84,7 @@ object AIService {
         }
         val requestBody = RequestBody.create("application/json".toMediaType(), requestJson.toString())
         val request = Request.Builder().url(API_URL).post(requestBody).build()
+
         return withContext(Dispatchers.IO) {
             OkHttpClient().newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
@@ -95,7 +98,22 @@ object AIService {
                         val content = candidates.getJSONObject(0).getJSONObject("content")
                         val parts = content.getJSONArray("parts")
                         if (parts.length() > 0) {
-                            return@withContext parts.getJSONObject(0).getString("text")
+                            val answer = parts.getJSONObject(0).getString("text")
+
+                            if (answer.contains("không biết", true) ||
+                                answer.contains("không hiểu", true)) {
+
+                                val webInfo = searchWeb(prompt)
+                                return@withContext if (webInfo.isNotEmpty()) {
+                                    val newPrompt = "Dựa trên thông tin sau, hãy trả lời câu hỏi:\n$webInfo\n\nCâu hỏi: $prompt"
+                                    Log.d("ChatWithAI", "Kết quả web:\n$webInfo")
+                                    chatWithAI(newPrompt)
+                                } else {
+                                    "Tôi không tìm thấy thông tin phù hợp trên Internet."
+                                }
+                            }
+
+                            return@withContext answer
                         }
                     }
                     return@withContext "Xin lỗi, tôi không hiểu câu hỏi."
@@ -103,6 +121,33 @@ object AIService {
                     e.printStackTrace()
                     return@withContext "Xin lỗi, tôi gặp lỗi khi xử lý phản hồi!"
                 }
+            }
+        }
+    }
+
+    suspend fun searchWeb(query: String): String {
+        val apiKey = "3bcdd496d4969450f76377582487e95260f0cc0cc5cc83a0ef6d03b77ed242a4"
+        val url = "https://serpapi.com/search.json?q=${URLEncoder.encode(query, "UTF-8")}&hl=vi&gl=vn&api_key=$apiKey"
+
+        return withContext(Dispatchers.IO) {
+            val request = Request.Builder().url(url).build()
+            OkHttpClient().newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext "Lỗi khi tìm kiếm web!"
+
+                val body = response.body?.string() ?: return@withContext "Không nhận được phản hồi từ web."
+                val json = JSONObject(body)
+                val results = json.optJSONArray("organic_results") ?: return@withContext "Không có kết quả nào phù hợp."
+
+                val topResults = StringBuilder()
+                for (i in 0 until minOf(2, results.length())) {
+                    val result = results.getJSONObject(i)
+                    val title = result.optString("title")
+                    val snippet = result.optString("snippet")
+                    val link = result.optString("link")
+                    topResults.append("$title:\n$snippet\n$link\n\n")
+                }
+
+                return@withContext topResults.toString().trim()
             }
         }
     }
