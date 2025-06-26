@@ -23,6 +23,7 @@ import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.databinding.FragmentMainPageBinding
+import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.dataclass.Friend
 import com.example.socialmediaproject.dataclass.Message
 import com.example.socialmediaproject.dataclass.PostViewModel
@@ -177,6 +178,16 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             val bundle=Bundle()
             bundle.putString("userId", wallUserId)
             findNavController().navigate(R.id.navigation_detail_information, bundle)
+        }
+        binding.buttonChat.setOnClickListener {
+            val chatUser=ChatUser(
+                id=wallUserId,
+                username=viewModel.userInfo.value?.name?:"",
+                avatarUrl=viewModel.userInfo.value?.avatarUrl
+            )
+            val bundle=Bundle()
+            bundle.putParcelable("chatUser", chatUser)
+            findNavController().navigate(R.id.navigation_chatdetail, bundle)
         }
     }
 
