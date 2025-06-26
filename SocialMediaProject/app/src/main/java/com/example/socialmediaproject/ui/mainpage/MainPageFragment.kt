@@ -439,11 +439,13 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             binding.buttonAddFriend.visibility = View.GONE
             binding.buttonUnfriend.visibility = View.GONE
             binding.buttonChat.visibility = View.GONE
+            binding.friendActionGroup.visibility=View.GONE
         } else {
             if (isFriendFlag) {
                 binding.buttonAddFriend.visibility = View.GONE
                 binding.buttonUnfriend.visibility = View.VISIBLE
                 binding.buttonChat.visibility = View.VISIBLE
+                binding.friendActionGroup.visibility=View.VISIBLE
             } else {
                 if (isSendingFriendRequest) {
                     binding.buttonAddFriend.text="Đã gửi lời mời"
@@ -455,6 +457,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                     binding.buttonAddFriend.visibility = View.VISIBLE
                     binding.buttonUnfriend.visibility = View.GONE
                     binding.buttonChat.visibility = View.GONE
+                    binding.friendActionGroup.visibility=View.GONE
                 }
             }
         }
