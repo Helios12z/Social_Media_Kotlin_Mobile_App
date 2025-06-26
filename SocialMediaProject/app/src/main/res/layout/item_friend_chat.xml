@@ -54,7 +54,6 @@
             app:layout_constraintEnd_toStartOf="@id/tvUnreadCount"
             app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
             app:layout_constraintTop_toBottomOf="@id/tvUsername"
-            android:textStyle="bold"
             tools:text="helios12: chào bạn" />
 
         <TextView
