@@ -21,6 +21,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.bumptech.glide.Glide
 import com.example.socialmediaproject.adapter.FeedAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
@@ -50,8 +51,11 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     private lateinit var searchbutton: ImageView
     private lateinit var chatViewModel: ChatViewModel
     private lateinit var badge: BadgeDrawable
+    private lateinit var avatar: ImageView
     private var isLoading = false
     private var isLastPage = false
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,6 +65,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         homeviewmodel=ViewModelProvider(requireActivity())[HomeViewModel::class.java]
         chatViewModel=ViewModelProvider(requireActivity())[ChatViewModel::class.java]
+        avatar=view.findViewById(R.id.image_avatar)
         chatbutton=view.findViewById(R.id.button_chat)
         chatbutton.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_chatFragment)
@@ -69,6 +74,8 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         searchbutton.setOnClickListener {
             findNavController().navigate(R.id.navigation_search_users_and_posts)
         }
+        auth=FirebaseAuth.getInstance()
+        db=FirebaseFirestore.getInstance()
         initViews(view)
         setupRecyclerView()
         setupSwipeRefresh()
@@ -79,9 +86,7 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
     @OptIn(ExperimentalBadgeUtils::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val glow=android.view.animation.AnimationUtils.loadAnimation(requireContext(), R.anim.vector_tittle_animation)
-        view.findViewById<TextView>(R.id.textVector).startAnimation(glow)
-        val chatContainer = view.findViewById<FrameLayout>(R.id.chat_icon_container)
+        val chatContainer = view.findViewById<FrameLayout>(R.id.chat_container)
         val chatButton = view.findViewById<ImageView>(R.id.button_chat)
         badge = BadgeDrawable.create(requireContext()).apply {
             isVisible = false
@@ -98,6 +103,24 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             } else {
                 badge.clearNumber()
                 badge.isVisible = false
+            }
+        }
+        val currentUserId=auth.currentUser?.uid
+        if (currentUserId!=null) {
+            db.collection("Users").document(currentUserId).get().addOnSuccessListener {
+                result->if (result.exists()) {
+                    val imageurl=result.getString("avatarurl")
+                    Glide.with(requireContext())
+                        .load(imageurl)
+                        .error(R.drawable.avataricon)
+                        .placeholder(R.drawable.avataricon)
+                        .into(avatar)
+                    avatar.setOnClickListener {
+                        val bundle=Bundle()
+                        bundle.putString("wall_user_id", currentUserId)
+                        findNavController().navigate(R.id.action_homeFragment_to_mainPageFragment, bundle)
+                    }
+                }
             }
         }
     }
