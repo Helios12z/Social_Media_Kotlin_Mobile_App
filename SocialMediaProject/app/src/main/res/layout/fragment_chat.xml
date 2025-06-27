@@ -15,7 +15,6 @@
         android:background="?attr/colorSurface"
         app:title="Vector"
         app:titleTextAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-        app:menu="@menu/menu_chat"
         app:titleTextColor="@color/text_color"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
