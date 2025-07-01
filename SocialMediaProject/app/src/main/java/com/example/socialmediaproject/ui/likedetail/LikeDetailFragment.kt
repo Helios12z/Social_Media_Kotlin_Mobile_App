@@ -1,4 +1,4 @@
-package com.example.socialmediaproject.fragmentwithoutviewmodel
+package com.example.socialmediaproject.ui.likedetail
 
 import android.os.Bundle
 import android.view.LayoutInflater

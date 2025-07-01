@@ -123,7 +123,8 @@ class SignUpActivity : AppCompatActivity() {
             "name" to name,
             "email" to email,
             "role" to "user",
-            "isfirsttime" to true
+            "isfirsttime" to true,
+            "createdAt" to System.currentTimeMillis(),
         )
         db.collection("Users").document(userid).set(user).addOnSuccessListener {
             loading.dismiss()

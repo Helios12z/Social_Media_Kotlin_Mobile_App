@@ -7,12 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.fragment.findNavController
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.FragmentSettingBinding
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class SettingFragment : Fragment() {
@@ -41,7 +39,6 @@ class SettingFragment : Fragment() {
                 if (result.getString("role")=="Admin")
                 {
                     binding.cardEditInterests.visibility=View.VISIBLE
-                    binding.cardEditGenders.visibility=View.VISIBLE
                     binding.cardUserManagement.visibility=View.VISIBLE
                 }
             }
@@ -76,6 +73,26 @@ class SettingFragment : Fragment() {
         binding.cardDeleteAccount.setOnClickListener {
             val deleteFragment=FragmentConfirmDeleteAccount()
             deleteFragment.show(parentFragmentManager, "deleteFragment")
+        }
+        binding.cardChangeSelfInterests.setOnClickListener {
+
+        }
+        db.collection("Users").document(userId).get().addOnSuccessListener {
+            result->if (result.exists()) {
+                val role=result.getString("role")
+                if (role=="admin") {
+                    binding.cardEditInterests.visibility=View.VISIBLE
+                    binding.cardUserManagement.visibility=View.VISIBLE
+
+                    binding.cardEditInterests.setOnClickListener {
+
+                    }
+
+                    binding.cardUserManagement.setOnClickListener {
+                        findNavController().navigate(R.id.navigation_user_management)
+                    }
+                }
+            }
         }
     }
 }

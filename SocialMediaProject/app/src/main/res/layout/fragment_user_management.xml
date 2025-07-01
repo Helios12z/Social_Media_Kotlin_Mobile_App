@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/background_color"
+    android:fitsSystemWindows="true"
+    tools:context=".fragmentwithoutviewmodel.UserManagementFragment">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="2"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_marginEnd="8dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/text_color"
+                app:cardElevation="4dp">
+
+                <TextView
+                    android:id="@+id/totalUsersText"
+                    android:text="Tổng người dùng: 0"
+                    android:padding="16dp"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_color"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:strokeColor="@color/text_color"
+                app:strokeWidth="1dp"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_marginStart="8dp"
+                app:cardElevation="4dp">
+
+                <TextView
+                    android:id="@+id/activeUsersText"
+                    android:text="Đang hoạt động: 0"
+                    android:padding="16dp"
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:textColor="@color/text_color"
+                    android:textSize="16sp"/>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/userChart"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cập nhật tài khoản"
+            android:textColor="@color/text_color"
+            android:layout_marginTop="20dp"
+            android:textSize="20dp"/>
+
+        <EditText
+            android:id="@+id/searchUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tìm kiếm theo username"
+            android:padding="12dp"
+            android:textColor="@color/text_color"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/rounded_edittext" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/userSearchRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"/>
+
+        <Spinner
+            android:id="@+id/roleSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:visibility="gone"
+            android:entries="@array/user_roles" />
+
+        <Button
+            android:id="@+id/updateRoleBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cập nhật quyền"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/deleteUserBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cấm tài khoản"
+            android:visibility="gone"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
+</ScrollView>

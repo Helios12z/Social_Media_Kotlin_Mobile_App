@@ -78,7 +78,7 @@
     </fragment>
 
     <fragment android:id="@+id/navigation_likedetail"
-        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.LikeDetailFragment"
+        android:name="com.example.socialmediaproject.ui.likedetail.LikeDetailFragment"
         android:label="LikeDetail"
         tools:layout="@layout/fragment_like_detail">
     </fragment>
@@ -157,4 +157,9 @@
         android:name="com.example.socialmediaproject.ui.searchchatuser.SearchChatUserFragment"
         android:label="SearchChatUser"
         tools:layout="@layout/fragment_search_chat_user"/>
+
+    <fragment android:id="@+id/navigation_user_management"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.UserManagementFragment"
+        android:label="UserManagement"
+        tools:layout="@layout/fragment_user_management"/>
 </navigation>
