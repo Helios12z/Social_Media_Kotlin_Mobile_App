@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,12 +31,14 @@ class LikeDetailFragment : Fragment() {
     private var currentPage = 0
     private val pageSize = 10
     private var isLoading = false
+    private lateinit var viewModel: LikeDetailViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding=FragmentLikeDetailBinding.inflate(inflater, container, false)
+        viewModel=ViewModelProvider(requireActivity())[LikeDetailViewModel::class.java]
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
         bottomnavbar.visibility=View.GONE
@@ -44,10 +47,40 @@ class LikeDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
+        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
+        bottomnavbar.visibility=View.GONE
         postId = arguments?.getString("post_id") ?: return
-        setupRecyclerView()
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        likesAdapter = LikesAdapter(mutableListOf()) { userId ->
+            val bundle = Bundle().apply {
+                putString("wall_user_id", userId)
+            }
+            findNavController().navigate(R.id.navigation_mainpage, bundle)
+        }
+        binding.rvLikes.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = likesAdapter
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                    val totalItemCount = layoutManager.itemCount
+                    val lastVisible = layoutManager.findLastVisibleItemPosition()
+                    if (lastVisible >= totalItemCount - 2) {
+                        viewModel.loadNextPage(currentUserId)
+                    }
+                }
+            })
+        }
+
+        viewModel.likedUsers.observe(viewLifecycleOwner) { users ->
+            likesAdapter.submitList(users)
+        }
+
+        viewModel.loadInitial(postId, currentUserId)
         loadPostSummary()
-        loadLikedUsers()
     }
 
     override fun onResume() {
@@ -62,34 +95,6 @@ class LikeDetailFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(0f).setDuration(200).start()
         bottomnavbar.visibility=View.VISIBLE
-    }
-
-    private fun setupRecyclerView() {
-        likesAdapter = LikesAdapter(likedUsers) { userid->
-            val bundle=Bundle()
-            bundle.putString("wall_user_id", userid)
-            findNavController().navigate(R.id.navigation_mainpage, bundle)
-        }
-        binding.rvLikes.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = likesAdapter
-        }
-        binding.rvLikes.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                val totalItemCount = layoutManager.itemCount
-                val lastVisibleItem = layoutManager.findLastVisibleItemPosition()
-                if (!isLoading && lastVisibleItem >= totalItemCount - 2) {
-                    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-                    db.collection("Users").document(currentUserId).get()
-                    .addOnSuccessListener { currentUserDoc ->
-                        val friendList = currentUserDoc["friends"] as? List<*> ?: emptyList<String>()
-                        loadNextPage(friendList)
-                    }
-                }
-            }
-        })
     }
 
     private fun loadPostSummary() {
@@ -138,59 +143,6 @@ class LikeDetailFragment : Fragment() {
         .addOnFailureListener {
             loading.dismiss()
             Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun loadLikedUsers() {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        db.collection("Users").document(currentUserId).get()
-        .addOnSuccessListener { currentUserDoc ->
-            val friendList = currentUserDoc["friends"] as? List<*> ?: emptyList<String>()
-            db.collection("Likes")
-                .whereEqualTo("postid", postId)
-                .whereEqualTo("status", true)
-                .get()
-                .addOnSuccessListener { likeDocs ->
-                    allLikedUserIds = likeDocs.mapNotNull { it.getString("userid") }
-                    currentPage = 0
-                    likedUsers.clear()
-                    loadNextPage(friendList)
-                }
-        }
-    }
-
-    private fun loadNextPage(friendList: List<*>) {
-        if (isLoading) return
-        isLoading = true
-        val start = currentPage * pageSize
-        val end = minOf(start + pageSize, allLikedUserIds.size)
-        if (start >= end) {
-            isLoading = false
-            return
-        }
-        val pageIds = allLikedUserIds.subList(start, end)
-        db.collection("Users")
-        .whereIn(FieldPath.documentId(), pageIds)
-        .get()
-        .addOnSuccessListener { userDocs ->
-            for (doc in userDocs) {
-                val id = doc.id
-                val name = doc.getString("name") ?: ""
-                val avatar = doc.getString("avatarurl") ?: ""
-                val isFriend = friendList.contains(id)
-                val isSelf=id==FirebaseAuth.getInstance().currentUser?.uid
-                var email=""
-                if (isSelf) email="Bạn"
-                else if (isFriend) email="Bạn bè"
-                else email="Người lạ"
-                likedUsers.add(User(id, name, avatar, email))
-            }
-            likesAdapter.notifyDataSetChanged()
-            currentPage++
-            isLoading = false
-        }
-        .addOnFailureListener {
-            isLoading = false
         }
     }
 }

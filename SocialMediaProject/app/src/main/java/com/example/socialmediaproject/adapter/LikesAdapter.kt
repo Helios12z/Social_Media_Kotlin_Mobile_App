@@ -11,7 +11,8 @@ import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.dataclass.User
 
-class LikesAdapter(private val users: List<User>, private val onUserClick: (String)->Unit) :
+class LikesAdapter(private val userList: MutableList<User>,
+                   private val onUserClick: (String) -> Unit) :
     RecyclerView.Adapter<LikesAdapter.LikeViewHolder>() {
 
     inner class LikeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,7 +28,7 @@ class LikesAdapter(private val users: List<User>, private val onUserClick: (Stri
     }
 
     override fun onBindViewHolder(holder: LikeViewHolder, position: Int) {
-        val user = users[position]
+        val user = userList[position]
         holder.tvName.text = user.name
         holder.tvBio.text = user.email
         if (user.avatarurl.isNotEmpty()) {
@@ -43,5 +44,11 @@ class LikesAdapter(private val users: List<User>, private val onUserClick: (Stri
         }
     }
 
-    override fun getItemCount(): Int = users.size
+    override fun getItemCount(): Int = userList.size
+
+    fun submitList(newList: List<User>) {
+        this.userList.clear()
+        this.userList.addAll(newList)
+        notifyDataSetChanged()
+    }
 }
