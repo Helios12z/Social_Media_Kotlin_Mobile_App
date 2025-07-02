@@ -249,6 +249,16 @@ class MainActivity : AppCompatActivity() {
                 navController.navigate(R.id.navigation_calling, bundle)
             }
 
+            "video_calling" -> {
+                val userId = intent.getStringExtra("user_id")
+                val roomId = intent.getStringExtra("room_id")
+                val bundle = Bundle().apply {
+                    putString("user_id", userId)
+                    putString("room_id", roomId)
+                }
+                navController.navigate(R.id.navigation_video_call, bundle)
+            }
+
             "notificationPage" -> {
                 navController.navigate(R.id.navigation_notification)
             }

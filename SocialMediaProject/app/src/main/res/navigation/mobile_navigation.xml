@@ -177,4 +177,9 @@
         android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.ChangeEmailFragment"
         android:label="ChangeEmail"
         tools:layout="@layout/fragment_change_email"/>
+
+    <fragment android:id="@+id/navigation_video_call"
+        android:name="com.example.socialmediaproject.ui.videocall.VideoCallFragment"
+        android:label="VideoCall"
+        tools:layout="@layout/fragment_video_call"/>
 </navigation>

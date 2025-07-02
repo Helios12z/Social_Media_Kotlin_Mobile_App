@@ -82,6 +82,19 @@
                     android:src="@drawable/phone_icon"
                     android:contentDescription="Call"
                     android:layout_marginEnd="12dp"
+                    app:layout_constraintEnd_toStartOf="@id/btnVideoCall"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:tint="@color/text_color" />
+
+                <ImageView
+                    android:id="@+id/btnVideoCall"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/video_call_button"
+                    android:contentDescription="Call"
+                    android:layout_marginEnd="12dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"

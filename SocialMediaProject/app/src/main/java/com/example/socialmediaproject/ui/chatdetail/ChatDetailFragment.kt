@@ -269,6 +269,49 @@ class ChatDetailFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+        binding.btnVideoCall.setOnClickListener {
+            val callerId = auth.currentUser?.uid
+            val roomId = "${callerId}_${chatUser.id}_${System.currentTimeMillis()}"
+            val callData = hashMapOf(
+                "callerId" to callerId,
+                "receiverId" to chatUser.id,
+                "status" to "calling",
+                "type" to "video",
+                "timestamp" to System.currentTimeMillis()
+            )
+            db.collection("calls")
+                .document(roomId)
+                .set(callData).addOnSuccessListener {
+                    db.collection("Users").document(auth.currentUser?.uid ?: "").get()
+                        .addOnSuccessListener { result ->
+                            if (result.exists()) {
+                                val currentUserName = result.getString("name")
+
+                                OneSignalHelper.sendCallNotification(
+                                    userId = chatUser.id,
+                                    message = "Cuộc gọi video đến từ $currentUserName",
+                                    callerId = callerId ?: "",
+                                    roomId = roomId
+                                )
+
+                                val bundle = Bundle().apply {
+                                    putString("user_id", chatUser.id)
+                                    putString("room_id", roomId)
+                                    putBoolean("isCaller", true)
+                                }
+                                findNavController().navigate(R.id.navigation_video_call, bundle)
+                            } else {
+                                Toast.makeText(requireContext(), "Không thể thực hiện cuộc gọi", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(requireContext(), "Không thể thực hiện cuộc gọi", Toast.LENGTH_SHORT).show()
+                        }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Không thể tạo cuộc gọi", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 
     override fun onResume() {
