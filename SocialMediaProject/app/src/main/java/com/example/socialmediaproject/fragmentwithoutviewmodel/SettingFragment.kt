@@ -78,7 +78,7 @@ class SettingFragment : Fragment() {
             findNavController().navigate(R.id.navigation_self_interest)
         }
         binding.cardChangeEmail.setOnClickListener {
-
+            findNavController().navigate(R.id.navigation_change_email)
         }
         db.collection("Users").document(userId).get().addOnSuccessListener {
             result->if (result.exists()) {

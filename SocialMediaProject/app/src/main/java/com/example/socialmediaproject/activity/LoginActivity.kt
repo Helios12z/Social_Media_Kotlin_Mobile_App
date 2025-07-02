@@ -65,6 +65,20 @@ class LoginActivity : AppCompatActivity() {
                     val userId = firebaseauth.currentUser?.uid ?: ""
                     db.collection("Users").document(userId).get()
                         .addOnSuccessListener { doc ->
+                            val userEmailAuth = firebaseauth.currentUser?.email
+                            val emailInFirestore = doc.getString("email")
+
+                            if (userEmailAuth != null && emailInFirestore != null && userEmailAuth != emailInFirestore) {
+                                db.collection("Users").document(userId)
+                                    .update("email", userEmailAuth)
+                                    .addOnSuccessListener {
+                                        //TODO: think something to do here
+                                    }
+                                    .addOnFailureListener {
+                                        //TODO: think something to do here
+                                    }
+                            }
+
                             val isBanned = doc.getBoolean("isBanned") ?: false
                             if (isBanned) {
                                 if (!loading.isStateSaved) loading.dismiss()

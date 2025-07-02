@@ -172,4 +172,9 @@
         android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.EditSelfInterestFragment"
         android:label="SelfInterest"
         tools:layout="@layout/fragment_edit_self_interest"/>
+
+    <fragment android:id="@+id/navigation_change_email"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.ChangeEmailFragment"
+        android:label="ChangeEmail"
+        tools:layout="@layout/fragment_change_email"/>
 </navigation>
