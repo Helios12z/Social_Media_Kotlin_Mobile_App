@@ -2,8 +2,6 @@ package com.example.socialmediaproject.activity
 
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.LinearGradient
-import android.graphics.Shader
 import android.os.Bundle
 import android.widget.Button
 import android.widget.CheckBox
@@ -30,6 +28,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var db: FirebaseFirestore
     private lateinit var rememberme: CheckBox
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var forgotPassword: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +47,7 @@ class LoginActivity : AppCompatActivity() {
         signuptext=findViewById(R.id.signUpText)
         signuptext.setOnClickListener { onSignUpClicked() }
         loginbutton=findViewById(R.id.loginButton)
+        forgotPassword=findViewById(R.id.forgotPassword)
         rememberme=findViewById(R.id.rememberMe)
         firebaseauth=FirebaseAuth.getInstance()
         loginbutton.setOnClickListener {
@@ -149,6 +149,10 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
                 loginbutton.isEnabled=true
             }
+        }
+        forgotPassword.setOnClickListener {
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            startActivity(intent)
         }
     }
 
