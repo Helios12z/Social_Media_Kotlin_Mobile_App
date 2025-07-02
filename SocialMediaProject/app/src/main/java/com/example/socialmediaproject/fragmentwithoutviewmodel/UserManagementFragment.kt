@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.UserManagementAdapter
@@ -102,11 +103,13 @@ class UserManagementFragment : Fragment() {
             binding.userChart.data = data
             binding.userChart.invalidate()
 
-            binding.userChart.xAxis.textColor=R.color.text_color
-            binding.userChart.axisLeft.textColor=R.color.text_color
-            binding.userChart.axisRight.textColor=R.color.text_color
-            binding.userChart.legend.textColor=R.color.text_color
-            binding.userChart.description.textColor=R.color.text_color
+            val textColor = ContextCompat.getColor(binding.root.context, R.color.text_color)
+
+            binding.userChart.xAxis.textColor = textColor
+            binding.userChart.axisLeft.textColor = textColor
+            binding.userChart.axisRight.textColor = textColor
+            binding.userChart.legend.textColor = textColor
+            binding.userChart.description.textColor = textColor
         }
     }
 

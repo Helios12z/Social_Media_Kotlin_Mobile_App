@@ -85,7 +85,7 @@ class SettingFragment : Fragment() {
                     binding.cardUserManagement.visibility=View.VISIBLE
 
                     binding.cardEditInterests.setOnClickListener {
-
+                        findNavController().navigate(R.id.navigation_interest_management)
                     }
 
                     binding.cardUserManagement.setOnClickListener {

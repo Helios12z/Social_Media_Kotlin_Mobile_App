@@ -79,6 +79,7 @@ class LoginActivity : AppCompatActivity() {
                                     }
                                     .setCancelable(false)
                                     .show()
+                                loginbutton.isEnabled=true
                             }
                             else {
                                 if (!loading.isStateSaved) {
@@ -107,8 +108,27 @@ class LoginActivity : AppCompatActivity() {
                                 loading.dismissAllowingStateLoss()
                             }
                             Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
+                            loginbutton.isEnabled=true
                         }
                     }
+                    else {
+                        if (!loading.isStateSaved) {
+                            loading.dismiss()
+                        } else {
+                            loading.dismissAllowingStateLoss()
+                        }
+                        Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
+                        loginbutton.isEnabled=true
+                    }
+                }
+                .addOnFailureListener {
+                    if (!loading.isStateSaved) {
+                        loading.dismiss()
+                    } else {
+                        loading.dismissAllowingStateLoss()
+                    }
+                    Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
+                    loginbutton.isEnabled=true
                 }
             }
             else {
