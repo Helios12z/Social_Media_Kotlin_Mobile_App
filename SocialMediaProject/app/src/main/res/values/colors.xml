@@ -49,10 +49,19 @@
     <color name="nav_icon_selected">#FFFFFFFF</color>
     <color name="nav_icon_unselected">#E0FFFFFF</color>
     
+    <!-- Profile page colors -->
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#666666</color>
+    <color name="primary_button_color">#667eea</color>
+    <color name="secondary_button_color">#F8F9FA</color>
+    <color name="stats_text_primary">#1A1A1A</color>
+    <color name="stats_text_secondary">#8E8E93</color>
+    
     <!-- Blur overlay color for glassmorphism effect -->
     <color name="blur_overlay_color">#40FFFFFF</color>
     
     <!-- Trendy colors for buttons -->
+    <color name="divider_color">#E0E0E0</color>
     <color name="trendy_purple_start">#FF8A2BE2</color>
     <color name="trendy_purple_end">#FF9370DB</color>
     <color name="trendy_blue_start">#FF4169E1</color>
