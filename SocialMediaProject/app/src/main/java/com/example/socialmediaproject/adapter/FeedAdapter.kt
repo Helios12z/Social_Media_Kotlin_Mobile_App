@@ -179,7 +179,6 @@ class FeedAdapter(
         val imageViewLike: ImageView = itemView.findViewById(R.id.imageViewLike)
         val textViewLikeCount: TextView = itemView.findViewById(R.id.textViewLikeCount)
         val textViewCommentCount: TextView = itemView.findViewById(R.id.textViewCommentCount)
-        val textViewShareCount: TextView = itemView.findViewById(R.id.textViewShareCount)
         val buttonMore: ImageButton = itemView.findViewById(R.id.buttonMore)
         val layoutLike: LinearLayout = itemView.findViewById(R.id.layoutLike)
         val layoutComment: LinearLayout = itemView.findViewById(R.id.layoutComment)

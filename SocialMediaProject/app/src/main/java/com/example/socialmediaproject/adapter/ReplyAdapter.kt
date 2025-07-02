@@ -1,5 +1,6 @@
 package com.example.socialmediaproject.adapter
 
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -81,7 +82,7 @@ class ReplyAdapter(
         }
         val isLiked = reply.likes.contains(currentUserId)
         val iconRes = if (isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
-        holder.btnLike.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0)
+        setDrawableStartWithSize(holder.btnLike, iconRes, 24)
         holder.username.text = reply.username
         holder.content.text = reply.content
         holder.likeCount.text = reply.likes.size.toString()
@@ -147,5 +148,16 @@ class ReplyAdapter(
                 sdf.format(Date(timestamp))
             }
         }
+    }
+
+    private fun setDrawableStartWithSize(textView: TextView, drawableResId: Int, sizeDp: Int) {
+        val context = textView.context
+        val sizePx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, sizeDp.toFloat(), context.resources.displayMetrics
+        ).toInt()
+
+        val drawable = ContextCompat.getDrawable(context, drawableResId)
+        drawable?.setBounds(0, 0, sizePx, sizePx)
+        textView.setCompoundDrawables(drawable, null, null, null)
     }
 }

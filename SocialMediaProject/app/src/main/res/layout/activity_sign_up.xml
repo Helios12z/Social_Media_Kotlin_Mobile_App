@@ -28,7 +28,7 @@
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_app_filled"
+                android:src="@drawable/appicon"
                 app:shapeAppearanceOverlay="@style/CircleImageView"
                 android:padding="2dp" />
 
