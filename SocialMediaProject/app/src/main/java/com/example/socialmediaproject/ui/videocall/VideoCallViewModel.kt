@@ -84,6 +84,9 @@ class VideoCallViewModel : ViewModel() {
         localVideoTrack.addSink(localRenderer)
 
         remoteRenderer.init(eglBase.eglBaseContext, null)
+
+        localRenderer.setMirror(true)
+        remoteRenderer.setMirror(false)
     }
 
     fun createVideoCapturer(context: Context): VideoCapturer {
@@ -94,7 +97,12 @@ class VideoCallViewModel : ViewModel() {
                 return enumerator.createCapturer(device, null)!!
             }
         }
-        throw IllegalStateException("No front camera found")
+        for (device in devices) {
+            if (enumerator.isBackFacing(device)) {
+                return enumerator.createCapturer(device, null)!!
+            }
+        }
+        throw IllegalStateException("No camera found")
     }
 
     fun initPeerConnection() {
@@ -112,9 +120,15 @@ class VideoCallViewModel : ViewModel() {
 
             override fun onTrack(transceiver: RtpTransceiver) {
                 val track = transceiver.receiver.track()
+                Log.d("VIDEO_CALL", "Track received: ${track?.kind()}")
                 if (track is VideoTrack) {
                     track.setEnabled(true)
                     track.addSink(remoteRenderer)
+                    Log.d("VIDEO_CALL", "VideoTrack added to remoteRenderer")
+                } else if (track is AudioTrack) {
+                    track.setEnabled(true)
+                    Log.d("VIDEO_CALL", "AudioTrack received")
+                    //TODO: add mute/unmute
                 }
             }
 
@@ -166,7 +180,9 @@ class VideoCallViewModel : ViewModel() {
                         val offer = SessionDescription(SessionDescription.Type.OFFER, sdp)
                         peerConnection.setRemoteDescription(object : SdpObserver {
                             override fun onSetSuccess() { createAnswer() }
-                            override fun onSetFailure(p0: String?) {}
+                            override fun onSetFailure(p0: String?) {
+                                Log.e("VIDEO_CALL", "Set remote offer failed: $p0")
+                            }
                             override fun onCreateSuccess(p0: SessionDescription?) {}
                             override fun onCreateFailure(p0: String?) {}
                         }, offer)

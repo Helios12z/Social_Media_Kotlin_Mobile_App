@@ -1,6 +1,5 @@
 package com.example.socialmediaproject.ui.videocall
 
-import androidx.fragment.app.viewModels
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -35,6 +34,7 @@ class VideoCallFragment : Fragment() {
 
         viewModel.initFactoryAndTracks(requireContext(), binding.localVideoView, binding.remoteVideoView)
         viewModel.initPeerConnection()
+        viewModel.isCaller = arguments?.getBoolean("isCaller") ?: false
 
         listenFirestoreStatus()
         return binding.root
