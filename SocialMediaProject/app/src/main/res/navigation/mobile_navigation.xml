@@ -167,4 +167,9 @@
         android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.InterestManagementFragment"
         android:label="InterestManagement"
         tools:layout="@layout/fragment_interest_management"/>
+
+    <fragment android:id="@+id/navigation_self_interest"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.EditSelfInterestFragment"
+        android:label="SelfInterest"
+        tools:layout="@layout/fragment_edit_self_interest"/>
 </navigation>

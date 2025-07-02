@@ -75,6 +75,9 @@ class SettingFragment : Fragment() {
             deleteFragment.show(parentFragmentManager, "deleteFragment")
         }
         binding.cardChangeSelfInterests.setOnClickListener {
+            findNavController().navigate(R.id.navigation_self_interest)
+        }
+        binding.cardChangeEmail.setOnClickListener {
 
         }
         db.collection("Users").document(userId).get().addOnSuccessListener {
