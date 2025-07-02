@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.FriendShareAdapter
+import com.example.socialmediaproject.adapter.UserManagementAdapter
 import com.example.socialmediaproject.databinding.FragmentUserManagementBinding
 import com.example.socialmediaproject.dataclass.Friend
 import com.github.mikephil.charting.data.BarData
@@ -25,7 +26,7 @@ class UserManagementFragment : Fragment() {
     private lateinit var binding: FragmentUserManagementBinding
     private lateinit var db: FirebaseFirestore
     private var users= mutableListOf<Friend>()
-    private lateinit var friendAdapter: FriendShareAdapter
+    private lateinit var friendAdapter: UserManagementAdapter
     private var selectedFriend: Friend? = null
 
     override fun onCreateView(
@@ -143,14 +144,44 @@ class UserManagementFragment : Fragment() {
                 .addOnSuccessListener { snap ->
                     if (!snap.isEmpty) {
                         val doc = snap.documents[0]
-                        db.collection("Users").document(doc.id).delete()
+                        val userRef=db.collection("Users").document(doc.id)
+                        val currentStatus = doc.getBoolean("isBanned") ?: false
+                        userRef.update("isBanned", !currentStatus)
+                            .addOnSuccessListener {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Cấm tài khoản thành công",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Cấm tài khoản không thành công",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                     }
+                    else {
+                        Toast.makeText(
+                            requireContext(),
+                            "Cấm tài khoản không thành công",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(
+                        requireContext(),
+                        "Cấm tài khoản không thành công",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
         }
     }
 
     private fun setUpLiveSearch() {
-        friendAdapter = FriendShareAdapter(users) { friend ->
+        friendAdapter = UserManagementAdapter(users) { friend ->
             selectedFriend = friend
             binding.searchUsername.setText(friend.displayName)
             binding.userSearchRecycler.visibility = View.GONE
@@ -165,6 +196,9 @@ class UserManagementFragment : Fragment() {
                         else -> 0
                     }
                     binding.roleSpinner.setSelection(roleIndex)
+                    val isBanned=doc.getBoolean("isBanned") ?: false
+                    if (isBanned) binding.deleteUserBtn.text="Khôi phục tài khoản"
+                    else binding.deleteUserBtn.text="Cấm tài khoản"
 
                     binding.roleSpinner.visibility = View.VISIBLE
                     binding.updateRoleBtn.visibility = View.VISIBLE
