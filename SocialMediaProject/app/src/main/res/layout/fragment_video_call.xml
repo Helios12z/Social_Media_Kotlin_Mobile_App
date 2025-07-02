@@ -9,14 +9,36 @@
     <org.webrtc.SurfaceViewRenderer
         android:id="@+id/remoteVideoView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:keepScreenOn="true" />
 
     <org.webrtc.SurfaceViewRenderer
         android:id="@+id/localVideoView"
         android:layout_width="120dp"
         android:layout_height="160dp"
         android:layout_gravity="top|end"
-        android:layout_margin="16dp" />
+        android:layout_margin="16dp"
+        android:keepScreenOn="true" />
+
+    <TextView
+        android:id="@+id/tvCallStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="24dp"
+        android:text="Đang gọi..."
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
+
+    <Chronometer
+        android:id="@+id/videoCallTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="24dp"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/btnEndVideoCall"
