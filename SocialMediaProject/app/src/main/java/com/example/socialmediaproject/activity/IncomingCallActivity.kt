@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.NotificationNavigationCache
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.ActivityIncomingBinding
 import com.google.firebase.firestore.FirebaseFirestore
@@ -48,12 +49,13 @@ class IncomingCallActivity : AppCompatActivity() {
         binding.btnAccept.setOnClickListener {
             db.collection("calls").document(roomId).update("status", "accepted")
 
-            val intent = Intent(this, MainActivity::class.java).apply {
+            NotificationNavigationCache.pendingIntent = intent.apply {
+                putExtra("navigateTo", "calling")
                 putExtra("user_id", callerId)
                 putExtra("room_id", roomId)
-                putExtra("navigate_to", "calling")
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             }
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
             finish()
         }
