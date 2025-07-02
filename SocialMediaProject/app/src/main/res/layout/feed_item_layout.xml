@@ -257,21 +257,6 @@
                         android:shadowDx="1"
                         android:shadowDy="1"
                         android:shadowRadius="2" />
-
-                    <TextView
-                        android:id="@+id/textViewShareCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:text="229"
-                        android:textColor="@android:color/white"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:alpha="0.75"
-                        android:shadowColor="@android:color/black"
-                        android:shadowDx="1"
-                        android:shadowDy="1"
-                        android:shadowRadius="2" />
                 </LinearLayout>
             </LinearLayout>
 

@@ -18,6 +18,7 @@ import androidx.work.workDataOf
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
+import com.example.socialmediaproject.activity.MainActivity
 import com.example.socialmediaproject.databinding.FragmentAccountDetailBinding
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.firebase.auth.FirebaseAuth
@@ -44,11 +45,13 @@ class AccountDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding=FragmentAccountDetailBinding.inflate(inflater, container, false)
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         setupBirthdayPicker()
         db=FirebaseFirestore.getInstance()
         auth=FirebaseAuth.getInstance()
@@ -242,5 +245,15 @@ class AccountDetailFragment : Fragment() {
                 tmp2=resultUri
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 }

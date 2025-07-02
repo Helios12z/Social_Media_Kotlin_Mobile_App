@@ -1,6 +1,7 @@
 package com.example.socialmediaproject.adapter
 
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -87,7 +88,7 @@ class CommentAdapter(
         }
         val isLiked = comment.likes.contains(currentUserId)
         val iconRes = if (isLiked) R.drawable.smallheartedicon else R.drawable.smallhearticon
-        holder.btnLike.setCompoundDrawablesWithIntrinsicBounds(iconRes, 0, 0, 0)
+        setDrawableStartWithSize(holder.btnLike, iconRes, 24)
         holder.btnLike.setOnClickListener { onLikeClicked(comment) }
         holder.btnReply.setOnClickListener { onReplyClicked(comment) }
         val repliesToShow = if (expandedCommentIds.contains(comment.id)) {
@@ -156,5 +157,16 @@ class CommentAdapter(
                 sdf.format(Date(timestamp))
             }
         }
+    }
+
+    private fun setDrawableStartWithSize(textView: TextView, drawableResId: Int, sizeDp: Int) {
+        val context = textView.context
+        val sizePx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, sizeDp.toFloat(), context.resources.displayMetrics
+        ).toInt()
+
+        val drawable = ContextCompat.getDrawable(context, drawableResId)
+        drawable?.setBounds(0, 0, sizePx, sizePx)
+        textView.setCompoundDrawables(drawable, null, null, null)
     }
 }
