@@ -36,7 +36,7 @@
     <color name="nav_item_selected">#99FFFFFF</color>
     <color name="nav_item_unselected">#60000000</color>
     <color name="nav_icon_selected">#FFFFFFFF</color>
-    <color name="nav_icon_unselected">#99000000</color>
+    <color name="nav_icon_unselected">#E0FFFFFF</color>
     
     <!-- Blur overlay color for glassmorphism effect -->
     <color name="blur_overlay_color">#40FFFFFF</color>
