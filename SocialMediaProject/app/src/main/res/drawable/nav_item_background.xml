@@ -1,13 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Selected state with modern glass effect -->
     <item android:state_checked="true">
-        <shape android:shape="rectangle">
-            <solid android:color="?attr/colorSurface" />
-            <corners android:radius="16dp" />
-        </shape>
+        <layer-list>
+            <!-- Soft shadow -->
+            <item android:top="2dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="#30000000" />
+                    <corners android:radius="24dp" />
+                </shape>
+            </item>
+            
+            <!-- Main glass background -->
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/nav_item_selected" />
+                    <corners android:radius="22dp" />
+                </shape>
+            </item>
+            
+            <!-- Gradient overlay for depth -->
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:startColor="#40FFFFFF"
+                        android:endColor="#10FFFFFF"
+                        android:angle="90" />
+                    <corners android:radius="22dp" />
+                </shape>
+            </item>
+            
+            <!-- Glass highlight border -->
+            <item>
+                <shape android:shape="rectangle">
+                    <stroke
+                        android:width="2dp"
+                        android:color="@color/glass_highlight" />
+                    <corners android:radius="22dp" />
+                </shape>
+            </item>
+            
+            <!-- Inner glow -->
+            <item android:top="2dp" android:left="2dp" android:right="2dp" android:bottom="2dp">
+                <shape android:shape="rectangle">
+                    <stroke
+                        android:width="1dp"
+                        android:color="#60FFFFFF" />
+                    <corners android:radius="20dp" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
+    
+    <!-- Unselected state with subtle hover effect -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@android:color/transparent" />
+            <solid android:color="#10FFFFFF" />
+            <corners android:radius="22dp" />
         </shape>
     </item>
+    
 </selector>

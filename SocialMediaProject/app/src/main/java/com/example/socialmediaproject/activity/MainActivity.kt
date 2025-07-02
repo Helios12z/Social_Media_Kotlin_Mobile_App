@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import eightbitlab.com.blurview.BlurView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -74,6 +75,10 @@ class MainActivity : AppCompatActivity() {
         notificationViewModel=ViewModelProvider(this)[NotificationViewModel::class.java]
         notificationViewModel.fetchNotifications()
         setContentView(binding.root)
+        
+        // Setup BlurView for glassmorphism effect
+        setupBlurView()
+        
         val navView: BottomNavigationView = binding.navView
         notificationViewModel.notificationsLiveData.observe(this) { notifications ->
             val unreadCount = notifications.count { !it.read }
@@ -326,5 +331,23 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+    
+    private fun setupBlurView() {
+        val blurView = binding.blurView
+        val radius = 15f
+        val windowBackground = window.decorView.background
+        
+        // Setup BlurView with rounded corners
+        blurView.setupWith(window.decorView.findViewById(android.R.id.content))
+            .setFrameClearDrawable(windowBackground)
+            .setBlurRadius(radius)
+            .setBlurAutoUpdate(true)
+            
+        // Apply glassmorphism overlay with rounded corners
+        val overlayDrawable = ContextCompat.getDrawable(this, R.drawable.glassmorphism_overlay)
+        blurView.background = overlayDrawable
+        blurView.clipToOutline = true
+        blurView.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
     }
 }
