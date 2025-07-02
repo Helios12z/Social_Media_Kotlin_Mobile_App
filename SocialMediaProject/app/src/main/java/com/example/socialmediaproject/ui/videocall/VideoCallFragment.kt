@@ -1,6 +1,7 @@
 package com.example.socialmediaproject.ui.videocall
 
 import android.os.Bundle
+import android.os.SystemClock
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -87,9 +88,14 @@ class VideoCallFragment : Fragment() {
                             viewModel.listenForOffer()
                             viewModel.listenForCallerCandidates()
                         }
+                        binding.tvCallStatus.visibility = View.GONE
+                        binding.videoCallTimer.visibility = View.VISIBLE
+                        binding.videoCallTimer.base = SystemClock.elapsedRealtime()
+                        binding.videoCallTimer.start()
                     }
                     "declined", "ended" -> {
                         Toast.makeText(requireContext(), "Cuộc gọi kết thúc", Toast.LENGTH_SHORT).show()
+                        binding.videoCallTimer.stop()
                         viewModel.endCall()
                         requireActivity().supportFragmentManager.popBackStack()
                     }
