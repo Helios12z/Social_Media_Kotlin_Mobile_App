@@ -188,6 +188,15 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             bundle.putParcelable("chatUser", chatUser)
             findNavController().navigate(R.id.navigation_chatdetail, bundle)
         }
+        binding.buttonCancelFriendRequest.setOnClickListener {
+            viewModel.cancelFriendRequest(binding.buttonAddFriend, wallUserId)
+        }
+        binding.buttonAcceptFriendRequest.setOnClickListener {
+            viewModel.acceptFriendRequest(binding.buttonUnfriend, binding.buttonChat, binding.buttonAddFriend, wallUserId)
+        }
+        binding.buttonDeclineFriendRequest.setOnClickListener {
+            viewModel.rejectFriendRequest(binding.buttonAddFriend, wallUserId)
+        }
     }
 
     private fun showBottomSheet() {
@@ -445,25 +454,41 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             binding.buttonAddFriend.visibility = View.GONE
             binding.buttonUnfriend.visibility = View.GONE
             binding.buttonChat.visibility = View.GONE
-            binding.friendActionGroup.visibility=View.GONE
+            binding.buttonCancelFriendRequest.visibility = View.GONE
+            binding.buttonAcceptFriendRequest.visibility = View.GONE
+            binding.buttonDeclineFriendRequest.visibility = View.GONE
         } else {
             if (isFriendFlag) {
                 binding.buttonAddFriend.visibility = View.GONE
                 binding.buttonUnfriend.visibility = View.VISIBLE
                 binding.buttonChat.visibility = View.VISIBLE
-                binding.friendActionGroup.visibility=View.VISIBLE
+                binding.buttonCancelFriendRequest.visibility = View.GONE
+                binding.buttonAcceptFriendRequest.visibility = View.GONE
+                binding.buttonDeclineFriendRequest.visibility = View.GONE
             } else {
                 if (isSendingFriendRequest) {
-                    binding.buttonAddFriend.text="Đã gửi lời mời"
+                    binding.buttonAddFriend.visibility = View.GONE
+                    binding.buttonCancelFriendRequest.visibility = View.VISIBLE
+                    binding.buttonChat.visibility = View.VISIBLE
+                    binding.buttonUnfriend.visibility = View.GONE
+                    binding.buttonAcceptFriendRequest.visibility = View.GONE
+                    binding.buttonDeclineFriendRequest.visibility = View.GONE
                 }
                 else if (isReceivingFriendRequest) {
-                    binding.buttonAddFriend.text="Đã gửi cho bạn lời mời kết bạn"
+                    binding.buttonAddFriend.visibility = View.GONE
+                    binding.buttonAcceptFriendRequest.visibility = View.VISIBLE
+                    binding.buttonDeclineFriendRequest.visibility = View.VISIBLE
+                    binding.buttonChat.visibility = View.VISIBLE
+                    binding.buttonUnfriend.visibility = View.GONE
+                    binding.buttonCancelFriendRequest.visibility = View.GONE
                 }
                 else {
                     binding.buttonAddFriend.visibility = View.VISIBLE
                     binding.buttonUnfriend.visibility = View.GONE
-                    binding.buttonChat.visibility = View.GONE
-                    binding.friendActionGroup.visibility=View.GONE
+                    binding.buttonChat.visibility = View.VISIBLE
+                    binding.buttonCancelFriendRequest.visibility = View.GONE
+                    binding.buttonAcceptFriendRequest.visibility = View.GONE
+                    binding.buttonDeclineFriendRequest.visibility = View.GONE
                 }
             }
         }

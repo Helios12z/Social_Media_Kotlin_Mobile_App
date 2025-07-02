@@ -247,75 +247,144 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:paddingHorizontal="24dp"
-                    android:paddingBottom="32dp"
-                    android:gravity="center">
+                    android:paddingBottom="32dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/button_add_friend"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="52dp"
-                        android:text="Follow"
-                        android:textAllCaps="false"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@android:color/white"
-                        android:backgroundTint="@color/primary_button_color"
-                        app:cornerRadius="26dp"
-                        android:layout_marginEnd="8dp"
-                        android:elevation="4dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/button_chat"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="52dp"
-                        android:text="Message"
-                        android:textAllCaps="false"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:backgroundTint="@color/secondary_button_color"
-                        app:cornerRadius="26dp"
-                        android:layout_marginStart="8dp"
-                        android:elevation="2dp"
-                        style="@style/Widget.Material3.Button.OutlinedButton" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/button_insight"
-                        android:layout_width="52dp"
-                        android:layout_height="52dp"
-                        android:text=""
-                        android:backgroundTint="@color/secondary_button_color"
-                        app:cornerRadius="26dp"
-                        android:layout_marginStart="16dp"
-                        android:elevation="2dp"
-                        app:icon="@drawable/ic_more_vert_filled"
-                        app:iconGravity="textStart"
-                        app:iconPadding="0dp"
-                        app:iconTint="@color/text_primary"
-                        style="@style/Widget.Material3.Button.OutlinedButton" />
-
+                    <!-- Responsive action buttons row -->
                     <LinearLayout
-                        android:id="@+id/friend_action_group"
+                        android:id="@+id/action_buttons_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:visibility="gone">
+                        android:gravity="center"
+                        android:baselineAligned="false">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_add_friend"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="52dp"
+                            android:text="Follow"
+                            android:textAllCaps="false"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/white"
+                            android:backgroundTint="@color/primary_button_color"
+                            app:cornerRadius="26dp"
+                            android:layout_marginEnd="4dp"
+                            android:elevation="4dp"
+                            app:icon="@drawable/ic_person_add_rounded"
+                            app:iconGravity="textStart"
+                            app:iconPadding="8dp"
+                            app:iconSize="20dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_chat"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="52dp"
+                            android:text="Message"
+                            android:textAllCaps="false"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:backgroundTint="@color/secondary_button_color"
+                            app:cornerRadius="26dp"
+                            android:layout_marginHorizontal="4dp"
+                            android:elevation="2dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            app:icon="@drawable/ic_message_rounded"
+                            app:iconGravity="textStart"
+                            app:iconPadding="8dp"
+                            app:iconSize="20dp"
+                            app:iconTint="@color/text_primary" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/button_unfriend"
                             android:layout_width="0dp"
                             android:layout_weight="1"
-                            android:layout_height="48dp"
+                            android:layout_height="52dp"
                             android:text="Bạn bè"
-                            android:layout_marginEnd="8dp"
                             android:textAllCaps="false"
-                            android:textSize="14sp"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:backgroundTint="@color/secondary_button_color"
                             style="@style/Widget.Material3.Button.OutlinedButton"
-                            app:cornerRadius="24dp" />
+                            app:cornerRadius="26dp"
+                            android:layout_marginHorizontal="4dp"
+                            android:elevation="2dp"
+                            android:visibility="gone"
+                            app:icon="@drawable/ic_people_rounded"
+                            app:iconGravity="textStart"
+                            app:iconPadding="8dp"
+                            app:iconSize="20dp"
+                            app:iconTint="@color/text_primary" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_cancel_friend_request"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="52dp"
+                            android:text="Hủy lời mời"
+                            android:textAllCaps="false"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:backgroundTint="@color/secondary_button_color"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            app:cornerRadius="26dp"
+                            android:layout_marginHorizontal="4dp"
+                            android:elevation="2dp"
+                            android:visibility="gone"
+                            app:icon="@drawable/ic_person_remove_rounded"
+                            app:iconGravity="textStart"
+                            app:iconPadding="8dp"
+                            app:iconSize="20dp"
+                            app:iconTint="@color/text_primary" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_accept_friend_request"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="52dp"
+                            android:text="Chấp nhận"
+                            android:textAllCaps="false"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/white"
+                            android:backgroundTint="@color/primary_button_color"
+                            app:cornerRadius="26dp"
+                            android:layout_marginHorizontal="4dp"
+                            android:elevation="4dp"
+                            android:visibility="gone"
+                            app:icon="@drawable/ic_check_circle_rounded"
+                            app:iconGravity="textStart"
+                            app:iconPadding="8dp"
+                            app:iconSize="20dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_decline_friend_request"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="52dp"
+                            android:text="Từ chối"
+                            android:textAllCaps="false"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:backgroundTint="@color/secondary_button_color"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            app:cornerRadius="26dp"
+                            android:layout_marginStart="4dp"
+                            android:elevation="2dp"
+                            android:visibility="gone"
+                            app:icon="@drawable/ic_cancel_rounded"
+                            app:iconGravity="textStart"
+                            app:iconPadding="8dp"
+                            app:iconSize="20dp"
+                            app:iconTint="@color/text_primary" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
