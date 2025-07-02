@@ -84,4 +84,5 @@ dependencies {
     implementation ("androidx.recyclerview:recyclerview:1.3.0")
     implementation ("com.infobip:google-webrtc:1.0.0035529")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation ("com.tbuonomo:dotsindicator:4.3")
 }
