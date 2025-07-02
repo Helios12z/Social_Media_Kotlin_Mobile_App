@@ -27,7 +27,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/CircleImageView"
-            tools:src="@drawable/avataricon" />
+            tools:src="@drawable/ic_avatar_filled" />
 
         <TextView
             android:id="@+id/tvUserName"

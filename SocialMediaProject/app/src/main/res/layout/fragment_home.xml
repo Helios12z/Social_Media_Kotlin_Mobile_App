@@ -31,7 +31,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center"
-                android:src="@drawable/chatbutton"
+                android:src="@drawable/ic_chat_filled"
                 android:contentDescription="Chat"
                 app:tint="@color/text_color" />
         </FrameLayout>
@@ -52,7 +52,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center"
-                android:src="@drawable/searchicon"
+                android:src="@drawable/ic_search_filled"
                 android:contentDescription="Search"
                 app:tint="@color/text_color" />
         </FrameLayout>
@@ -62,7 +62,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginEnd="4dp"
-            android:src="@drawable/avataricon"
+            android:src="@drawable/ic_avatar_filled"
             android:scaleType="centerCrop"
             app:shapeAppearanceOverlay="@style/CircleImageView"
             app:strokeColor="@color/purple_700"

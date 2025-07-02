@@ -62,7 +62,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/avataricon"
+                android:src="@drawable/ic_avatar_filled"
                 app:shapeAppearanceOverlay="@style/CircleImageView"
                 app:strokeColor="@android:color/white"
                 app:strokeWidth="2dp" />
@@ -119,7 +119,7 @@
                         android:id="@+id/privacy_icon"
                         android:layout_width="14dp"
                         android:layout_height="14dp"
-                        android:src="@drawable/icon_global"
+                        android:src="@drawable/ic_global_filled"
                         app:tint="@android:color/white"
                         android:alpha="0.9" />
                     </LinearLayout>
@@ -131,7 +131,7 @@
                     android:layout_height="40dp"
                     android:background="@drawable/circle_background_semi_transparent"
                     android:contentDescription="More options"
-                    android:src="@drawable/morebutton"
+                    android:src="@drawable/ic_more_vert_filled"
                 android:scaleType="centerInside"
                      app:tint="@android:color/white" />
             </LinearLayout>
@@ -168,7 +168,7 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:contentDescription="Like button"
-                        android:src="@drawable/smallhearticon"
+                        android:src="@drawable/ic_small_heart_filled"
                         app:tint="@android:color/white"
                         android:shadowColor="@android:color/black"
                         android:shadowDx="1"
@@ -206,7 +206,7 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:contentDescription="Comment button"
-                        android:src="@drawable/commentbutton"
+                        android:src="@drawable/ic_comment_filled"
                         app:tint="@android:color/white"
                         android:shadowColor="@android:color/black"
                         android:shadowDx="1"
@@ -243,7 +243,7 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:contentDescription="Share button"
-                        android:src="@drawable/sharebuttonicon"
+                        android:src="@drawable/ic_share_filled"
                         app:tint="@android:color/white"
                         android:shadowColor="@android:color/black"
                         android:shadowDx="1"

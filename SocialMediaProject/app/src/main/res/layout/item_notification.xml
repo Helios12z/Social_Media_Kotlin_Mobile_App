@@ -28,7 +28,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/CircleImageView"
-            tools:src="@drawable/avataricon" />
+            tools:src="@drawable/ic_avatar_filled" />
 
         <TextView
             android:id="@+id/notification_text"
@@ -57,7 +57,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/chaticon"
+            android:src="@drawable/ic_chat_filled"
             android:visibility="gone"
             android:id="@+id/unread_notification"
             app:layout_constraintTop_toBottomOf="@+id/notification_icon"

@@ -102,7 +102,7 @@
             android:id="@+id/empty_state_image"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:src="@drawable/search_empty_icon"
+            android:src="@drawable/ic_search_empty_filled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

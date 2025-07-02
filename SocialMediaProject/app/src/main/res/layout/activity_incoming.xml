@@ -13,7 +13,7 @@
         android:id="@+id/imgCallerAvatar"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/avataricon"
+        android:src="@drawable/ic_avatar_filled"
         app:shapeAppearanceOverlay="@style/CircleImageView"
         android:scaleType="centerCrop" />
 

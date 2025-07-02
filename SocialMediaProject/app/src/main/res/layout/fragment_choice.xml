@@ -42,7 +42,7 @@
                 android:id="@+id/ivUserAvatar"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:src="@drawable/avataricon"
+                android:src="@drawable/ic_avatar_filled"
                 app:shapeAppearanceOverlay="@style/CircleImageView" />
 
             <TextView

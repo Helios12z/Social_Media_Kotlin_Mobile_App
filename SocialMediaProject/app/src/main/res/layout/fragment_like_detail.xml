@@ -56,7 +56,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:shapeAppearanceOverlay="@style/CircleImageView"
-                tools:src="@drawable/avataricon" />
+                tools:src="@drawable/ic_avatar_filled" />
 
             <TextView
                 android:id="@+id/tvPostTitle"
@@ -86,7 +86,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:contentDescription="Icon like"
-                    android:src="@drawable/smallheartedicon"/>
+                    android:src="@drawable/ic_small_hearted_filled"/>
 
                 <TextView
                     android:id="@+id/tvLikeCount"

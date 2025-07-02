@@ -45,7 +45,7 @@
                             android:layout_height="30dp"
                             android:layout_alignParentStart="true"
                             android:layout_centerVertical="true"
-                            android:src="@drawable/back_button"
+                            android:src="@drawable/ic_arrow_back_filled"
                             app:tint="@color/text_color"
                             app:cornerRadius="20dp" />
 
@@ -97,7 +97,7 @@
                             android:id="@+id/img_profile"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:src="@drawable/avataricon"
+                            android:src="@drawable/ic_avatar_filled"
                             app:shapeAppearanceOverlay="@style/CircleImageView" />
 
                         <LinearLayout
@@ -239,7 +239,7 @@
                                                 android:layout_width="32dp"
                                                 android:layout_height="32dp"
                                                 android:contentDescription="Thêm ảnh"
-                                                android:src="@drawable/imageicon"
+                                                android:src="@drawable/ic_image_filled"
                                                 app:tint="@color/text_color" />
 
                                             <TextView

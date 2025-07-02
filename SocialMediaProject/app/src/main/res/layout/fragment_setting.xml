@@ -27,9 +27,9 @@
 
             <ImageView
                 android:id="@+id/dark_light_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/light_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_light_mode_filled"
                 app:tint="@color/text_color" />
 
 
@@ -79,8 +79,8 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/icon_management"
-                android:contentDescription="Home icon"
+                android:src="@drawable/ic_management_filled"
+                android:contentDescription="Management icon"
                 app:tint="@color/text_color" />
 
             <TextView
@@ -117,9 +117,9 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/icon_change_password"
+                android:src="@drawable/ic_password_filled"
                 app:tint="@color/text_color"
-                android:contentDescription="Settings icon" />
+                android:contentDescription="Password icon" />
 
             <TextView
                 android:layout_width="0dp"
@@ -154,9 +154,9 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/icon_change_password"
+                android:src="@drawable/ic_password_filled"
                 app:tint="@color/text_color"
-                android:contentDescription="Settings icon" />
+                android:contentDescription="Password icon" />
 
             <TextView
                 android:layout_width="0dp"
@@ -191,9 +191,9 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/icon_fotgot_password"
+                android:src="@drawable/ic_forgot_password_filled"
                 app:tint="@color/text_color"
-                android:contentDescription="Logout icon" />
+                android:contentDescription="Forgot password icon" />
 
             <TextView
                 android:layout_width="0dp"
@@ -229,9 +229,9 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/icon_management"
+                android:src="@drawable/ic_management_filled"
                 app:tint="@color/text_color"
-                android:contentDescription="Logout icon" />
+                android:contentDescription="Management icon" />
 
             <TextView
                 android:layout_width="0dp"
@@ -267,9 +267,9 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/icon_user"
+                android:src="@drawable/ic_user_management_filled"
                 app:tint="@color/text_color"
-                android:contentDescription="Logout icon" />
+                android:contentDescription="User management icon" />
 
             <TextView
                 android:layout_width="0dp"
@@ -304,9 +304,9 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/removebutton"
+                android:src="@drawable/ic_delete_filled"
                 app:tint="@color/text_color"
-                android:contentDescription="Logout icon" />
+                android:contentDescription="Delete account icon" />
 
             <TextView
                 android:layout_width="0dp"

@@ -53,7 +53,7 @@
                         android:layout_height="80dp"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
-                        android:src="@drawable/avataricon"
+                        android:src="@drawable/ic_avatar_filled"
                         android:scaleType="centerCrop"
                         app:shapeAppearanceOverlay="@style/CircleImageView"
                         android:elevation="4dp" />
@@ -168,7 +168,7 @@
                             android:id="@+id/profile_details"
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/horizontal_three_dots_button"
+                            android:src="@drawable/ic_more_vert_filled"
                             app:tint="@color/text_color" />
                         <TextView
                             android:layout_width="wrap_content"

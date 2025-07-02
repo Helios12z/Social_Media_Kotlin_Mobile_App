@@ -20,7 +20,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             app:shapeAppearanceOverlay="@style/CircleImageView"
-            android:src="@drawable/avataricon"
+            android:src="@drawable/ic_avatar_filled"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -54,7 +54,7 @@
             android:layout_height="15dp"
             android:id="@+id/post_privacy"
             app:tint="@color/text_color"
-            android:src="@drawable/icon_global"
+            android:src="@drawable/ic_global_filled"
             app:layout_constraintStart_toEndOf="@+id/tvPostTime"
             app:layout_constraintTop_toBottomOf="@+id/tvAuthorName"
             android:layout_marginStart="12dp"/>

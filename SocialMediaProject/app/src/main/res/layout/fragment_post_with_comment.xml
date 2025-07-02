@@ -60,7 +60,7 @@
                             android:layout_height="40dp"
                             android:scaleType="centerCrop"
                             app:shapeAppearanceOverlay="@style/CircleImageView"
-                            android:src="@drawable/avataricon" />
+                            android:src="@drawable/ic_avatar_filled" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -93,7 +93,7 @@
                             android:layout_height="50dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="More options"
-                            android:src="@drawable/morebutton"
+                            android:src="@drawable/ic_more_vert_filled"
                             android:scaleType="centerInside"
                             app:tint="@color/text_color" />
                     </LinearLayout>
@@ -141,7 +141,7 @@
                                 android:layout_height="24dp"
                                 app:tint="@color/text_color"
                                 android:contentDescription="Like button"
-                                android:src="@drawable/smallhearticon" />
+                                android:src="@drawable/ic_small_heart_filled" />
 
                             <TextView
                                 android:id="@+id/textViewLikeCount"
@@ -166,7 +166,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:contentDescription="Comment button"
-                                android:src="@drawable/commentbutton"
+                                android:src="@drawable/ic_comment_filled"
                                 app:tint="@color/text_color" />
 
                             <TextView
@@ -192,7 +192,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:contentDescription="Share button"
-                                android:src="@drawable/sharebuttonicon"
+                                android:src="@drawable/ic_share_filled"
                                 app:tint="@color/text_color" />
 
                             <TextView
@@ -230,7 +230,7 @@
                 <ImageView
                     android:layout_width="80dp"
                     android:layout_height="80dp"
-                    android:src="@drawable/no_comment_icon"
+                    android:src="@drawable/ic_no_comment_filled"
                     android:contentDescription="No comments"
                     app:tint="@color/text_color" />
 
@@ -276,7 +276,7 @@
             android:id="@+id/ivUserAvatar"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/avataricon"
+            android:src="@drawable/ic_avatar_filled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:shapeAppearanceOverlay="@style/CircleImageView"
@@ -317,7 +317,7 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Gửi bình luận"
-            android:src="@drawable/send_button"
+            android:src="@drawable/ic_send_filled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:scaleType="fitXY"

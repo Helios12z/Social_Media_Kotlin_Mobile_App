@@ -102,6 +102,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:src="@drawable/searchicon" />
+        android:src="@drawable/ic_search_filled" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
