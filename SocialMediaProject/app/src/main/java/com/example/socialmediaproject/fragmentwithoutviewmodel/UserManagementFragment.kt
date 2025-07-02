@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.socialmediaproject.R
-import com.example.socialmediaproject.adapter.FriendShareAdapter
 import com.example.socialmediaproject.adapter.UserManagementAdapter
 import com.example.socialmediaproject.databinding.FragmentUserManagementBinding
 import com.example.socialmediaproject.dataclass.Friend
@@ -18,7 +17,6 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Calendar
 
@@ -103,6 +101,12 @@ class UserManagementFragment : Fragment() {
             val data = BarData(barDataSet)
             binding.userChart.data = data
             binding.userChart.invalidate()
+
+            binding.userChart.xAxis.textColor=R.color.text_color
+            binding.userChart.axisLeft.textColor=R.color.text_color
+            binding.userChart.axisRight.textColor=R.color.text_color
+            binding.userChart.legend.textColor=R.color.text_color
+            binding.userChart.description.textColor=R.color.text_color
         }
     }
 
