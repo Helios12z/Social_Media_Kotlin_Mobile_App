@@ -6,17 +6,25 @@ import androidx.lifecycle.ViewModel
 import com.example.socialmediaproject.dataclass.User
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 
 class LikeDetailViewModel: ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val _likedUsers = MutableLiveData<List<User>>()
     val likedUsers: LiveData<List<User>> = _likedUsers
+    private val _postSummary = MutableLiveData<PostSummary>()
+    val postSummary: LiveData<PostSummary> = _postSummary
+    private var lastLoadedPostId: String? = null
 
     private var allLikedUserIds: List<String> = emptyList()
     private var currentPage = 0
     private val pageSize = 20
     private var isLoading = false
     private var currentPostId: String? = null
+
+    private var postListener: ListenerRegistration? = null
+    private var likeListener: ListenerRegistration? = null
+    private var likesRealtimeListener: ListenerRegistration? = null
 
     fun loadInitial(postId: String, currentUserId: String) {
         if (postId == currentPostId) return
@@ -27,13 +35,18 @@ class LikeDetailViewModel: ViewModel() {
         _likedUsers.value = emptyList()
         isLoading = false
 
-        db.collection("Likes")
+        likesRealtimeListener?.remove()
+
+        likesRealtimeListener = db.collection("Likes")
             .whereEqualTo("postid", postId)
             .whereEqualTo("status", true)
-            .get()
-            .addOnSuccessListener { likeDocs ->
-                allLikedUserIds = likeDocs.mapNotNull { it.getString("userid") }
-                loadNextPage(currentUserId)
+            .addSnapshotListener { likeDocs, _ ->
+                if (likeDocs != null) {
+                    allLikedUserIds = likeDocs.mapNotNull { it.getString("userid") }
+                    currentPage = 0
+                    _likedUsers.value = emptyList()
+                    loadNextPage(currentUserId)
+                }
             }
     }
 
@@ -75,4 +88,56 @@ class LikeDetailViewModel: ViewModel() {
                 .addOnFailureListener { isLoading = false }
         }
     }
+
+    fun observePostSummary(postId: String) {
+        if (postId == lastLoadedPostId) return
+        lastLoadedPostId = postId
+
+        postListener?.remove()
+        likeListener?.remove()
+
+        _postSummary.value = PostSummary("", "", 0)
+
+        postListener = db.collection("Posts").document(postId)
+            .addSnapshotListener { postDoc, _ ->
+                if (postDoc != null && postDoc.exists()) {
+                    val content = postDoc.getString("content") ?: ""
+                    val userId = postDoc.getString("userid") ?: ""
+
+                    db.collection("Users").document(userId).get()
+                        .addOnSuccessListener { userDoc ->
+                            val avatarUrl = userDoc.getString("avatarurl") ?: ""
+
+                            val currentSummary = _postSummary.value ?: PostSummary("", "", 0)
+                            _postSummary.postValue(
+                                currentSummary.copy(content = content, avatarUrl = avatarUrl)
+                            )
+                        }
+                }
+            }
+
+        likeListener = db.collection("Likes")
+            .whereEqualTo("postid", postId)
+            .whereEqualTo("status", true)
+            .addSnapshotListener { querySnapshot, _ ->
+                if (querySnapshot != null) {
+                    val likeCount = querySnapshot.size()
+                    val currentSummary = _postSummary.value ?: PostSummary("", "", 0)
+                    _postSummary.postValue(currentSummary.copy(likeCount = likeCount))
+                }
+            }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        postListener?.remove()
+        likeListener?.remove()
+        likesRealtimeListener?.remove()
+    }
 }
+
+data class PostSummary(
+    val content: String,
+    val avatarUrl: String,
+    val likeCount: Int
+)

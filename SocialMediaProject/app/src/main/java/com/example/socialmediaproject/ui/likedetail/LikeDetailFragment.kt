@@ -80,7 +80,19 @@ class LikeDetailFragment : Fragment() {
         }
 
         viewModel.loadInitial(postId, currentUserId)
-        loadPostSummary()
+        viewModel.observePostSummary(postId)
+
+        viewModel.postSummary.observe(viewLifecycleOwner) { summary ->
+            binding.tvPostTitle.text = summary.content
+
+            Glide.with(requireContext())
+                .load(summary.avatarUrl)
+                .placeholder(R.drawable.avataricon)
+                .error(R.drawable.avataricon)
+                .into(binding.ivPostThumbnail)
+
+            binding.tvLikeCount.text = "${summary.likeCount} lượt thích"
+        }
     }
 
     override fun onResume() {
@@ -95,54 +107,5 @@ class LikeDetailFragment : Fragment() {
         val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
         bottomnavbar.animate().translationY(0f).setDuration(200).start()
         bottomnavbar.visibility=View.VISIBLE
-    }
-
-    private fun loadPostSummary() {
-        val loading=LoadingDialogFragment()
-        loading.show(childFragmentManager, "loading")
-        db.collection("Posts").document(postId).get()
-        .addOnSuccessListener { doc ->
-            if (doc.exists()) {
-                val content = doc.getString("content") ?: ""
-                binding.tvPostTitle.text = content
-                db.collection("Users").document(doc.getString("userid")?:"").get().addOnSuccessListener {
-                    result->if (result.exists()) {
-                        val avatarurl=result.getString("avatarurl")
-                        Glide.with(requireContext()).load(avatarurl)
-                            .placeholder(R.drawable.avataricon)
-                            .error(R.drawable.avataricon)
-                            .into(binding.ivPostThumbnail)
-                        db.collection("Likes")
-                        .whereEqualTo("postid", postId)
-                        .whereEqualTo("status", true)
-                        .get()
-                        .addOnSuccessListener {
-                            binding.tvLikeCount.text = "${it.size()} lượt thích"
-                            loading.dismiss()
-                        }
-                        .addOnFailureListener {
-                            loading.dismiss()
-                            Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    else {
-                        loading.dismiss()
-                        Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                .addOnFailureListener {
-                    loading.dismiss()
-                    Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
-                }
-            }
-            else {
-                loading.dismiss()
-                Toast.makeText(requireContext(), "Bài viết không tồn tại", Toast.LENGTH_SHORT).show()
-            }
-        }
-        .addOnFailureListener {
-            loading.dismiss()
-            Toast.makeText(requireContext(), "Lỗi tải dữ liệu", Toast.LENGTH_SHORT).show()
-        }
     }
 }
