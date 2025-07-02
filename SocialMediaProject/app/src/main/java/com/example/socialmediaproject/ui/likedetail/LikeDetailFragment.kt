@@ -17,6 +17,7 @@ import com.example.socialmediaproject.adapter.LikesAdapter
 import com.example.socialmediaproject.databinding.FragmentLikeDetailBinding
 import com.example.socialmediaproject.dataclass.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.socialmediaproject.activity.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
@@ -39,17 +40,13 @@ class LikeDetailFragment : Fragment() {
     ): View? {
         binding=FragmentLikeDetailBinding.inflate(inflater, container, false)
         viewModel=ViewModelProvider(requireActivity())[LikeDetailViewModel::class.java]
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         postId = arguments?.getString("post_id") ?: return
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
@@ -97,15 +94,11 @@ class LikeDetailFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(0f).setDuration(200).start()
-        bottomnavbar.visibility=View.VISIBLE
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 }

@@ -20,6 +20,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.socialmediaproject.activity.MainActivity
 import com.example.socialmediaproject.LoadingDialogFragment
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.adapter.CommentAdapter
@@ -55,18 +56,14 @@ class CommentFragment : Fragment() {
     ): View {
         binding=FragmentCommentBinding.inflate(inflater, container, false)
         viewModel=ViewModelProvider(requireActivity())[CommentViewModel::class.java]
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         postId = arguments?.getString("post_id") ?: ""
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         recyclerViewState?.let {
             binding.rvComments.layoutManager?.onRestoreInstanceState(it)
         }
@@ -77,9 +74,7 @@ class CommentFragment : Fragment() {
         //this can be considered a good way to reload the comments, but after hours of thinking I discarded it
         //viewModel.resetComments()
         //viewModel.postId=""
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(0f).setDuration(200).start()
-        bottomnavbar.visibility=View.VISIBLE
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

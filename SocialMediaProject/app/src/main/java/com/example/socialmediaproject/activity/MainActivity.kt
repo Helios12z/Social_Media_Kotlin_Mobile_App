@@ -8,9 +8,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import eightbitlab.com.blurview.BlurView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -70,6 +72,10 @@ class MainActivity : AppCompatActivity() {
         notificationViewModel=ViewModelProvider(this)[NotificationViewModel::class.java]
         notificationViewModel.fetchNotifications()
         setContentView(binding.root)
+        
+        // Setup BlurView for glassmorphism effect
+        setupBlurView()
+        
         val navView: BottomNavigationView = binding.navView
         notificationViewModel.notificationsLiveData.observe(this) { notifications ->
             val unreadCount = notifications.count { !it.read }
@@ -332,5 +338,49 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+    
+    private fun setupBlurView() {
+        val blurView = binding.blurView
+        val radius = 15f
+        val windowBackground = window.decorView.background
+        
+        // Setup BlurView with rounded corners
+        blurView.setupWith(window.decorView.findViewById(android.R.id.content))
+            .setFrameClearDrawable(windowBackground)
+            .setBlurRadius(radius)
+            .setBlurAutoUpdate(true)
+            
+        // Apply glassmorphism overlay with rounded corners
+        val overlayDrawable = ContextCompat.getDrawable(this, R.drawable.glassmorphism_overlay)
+        blurView.background = overlayDrawable
+        blurView.clipToOutline = true
+        blurView.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+    }
+    
+    // Function to hide both navigation bar and blur background
+    fun hideNavigationWithBlur() {
+        val navView = binding.navView
+        val blurView = binding.blurView
+        
+        // Animate both views together
+        navView.animate().translationY(navView.height.toFloat()).setDuration(200).start()
+        blurView.animate().translationY(blurView.height.toFloat()).setDuration(200).start()
+        
+        navView.visibility = View.GONE
+        blurView.visibility = View.GONE
+    }
+    
+    // Function to show both navigation bar and blur background
+    fun showNavigationWithBlur() {
+        val navView = binding.navView
+        val blurView = binding.blurView
+        
+        navView.visibility = View.VISIBLE
+        blurView.visibility = View.VISIBLE
+        
+        // Animate both views together
+        navView.animate().translationY(0f).setDuration(200).start()
+        blurView.animate().translationY(0f).setDuration(200).start()
     }
 }

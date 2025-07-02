@@ -20,6 +20,7 @@ import com.example.socialmediaproject.adapter.ChatUserAdapter
 import com.example.socialmediaproject.databinding.FragmentChatBinding
 import com.example.socialmediaproject.ui.chatdetail.ChatDetailFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.socialmediaproject.activity.MainActivity
 
 class ChatFragment : Fragment() {
 
@@ -34,17 +35,13 @@ class ChatFragment : Fragment() {
     ): View {
         binding=FragmentChatBinding.inflate(inflater, container, false)
         viewModel=ViewModelProvider(requireActivity())[ChatViewModel::class.java]
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         recyclerView=binding.recyclerViewFriends
         recyclerView.layoutManager= LinearLayoutManager(requireContext())
         viewModel.chatUsers.observe(viewLifecycleOwner) {
@@ -76,15 +73,11 @@ class ChatFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(0f).setDuration(200).start()
-        bottomnavbar.visibility=View.VISIBLE
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 }

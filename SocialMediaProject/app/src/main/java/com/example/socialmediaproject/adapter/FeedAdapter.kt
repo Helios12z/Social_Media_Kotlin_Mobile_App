@@ -1,6 +1,7 @@
 package com.example.socialmediaproject.adapter
 
 import android.content.Context
+import android.graphics.drawable.GradientDrawable
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -18,6 +20,7 @@ import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.firebase.firestore.FirebaseFirestore
+import eightbitlab.com.blurview.BlurView
 
 class FeedAdapter(
     private val context: Context,
@@ -182,5 +185,30 @@ class FeedAdapter(
         val layoutComment: LinearLayout = itemView.findViewById(R.id.layoutComment)
         val layoutShare: LinearLayout = itemView.findViewById(R.id.layoutShare)
         val privacyIcon: ImageView = itemView.findViewById(R.id.privacy_icon)
+        val blurViewHeader: BlurView = itemView.findViewById(R.id.blurViewHeader)
+        
+        init {
+            setupBlurView()
+        }
+        
+        private fun setupBlurView() {
+            val overlayDrawable = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 60f
+                setColor(0x1A000000) // bg-black/10 equivalent
+            }
+            
+            try {
+                blurViewHeader.setupWith(itemView.rootView as ViewGroup)
+                    .setBlurRadius(20f)
+                
+                blurViewHeader.background = overlayDrawable
+                blurViewHeader.clipToOutline = true
+                blurViewHeader.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            } catch (e: Exception) {
+                // Fallback to simple background if BlurView fails
+                blurViewHeader.background = overlayDrawable
+            }
+        }
     }
 }

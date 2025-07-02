@@ -15,6 +15,7 @@ import com.example.socialmediaproject.databinding.FragmentSearchChatUserBinding
 import com.example.socialmediaproject.dataclass.ChatUser
 import com.example.socialmediaproject.dataclass.Friend
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.socialmediaproject.activity.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 
 class SearchChatUserFragment : Fragment() {
@@ -30,24 +31,18 @@ class SearchChatUserFragment : Fragment() {
         binding=FragmentSearchChatUserBinding.inflate(inflater, container, false)
         auth=FirebaseAuth.getInstance()
         viewModel= ViewModelProvider(requireActivity())[SearchChatUserViewModel::class.java]
-        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomNav.animate().translationY(bottomNav.height.toFloat()).setDuration(200).start()
-        bottomNav.visibility = View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomNav.animate().translationY(bottomNav.height.toFloat()).setDuration(200).start()
-        bottomNav.visibility = View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomNav.animate().translationY(0f).setDuration(200).start()
-        bottomNav.visibility = View.VISIBLE
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
