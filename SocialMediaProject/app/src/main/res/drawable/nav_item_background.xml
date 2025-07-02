@@ -7,7 +7,7 @@
             <!-- Soft shadow -->
             <item android:top="2dp">
                 <shape android:shape="rectangle">
-                    <solid android:color="#30000000" />
+                    <solid android:color="#50000000" />
                     <corners android:radius="24dp" />
                 </shape>
             </item>
@@ -53,10 +53,10 @@
         </layer-list>
     </item>
     
-    <!-- Unselected state with subtle hover effect -->
+    <!-- Unselected state with no background -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#10FFFFFF" />
+            <solid android:color="@android:color/transparent" />
             <corners android:radius="22dp" />
         </shape>
     </item>

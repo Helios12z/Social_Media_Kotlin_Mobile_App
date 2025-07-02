@@ -32,8 +32,8 @@
         android:layout_width="match_parent"
         android:layout_height="84dp"
         android:layout_gravity="bottom"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
         android:layout_marginBottom="20dp"
         android:elevation="24dp">
 
@@ -44,6 +44,8 @@
             android:background="@android:color/transparent"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
             app:itemBackground="@drawable/nav_item_background"
             app:itemIconSize="26dp"
             app:itemIconTint="@color/nav_icon_selector"
