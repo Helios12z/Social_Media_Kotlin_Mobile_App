@@ -31,6 +31,7 @@ import com.example.socialmediaproject.fragmentwithoutviewmodel.FriendShareDialog
 import com.example.socialmediaproject.service.PostActionWorker
 import com.example.socialmediaproject.service.PostUpdatingService
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.socialmediaproject.activity.MainActivity
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -64,9 +65,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             viewModel.resetState()
         }
         viewModel.wallUserId=wallUserId
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         initViews()
         setupRecyclerView()
         setupSwipeRefresh()
@@ -248,9 +247,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(0f).setDuration(200).start()
-        bottomnavbar.visibility=View.VISIBLE
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 
     private fun initViews() {
@@ -440,9 +437,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
 
     override fun onResume() {
         super.onResume()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
     }
 
     private fun updateFriendshipUI() {

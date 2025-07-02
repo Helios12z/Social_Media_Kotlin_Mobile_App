@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.ConcatAdapter
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.dataclass.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.socialmediaproject.activity.MainActivity
 
 class SearchUsersAndPostsFragment : Fragment() {
     private lateinit var viewModel: SearchUsersAndPostsViewModel
@@ -49,9 +50,7 @@ class SearchUsersAndPostsFragment : Fragment() {
     ): View {
         binding=FragmentSearchUsersAndPostsBinding.inflate(inflater, container, false)
         viewModel=ViewModelProvider(requireActivity())[SearchUsersAndPostsViewModel::class.java]
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         return binding.root
     }
 
@@ -103,16 +102,12 @@ class SearchUsersAndPostsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(0f).setDuration(200).start()
-        bottomnavbar.visibility=View.VISIBLE
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 
     private fun updateEmptyState() {

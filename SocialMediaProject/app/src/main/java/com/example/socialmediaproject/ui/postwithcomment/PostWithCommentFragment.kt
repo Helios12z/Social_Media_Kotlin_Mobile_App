@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.R
+import com.example.socialmediaproject.activity.MainActivity
 import com.example.socialmediaproject.adapter.CommentAdapter
 import com.example.socialmediaproject.adapter.ImagePostAdapter
 import com.example.socialmediaproject.adapter.MentionSuggestionAdapter
@@ -93,24 +94,18 @@ class PostWithCommentFragment : Fragment() {
                 binding.textViewPostDeleted.visibility=View.VISIBLE
             }
         }
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(0f).setDuration(200).start()
-        bottomnavbar.visibility=View.VISIBLE
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

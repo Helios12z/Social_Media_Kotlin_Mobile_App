@@ -11,6 +11,7 @@ import android.widget.Toast
 import com.example.socialmediaproject.R
 import com.example.socialmediaproject.databinding.FragmentUpdatePasswordBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.socialmediaproject.activity.MainActivity
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -27,24 +28,18 @@ class UpdatePasswordFragment : Fragment() {
         binding=FragmentUpdatePasswordBinding.inflate(layoutInflater, container, false)
         auth=FirebaseAuth.getInstance()
         db=FirebaseFirestore.getInstance()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
         return binding.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(0f).setDuration(200).start()
-        bottomnavbar.visibility=View.VISIBLE
+        (requireActivity() as MainActivity).showNavigationWithBlur()
     }
 
     override fun onResume() {
         super.onResume()
-        val bottomnavbar=requireActivity().findViewById<BottomNavigationView>(R.id.nav_view)
-        bottomnavbar.animate().translationY(bottomnavbar.height.toFloat()).setDuration(200).start()
-        bottomnavbar.visibility=View.GONE
+        (requireActivity() as MainActivity).hideNavigationWithBlur()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
