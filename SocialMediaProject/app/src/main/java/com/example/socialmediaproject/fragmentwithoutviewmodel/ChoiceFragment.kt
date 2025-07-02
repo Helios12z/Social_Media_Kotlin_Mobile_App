@@ -58,7 +58,7 @@ class ChoiceFragment : Fragment() {
                     .load(result.getString("avatarurl"))
                     .placeholder(R.drawable.avataricon)
                     .error(R.drawable.avataricon)
-                    .into(binding.ivUserAvatar)
+                    .into(binding.userAvatar)
             }
             binding.cardEditAccount.setOnClickListener {
                 navigateToAccountDetailFragment()
