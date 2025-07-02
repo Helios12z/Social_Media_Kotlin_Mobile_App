@@ -75,7 +75,10 @@ class SettingFragment : Fragment() {
             deleteFragment.show(parentFragmentManager, "deleteFragment")
         }
         binding.cardChangeSelfInterests.setOnClickListener {
-
+            findNavController().navigate(R.id.navigation_self_interest)
+        }
+        binding.cardChangeEmail.setOnClickListener {
+            findNavController().navigate(R.id.navigation_change_email)
         }
         db.collection("Users").document(userId).get().addOnSuccessListener {
             result->if (result.exists()) {
@@ -85,7 +88,7 @@ class SettingFragment : Fragment() {
                     binding.cardUserManagement.visibility=View.VISIBLE
 
                     binding.cardEditInterests.setOnClickListener {
-
+                        findNavController().navigate(R.id.navigation_interest_management)
                     }
 
                     binding.cardUserManagement.setOnClickListener {

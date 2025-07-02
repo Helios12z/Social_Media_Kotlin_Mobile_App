@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="@color/background_color"
+    tools:context=".fragmentwithoutviewmodel.ChangeEmailFragment">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Thay đổi Email"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"
+            android:textColor="@color/text_color" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Email hiện tại: "
+            android:textSize="16dp"
+            android:textStyle="bold"
+            android:id="@+id/currentEmail"
+            android:layout_marginBottom="24dp"
+            android:textColor="@color/text_color" />
+
+        <EditText
+            android:id="@+id/edtNewEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email mới"
+            android:inputType="textEmailAddress"
+            android:backgroundTint="@color/text_color" />
+
+        <EditText
+            android:id="@+id/edtPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mật khẩu hiện tại"
+            android:inputType="textPassword"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/text_color" />
+
+        <Button
+            android:id="@+id/btnUpdateEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cập nhật Email"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="?attr/colorPrimary"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+</ScrollView>

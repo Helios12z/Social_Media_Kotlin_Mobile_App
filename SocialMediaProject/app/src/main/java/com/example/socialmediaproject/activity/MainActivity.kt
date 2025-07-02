@@ -1,10 +1,8 @@
 package com.example.socialmediaproject.activity
 
 import android.Manifest
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -12,7 +10,6 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import eightbitlab.com.blurview.BlurView
@@ -20,7 +17,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.example.socialmediaproject.NotificationNavigationCache
 import com.example.socialmediaproject.service.PostingService

@@ -162,4 +162,19 @@
         android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.UserManagementFragment"
         android:label="UserManagement"
         tools:layout="@layout/fragment_user_management"/>
+
+    <fragment android:id="@+id/navigation_interest_management"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.InterestManagementFragment"
+        android:label="InterestManagement"
+        tools:layout="@layout/fragment_interest_management"/>
+
+    <fragment android:id="@+id/navigation_self_interest"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.EditSelfInterestFragment"
+        android:label="SelfInterest"
+        tools:layout="@layout/fragment_edit_self_interest"/>
+
+    <fragment android:id="@+id/navigation_change_email"
+        android:name="com.example.socialmediaproject.fragmentwithoutviewmodel.ChangeEmailFragment"
+        android:label="ChangeEmail"
+        tools:layout="@layout/fragment_change_email"/>
 </navigation>

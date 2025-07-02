@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:background="@color/background_color"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/txtInterest"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Sở thích"
+        android:textColor="@color/text_color"
+        android:textSize="20sp" />
+
+    <ImageButton
+        android:id="@+id/btnEdit"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/edit_icon"
+        android:scaleType="fitXY"
+        android:background="@android:color/transparent"
+        android:contentDescription="Sửa"
+        app:tint="@color/text_color" />
+
+    <ImageButton
+        android:id="@+id/btnDelete"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/removebutton"
+        android:background="@android:color/transparent"
+        app:tint="@color/text_color"
+        android:contentDescription="Xóa" />
+</LinearLayout>

@@ -2,8 +2,6 @@ package com.example.socialmediaproject.activity
 
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.LinearGradient
-import android.graphics.Shader
 import android.os.Bundle
 import android.widget.Button
 import android.widget.CheckBox
@@ -30,6 +28,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var db: FirebaseFirestore
     private lateinit var rememberme: CheckBox
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var forgotPassword: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +47,7 @@ class LoginActivity : AppCompatActivity() {
         signuptext=findViewById(R.id.signUpText)
         signuptext.setOnClickListener { onSignUpClicked() }
         loginbutton=findViewById(R.id.loginButton)
+        forgotPassword=findViewById(R.id.forgotPassword)
         rememberme=findViewById(R.id.rememberMe)
         firebaseauth=FirebaseAuth.getInstance()
         loginbutton.setOnClickListener {
@@ -65,6 +65,20 @@ class LoginActivity : AppCompatActivity() {
                     val userId = firebaseauth.currentUser?.uid ?: ""
                     db.collection("Users").document(userId).get()
                         .addOnSuccessListener { doc ->
+                            val userEmailAuth = firebaseauth.currentUser?.email
+                            val emailInFirestore = doc.getString("email")
+
+                            if (userEmailAuth != null && emailInFirestore != null && userEmailAuth != emailInFirestore) {
+                                db.collection("Users").document(userId)
+                                    .update("email", userEmailAuth)
+                                    .addOnSuccessListener {
+                                        //TODO: think something to do here
+                                    }
+                                    .addOnFailureListener {
+                                        //TODO: think something to do here
+                                    }
+                            }
+
                             val isBanned = doc.getBoolean("isBanned") ?: false
                             if (isBanned) {
                                 if (!loading.isStateSaved) loading.dismiss()
@@ -79,6 +93,7 @@ class LoginActivity : AppCompatActivity() {
                                     }
                                     .setCancelable(false)
                                     .show()
+                                loginbutton.isEnabled=true
                             }
                             else {
                                 if (!loading.isStateSaved) {
@@ -107,14 +122,37 @@ class LoginActivity : AppCompatActivity() {
                                 loading.dismissAllowingStateLoss()
                             }
                             Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
+                            loginbutton.isEnabled=true
                         }
                     }
+                    else {
+                        if (!loading.isStateSaved) {
+                            loading.dismiss()
+                        } else {
+                            loading.dismissAllowingStateLoss()
+                        }
+                        Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
+                        loginbutton.isEnabled=true
+                    }
+                }
+                .addOnFailureListener {
+                    if (!loading.isStateSaved) {
+                        loading.dismiss()
+                    } else {
+                        loading.dismissAllowingStateLoss()
+                    }
+                    Toast.makeText(this, "Tên đăng nhập/mật khẩu không chính xác hoặc không có internet!", Toast.LENGTH_SHORT).show()
+                    loginbutton.isEnabled=true
                 }
             }
             else {
                 Toast.makeText(this, "Vui lòng nhập đầy đủ các trường!", Toast.LENGTH_SHORT).show()
                 loginbutton.isEnabled=true
             }
+        }
+        forgotPassword.setOnClickListener {
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            startActivity(intent)
         }
     }
 
