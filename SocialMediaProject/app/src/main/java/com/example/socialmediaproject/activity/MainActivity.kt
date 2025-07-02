@@ -30,6 +30,7 @@ import com.example.socialmediaproject.ui.notification.NotificationViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.onesignal.OneSignal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private val db= FirebaseFirestore.getInstance()
     private lateinit var auth: FirebaseAuth
     private lateinit var notificationViewModel: NotificationViewModel
+    private var bannedListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +56,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
         val userid=auth.currentUser?.uid
+        observeUserBannedStatus(userid ?: return)
         val usersref=db.collection("Users")
         usersref.whereEqualTo("userid", userid).get().addOnSuccessListener {
             documents->if (!documents.isEmpty) {
@@ -301,5 +304,27 @@ class MainActivity : AppCompatActivity() {
             handleIntent(pendingIntent)
             NotificationNavigationCache.pendingIntent = null
         }
+    }
+
+    private fun observeUserBannedStatus(userId: String) {
+        bannedListener = db.collection("Users").document(userId)
+            .addSnapshotListener { docSnapshot, _ ->
+                if (docSnapshot != null && docSnapshot.exists()) {
+                    val isBanned = docSnapshot.getBoolean("isBanned") ?: false
+                    if (isBanned) {
+                        Toast.makeText(this, "Tài khoản của bạn đã bị cấm bởi quản trị viên.", Toast.LENGTH_LONG).show()
+
+                        OneSignal.logout()
+                        val sharedPreferences = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
+                        sharedPreferences.edit().clear().apply()
+                        FirebaseAuth.getInstance().signOut()
+
+                        val intent = Intent(this, LoginActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+            }
     }
 }
