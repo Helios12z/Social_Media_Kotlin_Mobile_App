@@ -72,4 +72,8 @@
     <!-- Modern blue to cyan gradient colors -->
     <color name="modern_blue_start">#FF42A5F5</color>
     <color name="modern_cyan_end">#FF26C6DA</color>
+    
+    <!-- Missing primary colors -->
+    <color name="primary_color">#FF6B73FF</color>
+    <color name="colorPrimary">#FF6B73FF</color>
 </resources>
