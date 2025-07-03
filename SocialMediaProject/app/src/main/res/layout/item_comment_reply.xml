@@ -38,15 +38,16 @@
         app:layout_constraintStart_toEndOf="@id/tvReplyUsername"
         app:layout_constraintTop_toTopOf="@id/tvReplyUsername" />
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardReplyComment"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         app:cardBackgroundColor="@color/background_color"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="1dp"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivReplyUserAvatar"
         app:layout_constraintTop_toBottomOf="@id/tvReplyUsername">
@@ -67,7 +68,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
         android:id="@+id/layoutReplyActions"
@@ -115,27 +116,27 @@
             android:textColor="@color/text_color"
             android:textSize="10sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
             android:id="@+id/editReply"
-            android:textColor="@color/text_color"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="2dp"
+            android:src="@drawable/ic_edit_rounded"
             android:visibility="gone"
-            android:text="Sửa"
-            android:textSize="10dp"
-            android:padding="4dp"
-            android:layout_marginStart="16dp"/>
+            app:tint="@color/text_color" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
             android:id="@+id/deleteReply"
-            android:textColor="@color/text_color"
-            android:text="Xóa"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="2dp"
+            android:src="@drawable/ic_delete_rounded"
             android:visibility="gone"
-            android:textSize="10dp"
-            android:padding="4dp"
-            android:layout_marginStart="16dp"/>
+            app:tint="@color/text_color" />
     </LinearLayout>
 
     <LinearLayout
