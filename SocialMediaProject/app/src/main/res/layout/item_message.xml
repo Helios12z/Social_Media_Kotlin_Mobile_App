@@ -26,7 +26,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardReceivedMessage"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -34,10 +34,10 @@
             android:layout_marginEnd="8dp"
             android:clipToPadding="false"
             android:clipChildren="false"
-            app:cardBackgroundColor="?attr/colorSurface"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:cardPreventCornerOverlap="false"
+            app:cardBackgroundColor="@android:color/white"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="0dp"
             app:layout_constraintStart_toEndOf="@id/ivSenderAvatar"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_default="wrap"
@@ -68,7 +68,7 @@
                 android:breakStrategy="high_quality"
                 android:hyphenationFrequency="normal"
                 tools:text="Chào bạn, bạn khỏe không?" />
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvReceivedTime"
@@ -92,14 +92,14 @@
         app:layout_constraintWidth_max="300dp"
         app:layout_constraintWidth_percent="0.8">
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardSentMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/purple_500"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:cardPreventCornerOverlap="true"
+            app:cardBackgroundColor="@color/primary_color"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:strokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_max="240dp">
@@ -124,7 +124,7 @@
                 android:maxLines="999"
                 android:breakStrategy="simple"
                 tools:text="Xin chào, tôi khỏe cảm ơn bạn!" />
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvSentTime"
@@ -140,10 +140,10 @@
 
         <ImageView
             android:id="@+id/ivMessageStatus"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:layout_marginEnd="4dp"
-            android:src="@drawable/ic_tick_filled"
+            android:src="@drawable/ic_tick_rounded"
             app:layout_constraintBottom_toBottomOf="@id/tvSentTime"
             app:layout_constraintEnd_toStartOf="@id/tvSentTime"
             app:layout_constraintTop_toTopOf="@id/tvSentTime"/>

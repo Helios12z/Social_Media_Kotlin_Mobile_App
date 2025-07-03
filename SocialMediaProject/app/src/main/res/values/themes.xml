@@ -16,6 +16,10 @@
         <item name="colorSurface">@color/glass_background</item>
         <item name="colorOnSurface">@color/text_color</item>
         
+        <!-- Font Family - Apply Inter font to entire app -->
+        <item name="android:fontFamily">@font/inter_font_family</item>
+        <item name="fontFamily">@font/inter_font_family</item>
+        
         <!-- Modern glass UI -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>

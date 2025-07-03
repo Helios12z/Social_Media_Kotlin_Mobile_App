@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.navigation.Navigation.findNavController
@@ -43,9 +44,9 @@ class CommentAdapter(
         val btnLike = itemView.findViewById<TextView>(R.id.btnLike)
         val btnReply = itemView.findViewById<TextView>(R.id.btnReply)
         val rvReplies = itemView.findViewById<RecyclerView>(R.id.rvReplies)
-        val cardComment = itemView.findViewById<androidx.cardview.widget.CardView>(R.id.cardComment)
-        val deleteComment=itemView.findViewById<TextView>(R.id.deleteComment)
-        val editComment=itemView.findViewById<TextView>(R.id.editComment)
+        val cardComment = itemView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardComment)
+        val deleteComment=itemView.findViewById<ImageView>(R.id.deleteComment)
+        val editComment=itemView.findViewById<ImageView>(R.id.editComment)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {

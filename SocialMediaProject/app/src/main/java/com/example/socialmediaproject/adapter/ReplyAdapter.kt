@@ -5,9 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.cardview.widget.CardView
+import com.google.android.material.card.MaterialCardView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,9 +43,9 @@ class ReplyAdapter(
         val btnLike = view.findViewById<TextView>(R.id.btnReplyLike)
         val btnReply = view.findViewById<TextView>(R.id.btnReplyToReply)
         val nestedRepliesContainer = view.findViewById<LinearLayout>(R.id.nestedRepliesContainer)
-        val cardReply=view.findViewById<CardView>(R.id.cardReplyComment)
-        val editReply=view.findViewById<TextView>(R.id.editReply)
-        val deleteReply=view.findViewById<TextView>(R.id.deleteReply)
+        val cardReply=view.findViewById<MaterialCardView>(R.id.cardReplyComment)
+        val editReply=view.findViewById<ImageView>(R.id.editReply)
+        val deleteReply=view.findViewById<ImageView>(R.id.deleteReply)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyViewHolder {

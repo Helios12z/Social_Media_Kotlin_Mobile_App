@@ -41,15 +41,16 @@
         app:layout_constraintStart_toEndOf="@id/tvUsername"
         app:layout_constraintTop_toTopOf="@id/tvUsername" />
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardComment"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         app:cardBackgroundColor="@color/background_color"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
         app:layout_constraintTop_toBottomOf="@id/tvUsername">
@@ -83,7 +84,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvReplyingTo" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
         android:id="@+id/layoutCommentActions"
@@ -131,27 +132,29 @@
             android:textColor="@color/text_color"
             android:textSize="12sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
             android:id="@+id/editComment"
-            android:layout_marginStart="10dp"
-            android:text="Sửa"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="12dp"
+            android:src="@drawable/ic_edit_rounded"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Sửa bình luận"
+            android:padding="6dp"
             android:visibility="gone"
-            android:textColor="@color/text_color"
-            android:padding="8dp"
-            android:textSize="12sp"/>
+            app:tint="@color/text_color" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <ImageView
             android:id="@+id/deleteComment"
-            android:layout_marginStart="10dp"
-            android:text="Xóa"
-            android:textColor="@color/text_color"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_delete_rounded"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Xóa bình luận"
+            android:padding="6dp"
             android:visibility="gone"
-            android:padding="8dp"
-            android:textSize="12sp"/>
+            app:tint="#F44336" />
     </LinearLayout>
 
     <TextView

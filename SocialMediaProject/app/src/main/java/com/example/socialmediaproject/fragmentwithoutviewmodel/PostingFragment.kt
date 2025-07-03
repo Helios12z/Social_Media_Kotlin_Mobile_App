@@ -25,6 +25,8 @@ import com.example.socialmediaproject.service.PostingService
 import com.example.socialmediaproject.databinding.FragmentPostingBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.socialmediaproject.activity.MainActivity
 
 private const val REQUEST_IMAGE_PICK = 100
 class PostingFragment : Fragment() {
@@ -43,6 +45,7 @@ class PostingFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding=FragmentPostingBinding.inflate(layoutInflater, container, false)
+        hideNavigationWithBlur()
         return binding.root
     }
 
@@ -146,10 +149,12 @@ class PostingFragment : Fragment() {
                 }
                 requireContext().startService(postIntent)
                 loading.dismiss()
+                showNavigationWithBlur()
                 parentFragmentManager.popBackStack()
             }
         }
         binding.btnBack.setOnClickListener {
+            showNavigationWithBlur()
             parentFragmentManager.popBackStack()
         }
     }
@@ -184,5 +189,18 @@ class PostingFragment : Fragment() {
                 rv_selected_media.visibility = View.VISIBLE
             }
         }
+    }
+    
+    private fun hideNavigationWithBlur() {
+        (requireActivity() as? MainActivity)?.hideNavigationWithBlur()
+    }
+    
+    private fun showNavigationWithBlur() {
+        (requireActivity() as? MainActivity)?.showNavigationWithBlur()
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        showNavigationWithBlur()
     }
 }

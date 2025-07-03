@@ -32,12 +32,48 @@
     <color name="primary_gradient_end">#FF9644FC</color>
     <color name="background_gradient_start">#FFF8F9FA</color>
     <color name="background_gradient_end">#FFE9ECEF</color>
+    
+    <!-- Gradient colors from design -->
+    <color name="gradient_1_start">#FFFCCBF0</color>
+    <color name="gradient_1_end">#FFFF5A57</color>
+    <color name="gradient_2_start">#FFFF5A57</color>
+    <color name="gradient_2_end">#FFE02F75</color>
+    <color name="gradient_3_start">#FFE02F75</color>
+    <color name="gradient_3_end">#FF6700A3</color>
+    <color name="gradient_4_start">#FF6700A3</color>
+    <color name="gradient_4_end">#FF1B2062</color>
+    <color name="gradient_background">#FF1B2062</color>
     <color name="nav_glass_tint">#E6FFFFFF</color>
     <color name="nav_item_selected">#99FFFFFF</color>
     <color name="nav_item_unselected">#60000000</color>
     <color name="nav_icon_selected">#FFFFFFFF</color>
-    <color name="nav_icon_unselected">#99000000</color>
+    <color name="nav_icon_unselected">#E0FFFFFF</color>
+    
+    <!-- Profile page colors -->
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#666666</color>
+    <color name="primary_button_color">#667eea</color>
+    <color name="secondary_button_color">#F8F9FA</color>
+    <color name="stats_text_primary">#1A1A1A</color>
+    <color name="stats_text_secondary">#8E8E93</color>
     
     <!-- Blur overlay color for glassmorphism effect -->
     <color name="blur_overlay_color">#40FFFFFF</color>
+    
+    <!-- Trendy colors for buttons -->
+    <color name="divider_color">#E0E0E0</color>
+    <color name="trendy_purple_start">#FF8A2BE2</color>
+    <color name="trendy_purple_end">#FF9370DB</color>
+    <color name="trendy_blue_start">#FF4169E1</color>
+    <color name="trendy_blue_end">#FF6495ED</color>
+    <color name="trendy_orange_start">#FFFF6347</color>
+    <color name="trendy_orange_end">#FFFF7F50</color>
+    
+    <!-- Modern blue to cyan gradient colors -->
+    <color name="modern_blue_start">#FF42A5F5</color>
+    <color name="modern_cyan_end">#FF26C6DA</color>
+    
+    <!-- Missing primary colors -->
+    <color name="primary_color">#FF6B73FF</color>
+    <color name="colorPrimary">#FF6B73FF</color>
 </resources>

@@ -20,4 +20,8 @@
     <color name="highlight_color">#4E4E00</color>
     <color name="normal_comment_background">#2B2B2B</color>
     <color name="surface_translucent">#CC1E1E1E</color>
+    
+    <!-- Missing primary colors for dark theme -->
+    <color name="primary_color">#FF8A9AFF</color>
+    <color name="colorPrimary">#FF8A9AFF</color>
 </resources>
