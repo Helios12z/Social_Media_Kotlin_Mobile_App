@@ -122,8 +122,8 @@ class PostingFragment : Fragment() {
             binding.btnPost.isEnabled = false
             val loading=LoadingDialogFragment()
             loading.show(parentFragmentManager, "loading")
-            if (binding.etPostContent.text.isEmpty()) {
-                Toast.makeText(requireContext(), "Không thể đăng một bài trống không!", Toast.LENGTH_SHORT).show()
+            if (imagelist.isEmpty()) {
+                Toast.makeText(requireContext(), "Không thể đăng một bài không có ảnh hoặc nội dung!", Toast.LENGTH_SHORT).show()
                 binding.btnPost.isEnabled = true
                 loading.dismiss()
                 return@setOnClickListener

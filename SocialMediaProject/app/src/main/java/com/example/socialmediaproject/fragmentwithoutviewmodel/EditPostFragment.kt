@@ -71,8 +71,8 @@ class EditPostFragment : Fragment() {
             openGallery()
         }
         binding.btnSave.setOnClickListener {
-            if (binding.etPostContent.text.isNullOrEmpty()) {
-                Toast.makeText(requireContext(), "Không thể lưu một bài trống không!", Toast.LENGTH_SHORT).show()
+            if (imagelist.isEmpty()) {
+                Toast.makeText(requireContext(), "Không thể lưu một bài không có ảnh nào!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             val imageUris = ArrayList<String>()

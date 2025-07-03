@@ -340,6 +340,8 @@ class ChatDetailFragment : Fragment() {
                     if (!canChat) {
                         binding.btnSend.visibility = View.GONE
                         binding.btnAttach.visibility = View.GONE
+                        binding.btnVoiceCall.visibility=View.GONE
+                        binding.btnVideoCall.visibility=View.GONE
                         binding.etMessage.apply {
                             isEnabled = false
                             gravity = Gravity.CENTER

@@ -12,6 +12,7 @@ import com.example.socialmediaproject.databinding.FragmentConfirmDeleteAccountBi
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class FragmentConfirmDeleteAccount : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentConfirmDeleteAccountBinding
@@ -62,17 +63,28 @@ class FragmentConfirmDeleteAccount : BottomSheetDialogFragment() {
     }
 
     private fun deleteAccount() {
-        val user = FirebaseAuth.getInstance().currentUser
-        user?.delete()
-            ?.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    FirebaseAuth.getInstance().signOut()
-                    requireActivity().finishAffinity()
-                    val intent = Intent(requireContext(), LoginActivity::class.java)
-                    startActivity(intent)
-                } else {
-                    Toast.makeText(requireContext(), "Xóa thất bại", Toast.LENGTH_SHORT).show()
+        binding.deleteButton.isEnabled = false
+        val currentUserId=FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("Users").document(currentUserId).delete().addOnSuccessListener {
+            val user = FirebaseAuth.getInstance().currentUser
+            user?.delete()
+                ?.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        FirebaseAuth.getInstance().signOut()
+                        requireActivity().finishAffinity()
+                        context?.let {
+                            val intent = Intent(it, LoginActivity::class.java)
+                            startActivity(intent)
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "Xóa thất bại", Toast.LENGTH_SHORT).show()
+                        binding.deleteButton.isEnabled = true
+                    }
                 }
+        }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Xóa thất bại", Toast.LENGTH_SHORT).show()
+                binding.deleteButton.isEnabled = true
             }
     }
 }
