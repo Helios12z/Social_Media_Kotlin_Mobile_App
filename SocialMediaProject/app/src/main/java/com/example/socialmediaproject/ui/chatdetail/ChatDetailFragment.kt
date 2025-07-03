@@ -263,9 +263,7 @@ class ChatDetailFragment : Fragment() {
                 }
         }
         listenForIncomingCall(chatUser.id)
-        binding.btnBack.setOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
+
         binding.btnVideoCall.setOnClickListener {
             val callerId = auth.currentUser?.uid
             val roomId = "${callerId}_${chatUser.id}_${System.currentTimeMillis()}"
