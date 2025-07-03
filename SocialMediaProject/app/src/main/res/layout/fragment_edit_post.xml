@@ -1,262 +1,287 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="@color/background_color"
-    tools:context=".fragmentwithoutviewmodel.EditPostFragment">
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
-    <com.google.android.material.card.MaterialCardView
+    <!-- Modern Header -->
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="0dp"
-        android:layout_marginBottom="0dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="?attr/colorSurface"
-        app:shapeAppearanceOverlay="@style/TopRoundedCard">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@android:color/white"
+        android:elevation="4dp"
+        android:paddingHorizontal="16dp">
 
-        <androidx.coordinatorlayout.widget.CoordinatorLayout
+        <ImageButton
+            android:id="@+id/btn_cancel"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:src="@drawable/ic_arrow_back_filled"
+            android:scaleType="centerInside"
+            app:tint="@color/dark_gray" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Chỉnh sửa bài viết"
+            android:textColor="@color/dark_gray"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+
+    </RelativeLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/light_gray" />
+
+    <!-- Main Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <com.google.android.material.appbar.AppBarLayout
-                android:id="@+id/appbar"
+            <!-- User Profile Section -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                app:elevation="0dp">
-
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    app:contentInsetStart="0dp"
-                    app:contentInsetLeft="0dp">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-
-                        <ImageView
-                            android:id="@+id/btn_cancel"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/ic_arrow_back_filled"
-                            app:tint="@color/text_color"
-                            app:cornerRadius="20dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerInParent="true"
-                            android:text="Chỉnh sửa bài viết"
-                            android:textColor="@color/text_color"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_save"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:backgroundTint="@color/purple_500"
-                            android:text="Lưu"
-                            android:textAllCaps="false"
-                            android:textColor="@color/white"
-                            app:cornerRadius="20dp" />
-                    </RelativeLayout>
-                </androidx.appcompat.widget.Toolbar>
-            </com.google.android.material.appbar.AppBarLayout>
-
-            <androidx.core.widget.NestedScrollView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fillViewport="true"
-                android:background="@color/background_color"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+                android:layout_marginVertical="8dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="@drawable/card_background_enhanced"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="8dp"
+                app:strokeColor="@color/light_gray"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/img_profile"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_avatar_filled"
+                    app:shapeAppearanceOverlay="@style/CircleImageView"
+                    app:strokeColor="@color/light_gray"
+                    app:strokeWidth="2dp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_username"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Username"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium" />
+
+                    <TextView
+                        android:id="@+id/tv_post_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textColor="@color/dark_gray"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tv_post_update_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textColor="@color/dark_gray"
+                        android:visibility="gone"
+                        android:textSize="12sp" />
+
+                    <Spinner
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/postprivacy"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Post Content Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="@drawable/card_background_enhanced"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="8dp"
+                app:strokeColor="@color/light_gray"
+                app:strokeWidth="1dp">
+
+                <EditText
+                    android:id="@+id/et_post_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:padding="20dp"
+                    android:gravity="top|start"
+                    android:hint="Nội dung bài viết..."
+                    android:importantForAutofill="no"
+                    android:inputType="textMultiLine"
+                    android:minHeight="120dp"
+                    android:textColor="@color/dark_gray"
+                    android:textColorHint="@color/gray"
+                    android:textSize="16sp"
+                    android:lineSpacingExtra="4dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Existing Media RecyclerView -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginHorizontal="16dp"
+                android:text="Hình ảnh đã đăng"
+                android:textColor="@color/dark_gray"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_post_media"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="8dp"
+                tools:itemCount="2"
+                tools:listitem="@layout/item_post_media" />
+
+            <!-- Add to Post Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="8dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="@drawable/card_background_enhanced"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="8dp"
+                app:strokeColor="@color/light_gray"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingBottom="16dp">
-
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:id="@+id/img_profile"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:src="@drawable/ic_avatar_filled"
-                            app:shapeAppearanceOverlay="@style/CircleImageView" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/tv_username"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Username"
-                                android:textColor="@color/text_color"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:id="@+id/tv_post_date"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text=""
-                                android:textColor="@color/text_color"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/tv_post_update_date"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text=""
-                                android:textColor="@color/text_color"
-                                android:visibility="gone"
-                                android:textSize="12sp" />
-
-                            <Spinner
-                                android:id="@+id/postprivacy"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="?attr/colorSurface" />
-
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="?attr/colorSurface">
-
-                        <EditText
-                            android:id="@+id/et_post_content"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="@android:color/transparent"
-                            android:padding="16dp"
-                            android:gravity="top|start"
-                            android:hint="Nội dung bài viết..."
-                            android:importantForAutofill="no"
-                            android:inputType="textMultiLine"
-                            android:minHeight="120dp"
-                            android:textColor="@color/text_color"
-                            android:textColorHint="@color/text_color"
-                            android:textSize="16sp" />
-                    </androidx.cardview.widget.CardView>
+                    android:padding="20dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="Hình ảnh đã đăng"
-                        android:textColor="@color/text_color"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:text="Thêm ảnh mới"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium" />
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rv_post_media"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        tools:itemCount="2"
-                        tools:listitem="@layout/item_post_media" />
-
-                    <com.google.android.material.card.MaterialCardView
+                    <HorizontalScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        app:cardBackgroundColor="?attr/colorSurface"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp">
+                        android:scrollbars="none">
 
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
+                            android:orientation="horizontal">
 
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="Thêm ảnh mới"
-                                android:textColor="@color/text_color"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-
-                            <HorizontalScrollView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
-                                android:scrollbars="none">
+                            <com.google.android.material.card.MaterialCardView
+                                android:id="@+id/btn_add_photos"
+                                android:layout_width="80dp"
+                                android:layout_height="80dp"
+                                android:layout_marginEnd="12dp"
+                                android:foreground="?attr/selectableItemBackground"
+                                app:cardCornerRadius="24dp"
+                                app:cardElevation="4dp"
+                                app:cardBackgroundColor="@android:color/transparent">
 
                                 <LinearLayout
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:orientation="horizontal">
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@drawable/trendy_add_photo_button"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
 
-                                    <com.google.android.material.card.MaterialCardView
-                                        android:id="@+id/btn_add_photos"
-                                        android:layout_width="80dp"
-                                        android:layout_height="80dp"
-                                        android:layout_marginEnd="12dp"
-                                        app:cardBackgroundColor="@color/background_color"
-                                        app:cardCornerRadius="8dp"
-                                        app:cardElevation="0dp">
+                                    <ImageView
+                                        android:layout_width="28dp"
+                                        android:layout_height="28dp"
+                                        android:contentDescription="Ảnh"
+                                        app:tint="@android:color/white"
+                                        android:src="@drawable/ic_image_filled" />
 
-                                        <LinearLayout
-                                            android:layout_width="match_parent"
-                                            android:layout_height="match_parent"
-                                            android:gravity="center"
-                                            android:orientation="vertical">
-
-                                            <ImageView
-                                                android:layout_width="32dp"
-                                                android:layout_height="32dp"
-                                                android:contentDescription="Thêm ảnh"
-                                                android:src="@drawable/ic_image_filled"
-                                                app:tint="@color/text_color" />
-
-                                            <TextView
-                                                android:layout_width="wrap_content"
-                                                android:layout_height="wrap_content"
-                                                android:layout_marginTop="4dp"
-                                                android:text="Thêm ảnh"
-                                                android:textColor="@color/text_color"
-                                                android:textSize="12sp" />
-                                        </LinearLayout>
-                                    </com.google.android.material.card.MaterialCardView>
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="4dp"
+                                        android:text="Ảnh"
+                                        android:textColor="@android:color/white"
+                                        android:textSize="12sp"
+                                        android:textStyle="bold" />
                                 </LinearLayout>
-                            </HorizontalScrollView>
+                            </com.google.android.material.card.MaterialCardView>
                         </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                    </HorizontalScrollView>
                 </LinearLayout>
-            </androidx.core.widget.NestedScrollView>
-        </androidx.coordinatorlayout.widget.CoordinatorLayout>
-    </com.google.android.material.card.MaterialCardView>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+            </com.google.android.material.card.MaterialCardView>
+            
+            <!-- Save Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_save"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/gradient_post_button"
+                app:backgroundTint="@null"
+                android:text="Lưu thay đổi"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:icon="@drawable/ic_send_post"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@android:color/white"
+                app:cornerRadius="32dp"
+                android:elevation="6dp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

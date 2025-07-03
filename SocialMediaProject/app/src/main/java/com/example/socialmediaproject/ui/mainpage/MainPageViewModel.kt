@@ -283,10 +283,9 @@ class MainPageViewModel : ViewModel() {
                     batch.update(userRef, "friends", FieldValue.arrayUnion(senderId))
                     batch.delete(requestDocRef)
                 }.await()
-                buttonFriend.visibility= View.VISIBLE
-                buttonFriend.setText("Bạn bè")
-                buttonChat.visibility=View.VISIBLE
-                oldButton.visibility=View.GONE
+                // Cập nhật trạng thái để ẩn cả 2 button chấp nhận và từ chối
+                isReceivingFriendRequest.value = false
+                isFriend.value = true
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -296,7 +295,7 @@ class MainPageViewModel : ViewModel() {
     fun rejectFriendRequest(buttonCheck: Button, senderId: String) {
         val receiverId = auth.currentUser?.uid ?: return
         buttonCheck.isEnabled=false
-        buttonCheck.text="Đang từ chối"
+        buttonCheck.text="Kết bạn"
         viewModelScope.launch {
             try {
                 val requestDocRef = db.collection("friend_requests").document("${senderId}_${receiverId}")
@@ -308,9 +307,11 @@ class MainPageViewModel : ViewModel() {
                     return@launch
                 }
                 requestDocRef.delete().await()
-                buttonCheck.text="Kết bạn"
-                buttonCheck.isEnabled=true
+                // Cập nhật trạng thái để ẩn cả 2 button chấp nhận và từ chối
+                // Khi từ chối, chỉ hiện button kết bạn và ẩn message
                 isReceivingFriendRequest.value=false
+                isFriend.value = false
+                isSendingFriendRequest.value = false
             } catch (e: Exception) {
                 e.printStackTrace()
             }

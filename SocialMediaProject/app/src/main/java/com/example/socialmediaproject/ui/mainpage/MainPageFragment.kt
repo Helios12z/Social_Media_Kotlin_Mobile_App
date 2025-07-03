@@ -244,6 +244,8 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         btn2.text = "Từ chối"
         btn1.setOnClickListener {
             viewModel.acceptFriendRequest(binding.buttonUnfriend, binding.buttonChat, binding.buttonAddFriend, wallUserId)
+            btn1.visibility=View.GONE
+            btn2.visibility=View.GONE
             dialog.dismiss()
         }
         btn2.setOnClickListener {
@@ -485,7 +487,7 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
                 else {
                     binding.buttonAddFriend.visibility = View.VISIBLE
                     binding.buttonUnfriend.visibility = View.GONE
-                    binding.buttonChat.visibility = View.VISIBLE
+                    binding.buttonChat.visibility = View.GONE
                     binding.buttonCancelFriendRequest.visibility = View.GONE
                     binding.buttonAcceptFriendRequest.visibility = View.GONE
                     binding.buttonDeclineFriendRequest.visibility = View.GONE
