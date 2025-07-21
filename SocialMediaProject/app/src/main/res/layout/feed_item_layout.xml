@@ -16,7 +16,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Background Image Container -->
         <androidx.cardview.widget.CardView
             android:id="@+id/imageContainer"
             android:layout_width="match_parent"
@@ -31,15 +30,28 @@
                 android:nestedScrollingEnabled="false"
                 android:clipToPadding="false" />
 
-            <!-- Gradient Overlay positioned at bottom only -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="280dp"
                 android:layout_gravity="bottom"
                 android:background="@drawable/gradient_overlay_bottom" />
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/imageIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone"
+                app:tabIndicatorHeight="0dp"
+                app:tabSelectedTextColor="@android:color/white"
+                app:tabTextColor="@android:color/darker_gray"
+                app:tabRippleColor="@android:color/transparent"
+                android:background="@android:color/transparent"
+                app:tabIndicatorFullWidth="false" />
+
         </androidx.cardview.widget.CardView>
 
-        <!-- Top Header Section with Glass Effect -->
         <eightbitlab.com.blurview.BlurView
             android:id="@+id/blurViewHeader"
             android:layout_width="match_parent"
@@ -137,7 +149,6 @@
             </LinearLayout>
          </eightbitlab.com.blurview.BlurView>
 
-        <!-- Bottom Content Section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -148,7 +159,6 @@
             android:paddingTop="16dp"
             android:paddingBottom="16dp">
 
-            <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -260,7 +270,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Post Content -->
             <TextView
                 android:id="@+id/textViewPostContent"
                 android:layout_width="match_parent"

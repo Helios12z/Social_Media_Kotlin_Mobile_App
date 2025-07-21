@@ -197,6 +197,9 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         binding.buttonDeclineFriendRequest.setOnClickListener {
             viewModel.rejectFriendRequest(binding.buttonAddFriend, wallUserId)
         }
+        binding.backButton.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
     }
 
     private fun showBottomSheet() {

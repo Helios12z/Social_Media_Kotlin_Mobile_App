@@ -2,7 +2,6 @@ package com.example.socialmediaproject.adapter
 
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
-import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -11,13 +10,13 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.socialmediaproject.dataclass.PostViewModel
 import com.example.socialmediaproject.R
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.FirebaseFirestore
 import eightbitlab.com.blurview.BlurView
 
@@ -75,7 +74,7 @@ class FeedAdapter(
         }
         if (post.imageUrls.isNotEmpty()) {
             holder.recyclerViewImages.visibility = View.VISIBLE
-            setupImagesRecyclerView(holder.recyclerViewImages, post.imageUrls, position)
+            setupImagesRecyclerView(holder.recyclerViewImages, post.imageUrls, position, holder.imageIndicator)
         } else {
             holder.recyclerViewImages.visibility = View.GONE
         }
@@ -105,7 +104,10 @@ class FeedAdapter(
         setupClickListeners(holder, position)
     }
 
-    private fun setupImagesRecyclerView(recyclerView: RecyclerView, imageUrls: List<String>, postPosition: Int) {
+    private fun setupImagesRecyclerView(recyclerView: RecyclerView,
+                                        imageUrls: List<String>,
+                                        postPosition: Int,
+                                        indicator: TabLayout) {
         val imageAdapter = ImagePostAdapter(imageUrls) { imagePosition ->
             listener.onImageClicked(postPosition, imagePosition)
         }
@@ -113,6 +115,25 @@ class FeedAdapter(
         recyclerView.setHasFixedSize(true)
         recyclerView.setRecycledViewPool(RecyclerView.RecycledViewPool())
         recyclerView.adapter = imageAdapter
+        if (imageUrls.size > 1) {
+            indicator.visibility=View.VISIBLE
+            indicator.removeAllTabs()
+            repeat(imageUrls.size) {
+                val tab = indicator.newTab()
+                tab.setCustomView(R.layout.dot_indicator_tab)
+                indicator.addTab(tab)
+            }
+            recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                    val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
+                    val firstVisible = layoutManager?.findFirstVisibleItemPosition() ?: 0
+                    for (i in 0 until indicator.tabCount) {
+                        val view = indicator.getTabAt(i)?.customView
+                        view?.alpha = if (i == firstVisible) 1.0f else 0.4f
+                    }
+                }
+            })
+        }
     }
 
     private fun setupClickListeners(holder: PostViewHolder, position: Int) {
@@ -184,7 +205,8 @@ class FeedAdapter(
         val layoutShare: LinearLayout = itemView.findViewById(R.id.layoutShare)
         val privacyIcon: ImageView = itemView.findViewById(R.id.privacy_icon)
         val blurViewHeader: BlurView = itemView.findViewById(R.id.blurViewHeader)
-        
+        val imageIndicator: TabLayout = itemView.findViewById(R.id.imageIndicator)
+
         init {
             setupBlurView()
         }
