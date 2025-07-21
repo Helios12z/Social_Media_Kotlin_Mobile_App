@@ -1,2 +1,2 @@
 # Vector_SocialMediaMobileApp
- This is a WIP project. Nothing is done yet.
+ A kotlin social media android application. Features include chatting, voice calling, video calling (thanks to Google WebRTC), friend adding, sharing, posting, post reaction, updating profile (images, information,...), AI assistant in direct chat and friend chats (using Gemini 1.5 flash enhanced with search ability using SerpAPI), updating posts, commenting, replying to comments, tagging friengs in comments, delete comments, sending links and pictures in chat conversation, notifications, unfriending, blocking, searching for posts, users, friends, chats,... and admin management. Firebase is used for backend. Has caching, paging and race condition management. 
