@@ -1,5 +1,5 @@
 # Vector_SocialMediaMobileApp
- # 🧠 Vector Social — Kotlin Android Social Media App
+ # Vector Social — Kotlin Android Social Media App
 
 Vector Social is a modern, feature-rich **social media application** built using **Kotlin** and **Firebase**, offering a seamless and interactive experience similar to mainstream platforms.  
 This app showcases real-time features such as **chatting**, **post sharing**, **reactions**, **voice/video calls**, and an integrated **AI assistant powered by Gemini 1.5 Flash + SerpAPI**.
@@ -75,3 +75,12 @@ The app includes a friendly assistant named **VectorAI** who can:
 - Answer questions in chat
 - Be tagged in group chats
 - Use Google Gemini + SerpAPI to provide rich responses
+
+---
+
+## 🔐 Handling Concurrency
+
+All race-condition-prone operations such as:
+- Liking a post
+- Commenting with concurrent edits
+are managed using **Firebase Transactions** to ensure **data consistency** and **atomic updates**.
