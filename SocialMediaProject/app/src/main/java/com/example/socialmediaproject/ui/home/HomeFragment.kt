@@ -330,6 +330,14 @@ class HomeFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         }
     }
 
+    override fun onExpandClick(postPosition: Int) {
+        val post=homeviewmodel.postlist.value?.get(postPosition)?:return
+        val bundle=Bundle()
+        bundle.putString("post_id", post.id)
+        bundle.putString("comment_id", "")
+        findNavController().navigate(R.id.navigation_postWithComment, bundle)
+    }
+
     fun sendMessage(
         chatId: String,
         message: Message,

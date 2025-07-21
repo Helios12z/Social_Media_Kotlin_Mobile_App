@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/background_color">
 
-    <!-- Modern Header with Gradient Background -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -23,7 +22,6 @@
             app:expandedTitleGravity="center"
             app:collapsedTitleGravity="center">
 
-            <!-- Gradient Header Background -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
@@ -33,15 +31,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/gradient_profile_bg" />
-                
-                <!-- Overlay gradient -->
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/gradient_overlay" />
             </FrameLayout>
 
-            <!-- Profile Header Container -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -51,7 +47,6 @@
                 android:clipChildren="false"
                 app:layout_collapseMode="pin">
 
-                <!-- Profile Section -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -61,7 +56,6 @@
                     android:paddingBottom="20dp"
                     android:clipChildren="false">
 
-                    <!-- Modern avatar with border -->
                     <FrameLayout
                         android:id="@+id/avatar_container"
                         android:layout_width="120dp"
@@ -81,8 +75,7 @@
                             app:strokeWidth="4dp" />
                     </FrameLayout>
                 </RelativeLayout>
-                
-                <!-- User Info Section -->
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -97,7 +90,7 @@
                         android:layout_height="wrap_content"
                         android:text="Nguyễn Văn A"
                         android:textAppearance="@style/TextAppearance.App.Headline2"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/text_color"
                         android:gravity="center"/>
 
                     <TextView
@@ -114,7 +107,6 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -129,14 +121,12 @@
                 android:paddingVertical="24dp"
                 android:paddingBottom="32dp">
 
-            <!-- Modern Menu Cards -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_marginTop="16dp">
 
-                <!-- Edit Account Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardEditAccount"
                     android:layout_width="match_parent"
@@ -148,8 +138,9 @@
                     android:foreground="?attr/selectableItemBackground"
                     app:cardCornerRadius="24dp"
                     app:cardElevation="8dp"
-                    app:cardBackgroundColor="@android:color/white"
-                    app:strokeWidth="0dp">
+                    app:cardBackgroundColor="@color/background_color"
+                    app:strokeColor="@color/text_color"
+                    app:strokeWidth="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -159,7 +150,6 @@
                         android:paddingVertical="20dp"
                         android:gravity="center_vertical">
 
-                        <!-- Modern Icon Container -->
                         <FrameLayout
                             android:layout_width="48dp"
                             android:layout_height="48dp"
@@ -187,7 +177,7 @@
                                 android:text="Chỉnh sửa thông tin"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/text_primary"
+                                android:textColor="@color/text_color"
                                 android:fontFamily="sans-serif-medium" />
                                 
                             <TextView
@@ -208,7 +198,6 @@
         </LinearLayout>
                  </com.google.android.material.card.MaterialCardView>
 
-                 <!-- Go to Main Page Card -->
                  <com.google.android.material.card.MaterialCardView
                      android:id="@+id/cardAccountHome"
                      android:layout_width="match_parent"
@@ -220,8 +209,9 @@
                      android:foreground="?attr/selectableItemBackground"
                      app:cardCornerRadius="24dp"
                      app:cardElevation="8dp"
-                     app:cardBackgroundColor="@android:color/white"
-                     app:strokeWidth="0dp">
+                     app:cardBackgroundColor="@color/background_color"
+                     app:strokeColor="@color/text_color"
+                     app:strokeWidth="2dp">
 
                      <LinearLayout
                          android:layout_width="match_parent"
@@ -231,7 +221,6 @@
                          android:paddingVertical="20dp"
                          android:gravity="center_vertical">
 
-                         <!-- Modern Icon Container -->
                          <FrameLayout
                              android:layout_width="48dp"
                              android:layout_height="48dp"
@@ -260,7 +249,7 @@
                                  android:text="Trang cá nhân"
                                  android:textSize="16sp"
                                  android:textStyle="bold"
-                                 android:textColor="@color/text_primary"
+                                 android:textColor="@color/text_color"
                                  android:fontFamily="sans-serif-medium" />
                                  
                              <TextView
@@ -281,7 +270,6 @@
                      </LinearLayout>
                  </com.google.android.material.card.MaterialCardView>
 
-                 <!-- Settings Card -->
                  <com.google.android.material.card.MaterialCardView
                      android:id="@+id/cardSettings"
                      android:layout_width="match_parent"
@@ -293,8 +281,9 @@
                      android:foreground="?attr/selectableItemBackground"
                      app:cardCornerRadius="24dp"
                      app:cardElevation="8dp"
-                     app:cardBackgroundColor="@android:color/white"
-                     app:strokeWidth="0dp">
+                     app:cardBackgroundColor="@color/background_color"
+                     app:strokeColor="@color/text_color"
+                     app:strokeWidth="2dp">
 
                      <LinearLayout
                          android:layout_width="match_parent"
@@ -304,7 +293,6 @@
                          android:paddingVertical="20dp"
                          android:gravity="center_vertical">
 
-                         <!-- Modern Icon Container -->
                          <FrameLayout
                              android:layout_width="48dp"
                              android:layout_height="48dp"
@@ -333,7 +321,7 @@
                                  android:text="Cài đặt"
                                  android:textSize="16sp"
                                  android:textStyle="bold"
-                                 android:textColor="@color/text_primary"
+                                 android:textColor="@color/text_color"
                                  android:fontFamily="sans-serif-medium" />
                                  
                              <TextView
@@ -354,7 +342,6 @@
                      </LinearLayout>
                  </com.google.android.material.card.MaterialCardView>
 
-                 <!-- Logout Card -->
                  <com.google.android.material.card.MaterialCardView
                      android:id="@+id/cardLogout"
                      android:layout_width="match_parent"
@@ -366,9 +353,9 @@
                      android:foreground="?attr/selectableItemBackground"
                      app:cardCornerRadius="24dp"
                      app:cardElevation="8dp"
-                     app:cardBackgroundColor="@android:color/white"
-                     app:strokeWidth="1dp"
-                     app:strokeColor="#FFEBEE">
+                     app:cardBackgroundColor="@color/background_color"
+                     app:strokeWidth="2dp"
+                     app:strokeColor="@color/text_color">
 
                      <LinearLayout
                          android:layout_width="match_parent"

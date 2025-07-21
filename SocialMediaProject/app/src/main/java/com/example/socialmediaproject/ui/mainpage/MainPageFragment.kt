@@ -366,74 +366,74 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
         val postId = post.id
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         FirebaseFirestore.getInstance()
-            .collection("Users")
-            .document(uid)
-            .get()
-            .addOnSuccessListener { doc ->
-                val hidden = (doc.get("hiddenPosts") as? List<String>) ?: emptyList()
-                val isHidden = hidden.contains(postId)
-                PopupMenu(requireContext(), anchorView).apply {
-                    inflate(R.menu.post_management_menu)
-                    menu.findItem(R.id.btnHideOrUnhidePost).title = if (isHidden) "Hủy ẩn bài đăng" else "Ẩn bài đăng"
-                    menu.findItem(R.id.btnDeletePost).isVisible=(post.userId==uid || doc.getString("role").equals("Admin"))
-                    menu.findItem(R.id.btnEditPost).isVisible=(post.userId==uid)
-                    setOnMenuItemClickListener { item ->
-                        when (item.itemId) {
-                            R.id.btnDeletePost -> {
-                                AlertDialog.Builder(requireContext())
-                                    .setTitle("Xác nhận xóa")
-                                    .setMessage("Bạn có chắc chắn muốn xóa post này?")
-                                    .setPositiveButton("Có") { _, _ ->
-                                        val data = workDataOf(
-                                            "postId" to postId,
-                                            "action" to "delete"
-                                        )
-                                        WorkManager.getInstance(requireContext())
-                                            .enqueue(
-                                                OneTimeWorkRequestBuilder<PostActionWorker>()
-                                                    .setInputData(data)
-                                                    .build()
-                                            )
-                                        feedAdapter.removeAt(position)
-                                    }
-                                    .setNegativeButton("Không", null)
-                                    .show()
-                                true
-                            }
-                            R.id.btnEditPost -> {
-                                if (!PostUpdatingService.isUpdating)
-                                findNavController().navigate(
-                                    R.id.navigation_editPost,
-                                    bundleOf("postId" to postId)
-                                )
-                                else Toast.makeText(requireContext(), "Vui lòng đợi bài trước cập nhật xong!", Toast.LENGTH_SHORT).show()
-                                true
-                            }
-                            R.id.btnHideOrUnhidePost -> {
-                                val action = if (isHidden) "unhide" else "hide"
-                                val data = workDataOf(
-                                    "postId" to postId,
-                                    "action" to action
-                                )
-                                WorkManager.getInstance(requireContext())
-                                    .enqueue(
-                                        OneTimeWorkRequestBuilder<PostActionWorker>()
-                                            .setInputData(data)
-                                            .build()
+        .collection("Users")
+        .document(uid)
+        .get()
+        .addOnSuccessListener { doc ->
+            val hidden = (doc.get("hiddenPosts") as? List<String>) ?: emptyList()
+            val isHidden = hidden.contains(postId)
+            PopupMenu(requireContext(), anchorView).apply {
+                inflate(R.menu.post_management_menu)
+                menu.findItem(R.id.btnHideOrUnhidePost).title = if (isHidden) "Hủy ẩn bài đăng" else "Ẩn bài đăng"
+                menu.findItem(R.id.btnDeletePost).isVisible=(post.userId==uid || doc.getString("role").equals("Admin"))
+                menu.findItem(R.id.btnEditPost).isVisible=(post.userId==uid)
+                setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.btnDeletePost -> {
+                            AlertDialog.Builder(requireContext())
+                                .setTitle("Xác nhận xóa")
+                                .setMessage("Bạn có chắc chắn muốn xóa post này?")
+                                .setPositiveButton("Có") { _, _ ->
+                                    val data = workDataOf(
+                                        "postId" to postId,
+                                        "action" to "delete"
                                     )
-                                if (action=="hide") Toast.makeText(requireContext(), "Bài viết này sẽ không hiển thị trên bảng feed của bạn", Toast.LENGTH_SHORT).show()
-                                else Toast.makeText(requireContext(), "Đã hủy ẩn bài viết", Toast.LENGTH_SHORT).show()
-                                true
-                            }
-                            else -> false
+                                    WorkManager.getInstance(requireContext())
+                                        .enqueue(
+                                            OneTimeWorkRequestBuilder<PostActionWorker>()
+                                                .setInputData(data)
+                                                .build()
+                                        )
+                                    feedAdapter.removeAt(position)
+                                }
+                                .setNegativeButton("Không", null)
+                                .show()
+                            true
                         }
+                        R.id.btnEditPost -> {
+                            if (!PostUpdatingService.isUpdating)
+                            findNavController().navigate(
+                                R.id.navigation_editPost,
+                                bundleOf("postId" to postId)
+                            )
+                            else Toast.makeText(requireContext(), "Vui lòng đợi bài trước cập nhật xong!", Toast.LENGTH_SHORT).show()
+                            true
+                        }
+                        R.id.btnHideOrUnhidePost -> {
+                            val action = if (isHidden) "unhide" else "hide"
+                            val data = workDataOf(
+                                "postId" to postId,
+                                "action" to action
+                            )
+                            WorkManager.getInstance(requireContext())
+                                .enqueue(
+                                    OneTimeWorkRequestBuilder<PostActionWorker>()
+                                        .setInputData(data)
+                                        .build()
+                                )
+                            if (action=="hide") Toast.makeText(requireContext(), "Bài viết này sẽ không hiển thị trên bảng feed của bạn", Toast.LENGTH_SHORT).show()
+                            else Toast.makeText(requireContext(), "Đã hủy ẩn bài viết", Toast.LENGTH_SHORT).show()
+                            true
+                        }
+                        else -> false
                     }
-                    show()
                 }
+                show()
             }
-            .addOnFailureListener {
-                Toast.makeText(requireContext(), "Lỗi", Toast.LENGTH_SHORT).show()
-            }
+        }
+        .addOnFailureListener {
+            Toast.makeText(requireContext(), "Lỗi", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onImageClicked(postPosition: Int, imagePosition: Int) {
@@ -444,6 +444,14 @@ class MainPageFragment : Fragment(), FeedAdapter.OnPostInteractionListener {
             val bundle = bundleOf("IMAGE_URL" to imageurl)
             findNavController().navigate(R.id.viewingimagefragment, bundle)
         }
+    }
+
+    override fun onExpandClick(postPosition: Int) {
+        val post=viewModel.postlist.value?.get(postPosition)?:return
+        val bundle=Bundle()
+        bundle.putString("post_id", post.id)
+        bundle.putString("comment_id", "")
+        findNavController().navigate(R.id.navigation_postWithComment, bundle)
     }
 
     override fun onResume() {

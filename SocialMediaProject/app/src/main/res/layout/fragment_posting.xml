@@ -4,15 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="@color/background_color"
     android:orientation="vertical"
     android:fitsSystemWindows="true">
 
-    <!-- Modern Header -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/white"
+        android:background="@color/background_color"
         android:elevation="4dp"
         android:paddingHorizontal="16dp">
 
@@ -60,14 +59,13 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- User Profile Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="8dp"
                 android:layout_marginHorizontal="8dp"
                 android:background="@drawable/card_background_enhanced"
-                app:cardBackgroundColor="@android:color/white"
+                app:cardBackgroundColor="@color/background_color"
                 app:cardCornerRadius="32dp"
                 app:cardElevation="8dp"
                 app:strokeColor="@color/light_gray"
@@ -86,7 +84,7 @@
                     android:layout_height="48dp"
                     android:src="@drawable/ic_avatar_filled"
                     app:shapeAppearanceOverlay="@style/CircleImageView"
-                    app:strokeColor="@color/light_gray"
+                    app:strokeColor="@color/purple_700"
                     app:strokeWidth="2dp" />
 
                 <LinearLayout
@@ -101,7 +99,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Username"
-                        android:textColor="@color/dark_gray"
+                        android:textColor="@color/text_color"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:fontFamily="sans-serif-medium" />
@@ -115,14 +113,13 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Post Content Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="8dp"
                 android:layout_marginHorizontal="8dp"
                 android:background="@drawable/card_background_enhanced"
-                app:cardBackgroundColor="@android:color/white"
+                app:cardBackgroundColor="@color/background_color"
                 app:cardCornerRadius="32dp"
                 app:cardElevation="8dp"
                 app:strokeColor="@color/light_gray"
@@ -145,7 +142,6 @@
                     android:lineSpacingExtra="4dp" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Selected Media RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_selected_media"
                 android:layout_width="match_parent"
@@ -158,14 +154,13 @@
                 tools:listitem="@layout/item_post_media"
                 tools:visibility="visible" />
 
-            <!-- Add to Post Section -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="8dp"
                 android:layout_marginHorizontal="8dp"
                 android:background="@drawable/card_background_enhanced"
-                app:cardBackgroundColor="@android:color/white"
+                app:cardBackgroundColor="@color/background_color"
                 app:cardCornerRadius="32dp"
                 app:cardElevation="8dp"
                 app:strokeColor="@color/light_gray"
@@ -181,7 +176,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Thêm vào bài viết"
-                        android:textColor="@color/dark_gray"
+                        android:textColor="@color/text_color"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:fontFamily="sans-serif-medium" />

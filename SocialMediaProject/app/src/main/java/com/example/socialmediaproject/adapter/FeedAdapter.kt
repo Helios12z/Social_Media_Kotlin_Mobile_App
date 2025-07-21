@@ -2,17 +2,16 @@ package com.example.socialmediaproject.adapter
 
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
+import android.os.Bundle
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -40,6 +39,7 @@ class FeedAdapter(
         fun onMoreOptionsClicked(position: Int, anchorView: View)
         fun onImageClicked(postPosition: Int, imagePosition: Int)
         fun onLikeCountClicked(postPosition: Int)
+        fun onExpandClick(postPosition: Int)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -95,14 +95,9 @@ class FeedAdapter(
                 val isTruncated = layout.getEllipsisCount(2) > 0
                 holder.textViewReadMore.apply {
                     visibility = if (isExpanded || isTruncated) View.VISIBLE else View.GONE
-                    text = if (isExpanded) "Ẩn bớt" else "Xem thêm"
+                    text = "Xem thêm"
                 }
             }
-        }
-        holder.textViewReadMore.setOnClickListener {
-            if (isExpanded) expandedPositions.remove(position)
-            else expandedPositions.add(position)
-            notifyItemChanged(position)
         }
         if (post.privacy=="Công khai") holder.privacyIcon.setImageResource(R.drawable.icon_global)
         else if (post.privacy=="Bạn bè") holder.privacyIcon.setImageResource(R.drawable.iconfriends)
@@ -147,6 +142,10 @@ class FeedAdapter(
 
         holder.textViewLikeCount.setOnClickListener {
             listener.onLikeCountClicked(position)
+        }
+
+        holder.textViewReadMore.setOnClickListener {
+            listener.onExpandClick(position)
         }
     }
 
@@ -194,7 +193,7 @@ class FeedAdapter(
             val overlayDrawable = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = 60f
-                setColor(0x1A000000) // bg-black/10 equivalent
+                setColor(0x1A000000)
             }
             
             try {
@@ -205,7 +204,6 @@ class FeedAdapter(
                 blurViewHeader.clipToOutline = true
                 blurViewHeader.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             } catch (e: Exception) {
-                // Fallback to simple background if BlurView fails
                 blurViewHeader.background = overlayDrawable
             }
         }

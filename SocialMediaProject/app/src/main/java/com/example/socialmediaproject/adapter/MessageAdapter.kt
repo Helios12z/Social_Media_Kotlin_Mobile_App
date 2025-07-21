@@ -3,7 +3,6 @@ package com.example.socialmediaproject.adapter
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
