@@ -20,6 +20,7 @@ This app showcases real-time features such as **chatting**, **post sharing**, **
 - 🧭 Post privacy (Public / Friends / Private)
 - 🔄 Real-time updates and caching
 - 🧵 Expand/collapse post content with dynamic layout handling
+- Special algorithm for displaying the most suitable posts for particular users
 
 ### 💬 Chat System
 - 🔔 Real-time 1-1 chat with:
