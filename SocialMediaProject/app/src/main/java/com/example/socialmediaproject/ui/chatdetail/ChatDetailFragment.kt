@@ -218,6 +218,7 @@ class ChatDetailFragment : Fragment() {
         {
             binding.btnAttach.visibility=View.GONE
             binding.btnVoiceCall.visibility=View.GONE
+            binding.btnVideoCall.visibility=View.GONE
         }
         listenUserActivity(chatUser.id)
         binding.btnVoiceCall.setOnClickListener {

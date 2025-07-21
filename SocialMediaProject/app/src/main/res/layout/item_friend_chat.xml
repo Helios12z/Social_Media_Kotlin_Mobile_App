@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="8dp"
-    app:cardBackgroundColor="@android:color/white"
+    app:cardBackgroundColor="@color/background_color"
     app:cardCornerRadius="32dp"
     app:cardElevation="6dp"
     app:strokeWidth="0dp">
@@ -16,7 +16,6 @@
         android:layout_height="wrap_content"
         android:padding="20dp">
 
-        <!-- Avatar Container -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/avatarContainer"
             android:layout_width="wrap_content"
@@ -44,7 +43,7 @@
             android:layout_marginStart="16dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/text_color"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/tvTimestamp"
@@ -60,7 +59,7 @@
             android:layout_marginTop="6dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/text_color"
             android:textSize="15sp"
             app:layout_constraintBottom_toBottomOf="@id/avatarContainer"
             app:layout_constraintEnd_toStartOf="@id/tvUnreadCount"
@@ -79,7 +78,6 @@
             app:layout_constraintTop_toTopOf="@id/tvUsername"
             tools:text="10:30" />
 
-        <!-- Unread Count Badge -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/unreadBadgeContainer"
             android:layout_width="wrap_content"

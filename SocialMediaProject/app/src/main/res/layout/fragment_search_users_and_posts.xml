@@ -8,7 +8,6 @@
     android:background="@color/background_color"
     tools:context=".ui.searchusersandposts.SearchUsersAndPostsFragment">
 
-    <!-- Modern Header Section -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
@@ -24,13 +23,12 @@
             android:paddingTop="20dp"
             android:paddingBottom="16dp">
 
-            <!-- Search Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/search_container"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginBottom="12dp"
-                app:cardBackgroundColor="@android:color/white"
+                app:cardBackgroundColor="@color/background_color"
                 app:cardCornerRadius="28dp"
                 app:cardElevation="8dp"
                 app:strokeWidth="0dp">
@@ -51,7 +49,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Filter Chips -->
             <HorizontalScrollView
                 android:id="@+id/filter_scroll"
                 android:layout_width="match_parent"
@@ -120,16 +117,15 @@
             android:orientation="vertical"
             android:paddingHorizontal="4dp">
 
-            <!-- Results Container -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white"
+                app:cardBackgroundColor="@color/background_color"
                 app:cardCornerRadius="32dp"
                 app:cardElevation="4dp"
-                app:strokeWidth="0dp">
+                app:strokeWidth="2dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvSearchResults"
@@ -143,7 +139,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Empty State -->
     <LinearLayout
         android:id="@+id/empty_state_container"
         android:layout_width="match_parent"
@@ -158,7 +153,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            app:cardBackgroundColor="@android:color/white"
+            app:cardBackgroundColor="@color/background_color"
             app:cardCornerRadius="32dp"
             app:cardElevation="8dp"
             app:strokeWidth="0dp">
@@ -177,7 +172,7 @@
                     android:layout_marginBottom="24dp"
                     android:alpha="0.7"
                     android:src="@drawable/ic_search_empty_filled"
-                    android:tint="@color/primary_color" />
+                    app:tint="@color/text_color" />
 
                 <TextView
                     android:id="@+id/empty_state_title"
@@ -185,7 +180,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:text="Không tìm thấy kết quả"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/text_color"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -202,7 +197,6 @@
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
-    <!-- Loading Indicator -->
     <LinearLayout
         android:id="@+id/loading_layout"
         android:layout_width="match_parent"
@@ -215,7 +209,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardBackgroundColor="@android:color/white"
+            app:cardBackgroundColor="@color/background_color"
             app:cardCornerRadius="32dp"
             app:cardElevation="8dp"
             app:strokeWidth="0dp">
@@ -232,13 +226,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    app:indicatorColor="@color/primary_color" />
+                    app:indicatorColor="@color/text_color" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Đang tìm kiếm..."
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/text_color"
                     android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>

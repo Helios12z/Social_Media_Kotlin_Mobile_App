@@ -23,7 +23,6 @@
             app:expandedTitleGravity="center"
             app:collapsedTitleGravity="center">
 
-            <!-- Modern gradient background -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="280dp"
@@ -35,14 +34,12 @@
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
                     android:background="@drawable/gradient_profile_bg" />
-                
-                <!-- Overlay gradient -->
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/gradient_overlay" />
-                    
-                <!-- Back button -->
+
                 <ImageView
                     android:id="@+id/back_button"
                     android:layout_width="44dp"
@@ -58,7 +55,6 @@
                     android:contentDescription="Back" />
             </FrameLayout>
 
-            <!-- Modern profile container -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -68,7 +64,6 @@
                 android:clipChildren="false"
                 app:layout_collapseMode="pin">
 
-                <!-- Profile header with avatar -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -78,7 +73,6 @@
                     android:paddingBottom="20dp"
                     android:clipChildren="false">
 
-                    <!-- Modern avatar with border -->
                     <FrameLayout
                         android:id="@+id/avatar_container"
                         android:layout_width="120dp"
@@ -115,7 +109,7 @@
                         android:layout_height="wrap_content"
                         android:text="Katty Abrahams"
                         android:textAppearance="@style/TextAppearance.App.Headline2"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/text_color"
                         android:gravity="center"/>
 
                     <TextView
@@ -144,7 +138,6 @@
                         android:visibility="gone" />
                 </LinearLayout>
 
-                <!-- Modern stats section -->
                 <LinearLayout
                     android:id="@+id/information_container"
                     android:layout_width="match_parent"
@@ -170,7 +163,7 @@
                             android:text="567 K"
                             android:textSize="20sp"
                             android:textStyle="bold"
-                            android:textColor="@color/text_primary" />
+                            android:textColor="@color/text_color" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -196,6 +189,7 @@
                         android:focusable="true"
                         android:background="?attr/selectableItemBackground"
                         android:gravity="center">
+
                         <TextView
                             android:id="@+id/profile_followers_count"
                             android:layout_width="wrap_content"
@@ -203,7 +197,8 @@
                             android:text="1665"
                             android:textSize="20sp"
                             android:textStyle="bold"
-                            android:textColor="@color/text_primary" />
+                            android:textColor="@color/text_color" />
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
