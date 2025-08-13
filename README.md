@@ -3,6 +3,8 @@
 
 Vector Social is a modern, feature-rich **social media application** built using **Kotlin** and **Firebase**, offering a seamless and interactive experience similar to mainstream platforms.  
 This app showcases real-time features such as **chatting**, **post sharing**, **reactions**, **voice/video calls**, and an integrated **AI assistant powered by Gemini 1.5 Flash + SerpAPI**.
+<br/>
+Note that the used firebase database was completely deleted and all related API keys were disable. 
 
 ---
 
